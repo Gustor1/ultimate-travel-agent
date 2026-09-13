@@ -101,3 +101,17 @@ Ce registre consigne les décisions structurantes prises au cours de la concepti
   5. **Visibilité multi-agent** : Rendu visuel transparent des 9 étapes d'analyse avec leurs statuts, hypothèses, risques, niveaux de vérification et notification claire du mode hors-ligne.
 - **Conséquences :** Expérience utilisateur fluide et accessible, respect sans compromis de l'éthique de sécurité et du fonctionnement local sans dépendance externe.
 
+---
+
+## ADR 011 — Consolidation de l'Expérience Produit V1.1 (Interactivité Frontend, Normalisation Bilingue et Enrichissement des Exemples)
+
+- **Date :** 2026-09-13
+- **Statut :** Accepté
+- **Contexte :** Lors de l'audit de la première passe V1.1, plusieurs lacunes fonctionnelles ont été détectées : l'interface web manquait de la sélection interactive des centres d'intérêt, l'import local de fichiers JSON arbitraires n'était pas proposé, les données manquantes et recommandations estimées n'étaient pas affichées dans la vue de validation, les sources des étapes multi-agents étaient ignorées par le frontend, les 7 profils de préférences inter-villes n'étaient pas interactifs dans le navigateur, et les jeux d'exemples de référence ne modélisaient pas encore les 26 dimensions d'activités ni les routes inter-villes concurrentes.
+- **Décision :**
+  1. **Enrichissement de l'interface locale** : Intégration de cases à cocher et saisie libre pour les centres d'intérêt dans le formulaire de création, ajout d'un sélecteur de fichier JSON local (`importLocalTrip`), affichage exhaustif des 6 catégories de validation (erreurs, avertissements, manquants, non vérifiés, estimés, confirmés), rendu des sources pour chaque étape multi-agent, intégration des points critiques de pré-réservation dans la trousse de préparation, et bouton de filtrage dynamique par préférence dans le comparateur inter-villes.
+  2. **Robustesse bilingue** : Normalisation souple des préférences d'itinéraires en français et en anglais (`moins chère`, `plus rapide`, `moins de correspondances`, `plus confortable`, `plus écologique`, `relaxed`, `packed`) et tolérance aux alias français dans `Activity` (`histoire`, `détente`, `extérieur`, `facile`, etc.).
+  3. **Mise à niveau des exemples officiels** : Enrichissement intégral de `examples/city-trip/trip.json`, `examples/road-trip/trip.json` et de leurs copies dans `data/examples/` avec toutes les dimensions d'activités et des options de transit inter-villes représentatives.
+  4. **Extension protocolaire MCP** : Version passée à 1.1.0 et exposition de `get_inter_city_routes` et `get_contingency_dossier`.
+- **Conséquences :** Expérience produit V1.1 totalement interactive, conforme au cahier des charges et vérifiée par 69 tests automatisés.
+

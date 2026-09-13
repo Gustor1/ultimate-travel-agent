@@ -138,7 +138,7 @@ python examples/demo_run.py
 
 ### 3. Serveur MCP Local (Model Context Protocol) 🔌
 
-Le système inclut un serveur MCP standard stdio exposant 8 outils en lecture seule pour Claude Desktop, Cursor ou tout client MCP :
+Le système inclut un serveur MCP standard stdio exposant 10 outils en lecture seule pour Claude Desktop, Cursor ou tout client MCP :
 
 ```bash
 python -m ultimate_travel_agent.mcp.server
@@ -156,7 +156,7 @@ Configuration Claude Desktop (`mcp-config.json`) :
 }
 ```
 
-Outils disponibles : `list_trips`, `get_trip`, `validate_trip`, `get_itinerary`, `validate_itinerary`, `calculate_budget`, `list_booking_requirements`, `export_trip_summary`.
+Outils disponibles : `list_trips`, `get_trip`, `validate_trip`, `get_itinerary`, `validate_itinerary`, `calculate_budget`, `list_booking_requirements`, `export_trip_summary`, `get_inter_city_routes`, `get_contingency_dossier`.
 
 ---
 
