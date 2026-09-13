@@ -220,40 +220,28 @@ Le système supporte 3 modes d'exécution distincts :
 - 🛡️ **Zéro Partage de PII (Données Personnelles) :** Aucun nom, prénom, courriel, passeport ou donnée privée de voyageur n'est envoyé aux adaptateurs externes. Les requêtes sont anonymisées et portent uniquement sur des critères généraux (ville de départ, destination, dates, nombre d'adultes).
 - 🔒 **Secrets Protégés :** Le fichier `.env.example` ne contient aucun secret par défaut, et `.gitignore` exclut tous les masques `.env*` pour éviter toute fuite accidentelle vers un dépôt public.
 
-### 4. Tableau Récapitulatif des Fournisseurs
+### 4. Matrice des Fournisseurs de Données
 
-| Fournisseur | Domaine / Usage | Clé API requise | Mode supporté | Statut actuel |
-| :--- | :--- | :--- | :--- | :--- |
-| **MockFlightProvider** | Vols (itinéraires, tarifs indicatifs, bagages) | Aucune | `offline`, `mock` | ✅ Intégré & Actif par défaut |
-| **AmadeusFlightProvider** | Vols réels (GDS Amadeus for Developers) | `AMADEUS_CLIENT_ID` / `SECRET` | `live`, `mock` | 🟡 Préparé (Stub prêt, validation requise) |
-| **AviationEdgeFlightProvider** | Horaires & statuts de vol | `AVIATION_EDGE_API_KEY` | `live`, `mock` | 🟡 Préparé (Stub prêt) |
-| **Google Flights** | Comparaison de vols | N/A (Aucune API publique) | Aucun | ❌ **Rejeté** (Scraping interdit & instable) |
-| **MockTrainProvider** | Trains (temps de trajet porte-à-porte, TGV/TER) | Aucune | `offline`, `mock` | ✅ Intégré & Actif par défaut |
-| **SNCFTrainProvider** | Trains France / TGV InOui / TER | `SNCF_API_KEY` | `live`, `mock` | 🟡 Préparé (Stub prêt) |
-| **NavitiaTrainProvider** | Réseaux de transports publics européens | `NAVITIA_API_KEY` | `live`, `mock` | 🟡 Préparé (Stub prêt) |
-| **MockAccommodationProvider** | Hôtels (quartiers calmes, boutique-hôtels) | Aucune | `offline`, `mock` | ✅ Intégré & Actif par défaut |
-| **AmadeusHotelProvider** | Inventaire hôtelier et tarifs indicatifs | `AMADEUS_CLIENT_ID` / `SECRET` | `live`, `mock` | 🟡 Préparé (Stub prêt) |
-| **BookingProvider** | Consultation hébergements | Partenariat Affiliate | `live`, `mock` | 🟡 Préparé (Stub consultation uniquement) |
-| **MockReviewProvider** | Avis et sentiment voyageurs agrégés | Aucune | `offline`, `mock` | ✅ Intégré & Actif par défaut |
-| **StayAPIReviewProvider** | Sentiments et notes d'hôtels vérifiés | `STAYAPI_KEY` | `live`, `mock` | 🟡 Préparé (Strictement lecture/avis) |
-| **TripadvisorReviewProvider** | Notations et avis de réputation | `TRIPADVISOR_API_KEY` | `live`, `mock` | 🟡 Préparé (Strictement lecture/avis) |
-| **MockActivityProvider** | Activités (26 dimensions, créneaux, replis pluie) | Aucune | `offline`, `mock` | ✅ Intégré & Actif par défaut |
-| **GetYourGuideActivityProvider** | Visites et excursions culturelles | Partenariat GYG | `live`, `mock` | 🟡 Préparé (Stub consultation uniquement) |
-| **ViatorActivityProvider** | Activités et circuits | Partenariat Viator | `live`, `mock` | 🟡 Préparé (Stub consultation uniquement) |
-| **OpenTripMapActivityProvider** | POIs culturels et monuments ouverts | Clé gratuite OpenTripMap | `live`, `mock` | 🟡 Préparé (Stub prêt) |
-| **MockMapsProvider** | Distances, temps de trajet, matrices d'étapes | Aucune | `offline`, `mock` | ✅ Intégré & Actif par défaut |
-| **OSRMProvider** | Routage routier open source (OpenStreetMap) | Aucune (Serveur public/auto-hébergé) | `live`, `mock` | 🟡 Préparé (Prêt pour auto-hébergement) |
-| **OpenRouteServiceProvider** | Isochrones et routage multi-modal | `OPENROUTESERVICE_API_KEY` | `live`, `mock` | 🟡 Préparé (Stub prêt) |
-| **NominatimProvider** | Géocodage d'adresses OpenStreetMap | Aucune (Respect de l'User-Agent) | `live`, `mock` | 🟡 Préparé (Stub prêt) |
-| **GoogleMapsRoutesProvider** | Matrices de distance Google Maps | `GOOGLE_MAPS_API_KEY` | `live`, `mock` | 🟡 Préparé (Stub consultation uniquement) |
-| **MockWeatherProvider** | Météo, indices climatiques, déclencheur plan B | Aucune | `offline`, `mock` | ✅ Intégré & Actif par défaut |
-| **OpenMeteoProvider** | Prévisions météo sans clé (Open Data) | Aucune | `live`, `mock` | 🟡 Préparé (Stub prêt) |
-| **OpenWeatherMapProvider** | Prévisions et alertes météo | `OPENWEATHERMAP_API_KEY` | `live`, `mock` | 🟡 Préparé (Stub prêt) |
-| **MockCurrencyProvider** | Devises, conversion avec date de référence | Aucune | `offline`, `mock` | ✅ Intégré & Actif par défaut |
-| **ECBCurrencyProvider** | Taux officiels Banque Centrale Européenne | Aucune (Flux XML public) | `live`, `mock` | 🟡 Préparé (Stub prêt) |
-| **MockGuideProvider** | Contexte local, anecdotes, sécurité | Aucune | `offline`, `mock` | ✅ Intégré & Actif par défaut |
-| **WikivoyageProvider** | Données de voyage libres et participatives | Aucune (API MediaWiki) | `live`, `mock` | 🟡 Préparé (Stub prêt) |
-| **SocialDiscoveryProvider** | Pépites émergentes (TikTok/IG) — Non vérifiées | Aucune | `offline`, `mock` | ✅ Intégré & Tagué `social_discovery_only` |
+| Provider | Données | Clé API | Mode | Limites | Attribution |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **Open-Meteo** | Météo 7 jours, pluie, vent, géocodage | Aucune (Open Data) | `live`, `mock` | 10 000 req/jour, gap local 200 ms, cache 30 min | CC BY 4.0 ([open-meteo.com](https://open-meteo.com/)) |
+| **European Central Bank (ECB)** | Taux de change journaliers de référence | Aucune (Flux XML) | `live`, `mock` | Maj ~16:00 CET, gap 500 ms, marge bancaire 1.5–3.5% | BCE Open Data ([ecb.europa.eu](https://www.ecb.europa.eu/)) |
+| **Wikivoyage** | Guides participatifs, culture, contexte | Aucune (MediaWiki API) | `live`, `mock` | 3 req/s max (gap 330 ms), non-autoritaire sur visas/prix | CC BY-SA 4.0 ([en.wikivoyage.org](https://en.wikivoyage.org/)) |
+| **Nominatim (OSM)** | Géocodage d'adresses open source | Aucune (User-Agent requis) | `live` (désactivé par défaut), `mock` | Strict 1 req/s (mutex process dédié), requêtes ponctuelles | © OpenStreetMap contributors ([ODbL](https://www.openstreetmap.org/copyright)) |
+| **Project OSRM** | Routage routier, distances, temps de trajet | Aucune (Serveur public) | `live` (désactivé par défaut), `mock` | Serveur démo sans SLA, sans trafic direct, gap 1.0 s, alerte > 4h | ODbL / BSD 2-Clause ([project-osrm.org](https://project-osrm.org/)) |
+| **Mock Providers (x9)** | Vols, trains, hôtels, avis, POIs, devises | Aucune | `offline`, `mock` | Données déterministes simulées, aucune disponibilité réelle | Interne `ultimate-travel-agent` |
+| **Social Discovery** | Pépites émergentes (TikTok/IG) | Aucune | `offline`, `mock` | Strictement non vérifié (`social_discovery_only`) | Mentions communautaires |
+| **Amadeus (Flight & Hotel)** | Inventaire vols et hôtels réels | `AMADEUS_CLIENT_ID` / `SECRET` | `live` (désactivé), `mock` | Quota sandbox développeur mensuel | Amadeus for Developers |
+| **SNCF Open Data** | Horaires trains France TGV / TER | `SNCF_API_KEY` | `live` (désactivé), `mock` | Quotas Open Data SNCF Réseau | SNCF Open Data License |
+| **Navitia** | Transports en commun européens | `NAVITIA_API_KEY` | `live` (désactivé), `mock` | Quota gratuit 5 000 req/jour | Navitia Open Data |
+| **OpenTripMap** | POIs culturels et musées | `OPENTRIPMAP_API_KEY` | `live` (désactivé), `mock` | Quota gratuit développeur | OpenTripMap / OSM |
+| **OpenRouteService** | Isochrones et routage multi-modal | `OPENROUTESERVICE_API_KEY` | `live` (désactivé), `mock` | 2 000 req/jour (Free Tier) | OpenRouteService / HeiGIT |
+| **OpenWeatherMap** | Prévisions et alertes météo | `OPENWEATHERMAP_API_KEY` | `live` (désactivé), `mock` | 1 000 appels/jour gratuits | OpenWeatherMap |
+| **Google Maps** | Matrices de distance, géocodage | `GOOGLE_MAPS_API_KEY` | `live` (désactivé), `mock` | Crédit mensuel limité (pay-as-you-go) | Google Maps Platform |
+| **Booking.com** | Consultation hébergements | Partenariat Affiliate | `live` (désactivé), `mock` | Programme commercial partenaire requis | Booking.com Affiliate |
+| **StayAPI / Trip.com** | Sentiments avis et notations | `STAYAPI_KEY` | `live` (désactivé), `mock` | Compte commercial requis | StayAPI |
+| **TripAdvisor Terra** | Notes d'établissements et avis | `TRIPADVISOR_API_KEY` | `live` (désactivé), `mock` | Accord commercial partenaire requis | TripAdvisor Content API |
+| **Viator & GetYourGuide** | Réservation d'activités et excursions | Partenariats commerciaux | `live` (désactivé), `mock` | Programmes partenaires commerciaux | Viator / GetYourGuide |
 
 ---
 
@@ -331,6 +319,13 @@ To activate real-time API integrations on your deployed server:
 ---
 
 ## Documentation Complète
+
+### Phase 10 — Keyless Public Data Integrations
+- [Audit de Faisabilité Sans Clé](docs/phase-10-keyless-providers-audit.md)
+- [Architecture des Fournisseurs Sans Clé](docs/keyless-live-providers.md)
+- [Politique de Licences & Attributions Open Data](docs/open-data-attribution.md)
+- [Gestion des Limites de Débit & Cache](docs/provider-rate-limits.md)
+- [Limitations & Précautions d'Usage](docs/keyless-provider-limitations.md)
 
 ### Phase 9 — Remote MCP & Distribution Pack
 - [Audit de Transition Phase 9 (Remote MCP & Skills)](docs/phase-9-remote-mcp-audit.md)

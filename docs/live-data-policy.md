@@ -47,7 +47,29 @@ Ce document définit les règles de gouvernance, de sécurité et d'intégrité 
 ## 4. Règle Spécifique : Séparation Avis vs Disponibilité Hôtelière
 
 1. **Clarification StayAPI Trip.com** :
-   - StayAPI Trip.com est utilisé **exclusivement comme une source de recueil d'avis clients et d'évaluation de la réputation**.
-   - Il ne doit en aucun cas être présenté ou utilisé comme une API temps réel d'inventaire de chambres, de tarification garantie ou de réservation directe.
 2. **Prix Hôteliers Indicatifs** :
    - En l'absence d'une API live partenaire validée, les tarifs d'hébergement sont présentés comme des estimations indicatives de quartier.
+
+---
+
+## 5. Règle Spécifique : Intégrations Publiques Sans Clé (Phase 10)
+
+1. **Protocoles et Sécurité Réseau** :
+   - Tout appel externe vers un fournisseur public s'effectue exclusivement en **HTTPS**.
+   - Timeout court et strict (5.0s par défaut) pour éviter tout blocage d'agent.
+   - Envoi systématique d'un `User-Agent` non générique identifiant le projet et ses coordonnées.
+
+2. **Attribution et Licences Légales** :
+   - Chaque réponse live contient obligatoirement les mentions de licence :
+     - Open-Meteo : *Weather data by Open-Meteo.com under CC BY 4.0*
+     - BCE / ECB : *Source: European Central Bank (ECB) euro reference exchange rates*
+     - Wikivoyage : *Text from Wikivoyage under CC BY-SA 4.0*
+     - Nominatim / OSM : *Data © OpenStreetMap contributors, ODbL 1.0*
+     - OSRM : *Routing data © Project OSRM / OpenStreetMap contributors*
+
+3. **Intégrité et Limites Métier** :
+   - **Taux BCE** : Doivent être explicitement décrits comme des taux indicatifs de référence interbancaire et non des taux de carte bancaire commerciale.
+   - **Météo Open-Meteo** : Les prévisions au-delà de 7 jours doivent être assorties d'un avertissement d'incertitude météorologique.
+   - **Wikivoyage** : Source communautaire (`community_recommended`). Ne doit jamais se substituer à une source officielle gouvernementale pour les visas ou alertes sanitaires.
+   - **Services Limités (Nominatim, OSRM)** : Nominatim est plafonné à 1 requête/seconde sous mutex strict et désactivé par défaut. OSRM est expérimental et sans garantie de service.
+

@@ -29,22 +29,36 @@
 | `mock_maps` | Map | ✅ Ready | Offline / Mock | No | No |
 | `openrouteservice`| Map | 🟡 Prepared | Live (Disabled) | Yes (`OPENROUTESERVICE_API_KEY`)| Free Tier |
 | `google_maps` | Map | 🟡 Prepared | Live (Disabled) | Yes (`GOOGLE_MAPS_API_KEY`)| Free Tier Credit |
-| `osrm` | Map | ✅ Ready | Live (Keyless) | No | Self-Host / Public |
-| `nominatim` | Map | ✅ Ready | Live (Keyless) | No (User-Agent req) | OpenStreetMap |
+| `osrm` | Map | ⚠️ Experimental | Live (Disabled) | No | Project OSRM Demo |
+| `nominatim` | Map | ⚠️ Limited | Live (Disabled) | No (User-Agent req) | OpenStreetMap AUP |
 | `mock_weather` | Weather | ✅ Ready | Offline / Mock | No | No |
-| `open_meteo` | Weather | ✅ Ready | Live (Keyless) | No | Open Data |
+| `open_meteo` | Weather | 🟢 Live Ready | Live (Keyless) | No | Open-Meteo (CC BY 4.0)|
 | `openweathermap`| Weather | 🟡 Prepared | Live (Disabled) | Yes (`OPENWEATHERMAP_API_KEY`)| Free Tier |
 | `mock_currency` | Currency | ✅ Ready | Offline / Mock | No | No |
-| `ecb_currency` | Currency | ✅ Ready | Live (Keyless) | No | Public ECB XML |
+| `ecb_currency` | Currency | 🟢 Live Ready | Live (Keyless) | No | ECB Euro Reference |
 | `mock_guide` | Guide | ✅ Ready | Offline / Mock | No | No |
-| `wikivoyage` | Guide | ✅ Ready | Live (Keyless) | No | Public MediaWiki |
+| `wikivoyage` | Guide | 🟢 Live Ready | Live (Keyless) | No | Wikimedia MediaWiki |
 | `social_discovery`| Social | ✅ Ready | Offline / Mock | No | Output tagged strictly |
 
 ---
 
-## 2. Health & Inspection
+## 2. Phase 10 Keyless Live Provider Toggles
+
+Keyless live providers can be toggled via environment variables:
+- `TRAVEL_MCP_ENABLE_KEYLESS_LIVE_PROVIDERS=false` (Master toggle for all keyless live feeds)
+- `TRAVEL_MCP_ENABLE_OPEN_METEO=true` (Weather & Geocoding: approved)
+- `TRAVEL_MCP_ENABLE_ECB=true` (Daily Reference Exchange Rates: approved)
+- `TRAVEL_MCP_ENABLE_WIKIVOYAGE=true` (Editorial Guides & Context: approved)
+- `TRAVEL_MCP_ENABLE_NOMINATIM=false` (Limited to 1 req/s; disabled by default for public MCP)
+- `TRAVEL_MCP_ENABLE_OSRM=false` (Experimental demo server; disabled by default for public MCP)
+
+---
+
+## 3. Health & Inspection
 
 Providers can be inspected at runtime via:
-- MCP Tool: `get_provider_status(provider_name="amadeus_flight")`
+- MCP Tool: `get_keyless_provider_status()`
+- MCP Tool: `get_provider_status(provider_name="open_meteo")`
 - MCP Tool: `list_integration_providers(category="weather")`
 - HTTP Endpoint: `GET /ready` returns aggregate configured count.
+

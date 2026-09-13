@@ -78,13 +78,44 @@ OPEN_METEO_URL=https://api.open-meteo.com/v1/forecast
 # Serveur MCP
 MCP_SERVER_HOST=127.0.0.1
 MCP_SERVER_PORT=8765
+
+# Fournisseurs Publics Sans Clé (Phase 10 — Keyless Public Data)
+TRAVEL_MCP_ENABLE_KEYLESS_LIVE_PROVIDERS=false
+TRAVEL_MCP_ENABLE_OPEN_METEO=true
+TRAVEL_MCP_ENABLE_ECB=true
+TRAVEL_MCP_ENABLE_WIKIVOYAGE=true
+TRAVEL_MCP_ENABLE_NOMINATIM=false
+TRAVEL_MCP_ENABLE_OSRM=false
+TRAVEL_MCP_HTTP_USER_AGENT=UltimateTravelAgent/1.0 (https://github.com/Gustor1/ultimate-travel-agent)
+TRAVEL_HTTP_TIMEOUT=5.0
 ```
 
 ---
 
-## 4. Gestion des Erreurs et Repli Automatique (*Graceful Fallback*)
+## 4. Fournisseurs Publics Sans Clé (Phase 10)
+
+La Phase 10 intègre des sources ouvertes ne nécessitant aucune clé API ni compte développeur :
+
+| Fournisseur | Catégorie | Statut par défaut | Règle de débit | Cache local | Attribution obligatoire |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **Open-Meteo** | Météo & Géocodage | **Activé** si keyless live activé | 5 req/s max | 30 min | "Weather data by Open-Meteo.com under CC BY 4.0" |
+| **BCE / ECB** | Taux de change | **Activé** si keyless live activé | 2 req/s max | 12h | "Source: European Central Bank (ECB) euro reference exchange rates" |
+| **Wikivoyage** | Guides éditoriaux | **Activé** si keyless live activé | 3 req/s max | 24h | "Text from Wikivoyage under CC BY-SA 4.0" |
+| **Nominatim** | Géocodage OSM | **Désactivé** (mode limité) | **1 req/s absolu** | 7 jours | "Data © OpenStreetMap contributors, ODbL 1.0" |
+| **OSRM Démo** | Routage routier | **Désactivé** (mode expérimental) | 1 req/s max | 2h | "Routing © Project OSRM / OpenStreetMap contributors" |
+
+### Précautions d'Usage
+1. **Désactivation par défaut de Nominatim et OSRM** : Ces services publics reposent sur des infrastructures mutualisées sans SLA. Dans un serveur MCP distant public, ils doivent rester désactivés (`false`) pour éviter tout bannissement d'IP ou instabilité.
+2. **Attribution légale** : Toute réponse issue de ces providers renvoie obligatoirement le champ `attribution` et `source_url`.
+3. **Météo et Données communautaires** : L'agent qualité (`quality-controller`) interdit de qualifier de "garantie" une prévision météorologique ou un contenu communautaire Wikivoyage.
+
+---
+
+## 5. Gestion des Erreurs et Repli Automatique (*Graceful Fallback*)
 
 En mode programmatique ou via les outils MCP :
 - Si un outil est appelé avec `mode="offline"` ou `mode="mock"`, la réponse est garantie instantanée sans réseau.
-- Si un outil est appelé avec `mode="live"` alors que la clé correspondante est absente, le système retourne une erreur explicite `ProviderConfigurationError` indiquant la variable manquante et suggérant le repli vers le mode offline.
+- Si un outil est appelé avec `mode="live"` alors que la clé ou le service n'est pas activé, le système retourne une erreur explicite `ProviderConfigurationError` indiquant la variable d'activation requise et suggérant le repli vers le mode offline.
+- En cas d'erreur 429 (débit dépassé) ou 5xx réseau, le client HTTP renvoie les données expirées en cache (`cache_status: stale`) ou bascule sur le simulateur typé local.
 - En aucun cas une indisponibilité externe ou un quota épuisé ne doit interrompre brutalement le fonctionnement de base du planificateur local.
+
