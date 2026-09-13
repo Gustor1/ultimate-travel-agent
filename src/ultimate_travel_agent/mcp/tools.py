@@ -307,3 +307,432 @@ def get_contingency_dossier(trip_path: str) -> Dict[str, Any]:
     trip = _resolve_trip(trip_path)
     dossier = generate_contingency_dossier(trip)
     return dossier.model_dump()
+
+
+# ===========================================================================
+# Phase 8: Travel Integration & Provider Hub MCP Tools
+# ===========================================================================
+
+def list_integration_providers(
+    category: Optional[str] = None,
+    mode: Optional[str] = None,
+) -> List[Dict[str, Any]]:
+    """List all registered travel integration providers and their capabilities.
+
+    Args:
+        category: Optional category filter (flight, train, hotel, activity, review, map, weather, currency, guide, social).
+        mode: Optional mode filter (offline, mock, live).
+
+    Returns:
+        List of provider metadata descriptions.
+    """
+    from ultimate_travel_agent.integrations import default_registry
+    return default_registry.list_providers(category=category, mode=mode)
+
+
+def get_provider_status(provider_name: str) -> Dict[str, Any]:
+    """Check health, configuration, and credentials readiness for a specific provider.
+
+    Args:
+        provider_name: Identifier of the provider (e.g. 'amadeus_flight', 'mock_weather', 'sncf_train').
+
+    Returns:
+        Structured health check result.
+    """
+    from ultimate_travel_agent.integrations import default_registry
+    try:
+        res = default_registry.get_provider_status(provider_name)
+        return res.model_dump()
+    except KeyError as err:
+        return {
+            "status": "error",
+            "error_type": "ProviderNotFound",
+            "error": str(err),
+            "provider": provider_name,
+        }
+
+
+def search_flight_options(
+    origin: str,
+    destination: str,
+    departure_date: str,
+    return_date: Optional[str] = None,
+    passengers: int = 1,
+    max_budget: Optional[float] = None,
+    currency: str = "EUR",
+    sort_by: str = "price",
+    mode: str = "offline",
+) -> Dict[str, Any]:
+    """Search flight offers with fare estimation, duration, and official ticketing links.
+
+    STRICT SAFETY: Read-only search. Never performs automatic booking or payments.
+
+    Args:
+        origin: IATA code or city name (e.g. 'PAR', 'CDG', 'Paris').
+        destination: IATA code or city name (e.g. 'BCN', 'Barcelona').
+        departure_date: Date string (YYYY-MM-DD).
+        return_date: Optional return date string (YYYY-MM-DD).
+        passengers: Number of passengers (>= 1).
+        max_budget: Optional maximum total budget threshold.
+        currency: Currency code (default 'EUR').
+        sort_by: 'price', 'duration', 'stops', or 'comfort'.
+        mode: 'offline', 'mock', or 'live'.
+
+    Returns:
+        Standardized ProviderSearchResult with verified or estimated flight items.
+    """
+    if passengers < 1:
+        return {"status": "error", "error": "Passengers count must be >= 1."}
+
+    from ultimate_travel_agent.integrations import ProviderCategory, ProviderConfigurationError, default_registry
+    try:
+        res = default_registry.search(
+            category=ProviderCategory.FLIGHT,
+            origin=origin,
+            destination=destination,
+            departure_date=departure_date,
+            return_date=return_date,
+            passengers=passengers,
+            max_budget=max_budget,
+            currency=currency,
+            sort_by=sort_by,
+            mode=mode,
+        )
+        return res.model_dump()
+    except ProviderConfigurationError as err:
+        return {
+            "status": "error",
+            "error_type": "ProviderConfigurationError",
+            "error": str(err),
+            "category": "flight",
+            "mode": mode,
+            "requires_booking_verification": True,
+        }
+
+
+def search_train_options(
+    origin: str,
+    destination: str,
+    date: str,
+    mode: str = "offline",
+) -> Dict[str, Any]:
+    """Search rail connections with door-to-door transit time, transfers, and official booking portals.
+
+    STRICT SAFETY: Never executes automated ticketing.
+
+    Args:
+        origin: Departure station or city name.
+        destination: Arrival station or city name.
+        date: Travel date (YYYY-MM-DD).
+        mode: 'offline', 'mock', or 'live'.
+
+    Returns:
+        Standardized rail search result.
+    """
+    from ultimate_travel_agent.integrations import ProviderCategory, ProviderConfigurationError, default_registry
+    try:
+        res = default_registry.search(
+            category=ProviderCategory.TRAIN,
+            origin=origin,
+            destination=destination,
+            date=date,
+            mode=mode,
+        )
+        return res.model_dump()
+    except ProviderConfigurationError as err:
+        return {
+            "status": "error",
+            "error_type": "ProviderConfigurationError",
+            "error": str(err),
+            "category": "train",
+            "mode": mode,
+            "requires_booking_verification": True,
+        }
+
+
+def search_accommodation_options(
+    city: str,
+    checkin_date: str,
+    checkout_date: str,
+    neighborhood: Optional[str] = None,
+    guests: int = 2,
+    max_price_per_night: Optional[float] = None,
+    currency: str = "EUR",
+    mode: str = "offline",
+) -> Dict[str, Any]:
+    """Curate accommodations in strategic, quiet neighborhoods with price estimates.
+
+    STRICT SAFETY: Read-only search; zero automated booking or payment handling.
+
+    Args:
+        city: Destination city name.
+        checkin_date: Check-in date (YYYY-MM-DD).
+        checkout_date: Check-out date (YYYY-MM-DD).
+        neighborhood: Optional desired district or quarter (e.g. 'Gràcia').
+        guests: Number of guests (default 2).
+        max_price_per_night: Maximum nightly budget limit.
+        currency: Currency code (default 'EUR').
+        mode: 'offline', 'mock', or 'live'.
+
+    Returns:
+        Standardized accommodation search result.
+    """
+    from ultimate_travel_agent.integrations import ProviderCategory, ProviderConfigurationError, default_registry
+    try:
+        res = default_registry.search(
+            category=ProviderCategory.HOTEL,
+            city=city,
+            checkin_date=checkin_date,
+            checkout_date=checkout_date,
+            neighborhood=neighborhood,
+            guests=guests,
+            max_price_per_night=max_price_per_night,
+            currency=currency,
+            mode=mode,
+        )
+        return res.model_dump()
+    except ProviderConfigurationError as err:
+        return {
+            "status": "error",
+            "error_type": "ProviderConfigurationError",
+            "error": str(err),
+            "category": "hotel",
+            "mode": mode,
+            "requires_booking_verification": True,
+        }
+
+
+def search_hotel_reviews(
+    hotel_name: str,
+    city: str,
+    mode: str = "offline",
+) -> Dict[str, Any]:
+    """Retrieve community ratings and customer sentiment reviews for a lodging venue.
+
+    NOTE: Review sources (including StayAPI Trip.com) provide feedback only, not inventory or booking.
+
+    Args:
+        hotel_name: Name of hotel or accommodation property.
+        city: City where property is located.
+        mode: 'offline', 'mock', or 'live'.
+
+    Returns:
+        Standardized review result.
+    """
+    from ultimate_travel_agent.integrations import ProviderCategory, ProviderConfigurationError, default_registry
+    try:
+        res = default_registry.search(
+            category=ProviderCategory.REVIEW,
+            hotel_name=hotel_name,
+            city=city,
+            mode=mode,
+        )
+        return res.model_dump()
+    except ProviderConfigurationError as err:
+        return {
+            "status": "error",
+            "error_type": "ProviderConfigurationError",
+            "error": str(err),
+            "category": "review",
+            "mode": mode,
+            "requires_booking_verification": False,
+        }
+
+
+def search_activity_options(
+    city: str,
+    category: Optional[str] = None,
+    indoor_only: Optional[bool] = None,
+    max_price: Optional[float] = None,
+    currency: str = "EUR",
+    mode: str = "offline",
+) -> Dict[str, Any]:
+    """Explore curated activities with crowd avoidance advice, weather alternatives, and official tickets.
+
+    STRICT SAFETY: Informational only; zero cart additions or purchases.
+
+    Args:
+        city: Target city.
+        category: Category (culture, gastronomy, nature, scenery, adventure, relaxation, family, photo, nightlife).
+        indoor_only: Filter for indoor activities (useful during rain).
+        max_price: Maximum admission cost per person.
+        currency: Currency code (default 'EUR').
+        mode: 'offline', 'mock', or 'live'.
+
+    Returns:
+        Standardized activity search result.
+    """
+    from ultimate_travel_agent.integrations import ProviderCategory, ProviderConfigurationError, default_registry
+    try:
+        res = default_registry.search(
+            category=ProviderCategory.ACTIVITY,
+            city=city,
+            category_filter=category,
+            indoor_only=indoor_only,
+            max_price=max_price,
+            currency=currency,
+            mode=mode,
+        )
+        return res.model_dump()
+    except ProviderConfigurationError as err:
+        return {
+            "status": "error",
+            "error_type": "ProviderConfigurationError",
+            "error": str(err),
+            "category": "activity",
+            "mode": mode,
+            "requires_booking_verification": True,
+        }
+
+
+def get_route_options(
+    origin: str,
+    destination: str,
+    mode: str = "offline",
+) -> Dict[str, Any]:
+    """Calculate distance, travel durations (walking, driving, transit), and detect transit fatigue overload.
+
+    Args:
+        origin: Origin city or landmark.
+        destination: Destination city or landmark.
+        mode: 'offline', 'mock', or 'live'.
+
+    Returns:
+        Standardized route calculation with fatigue warnings if transit exceeds 4 hours.
+    """
+    from ultimate_travel_agent.integrations import ProviderCategory, ProviderConfigurationError, default_registry
+    try:
+        res = default_registry.search(
+            category=ProviderCategory.MAP,
+            origin=origin,
+            destination=destination,
+            mode=mode,
+        )
+        return res.model_dump()
+    except ProviderConfigurationError as err:
+        return {
+            "status": "error",
+            "error_type": "ProviderConfigurationError",
+            "error": str(err),
+            "category": "map",
+            "mode": mode,
+            "requires_booking_verification": False,
+        }
+
+
+def get_weather_outlook(
+    city: str,
+    date: Optional[str] = None,
+    mode: str = "offline",
+) -> Dict[str, Any]:
+    """Retrieve weather forecast and indoor contingency recommendations for rain or extreme weather.
+
+    Args:
+        city: Destination city name.
+        date: Target date (YYYY-MM-DD).
+        mode: 'offline', 'mock', or 'live'.
+
+    Returns:
+        Weather outlook distinguishing forecast, historical climate, and rainy-day Plan B.
+    """
+    from ultimate_travel_agent.integrations import ProviderCategory, ProviderConfigurationError, default_registry
+    try:
+        res = default_registry.search(
+            category=ProviderCategory.WEATHER,
+            city=city,
+            date=date,
+            mode=mode,
+        )
+        return res.model_dump()
+    except ProviderConfigurationError as err:
+        return {
+            "status": "error",
+            "error_type": "ProviderConfigurationError",
+            "error": str(err),
+            "category": "weather",
+            "mode": mode,
+            "requires_booking_verification": False,
+        }
+
+
+def convert_currency(
+    amount: float,
+    from_currency: str,
+    to_currency: str,
+    custom_rate: Optional[float] = None,
+    mode: str = "offline",
+) -> Dict[str, Any]:
+    """Convert monetary amounts between currencies with published reference date tracking.
+
+    Args:
+        amount: Numerical amount to convert (>= 0).
+        from_currency: 3-letter currency code (e.g. 'EUR', 'USD', 'ISK').
+        to_currency: 3-letter target currency code.
+        custom_rate: Optional manual exchange rate override.
+        mode: 'offline', 'mock', or 'live'.
+
+    Returns:
+        Converted amount, rate, rate publication date, and freshness warnings.
+    """
+    if amount < 0:
+        return {"status": "error", "error": "Amount must be >= 0."}
+
+    from ultimate_travel_agent.integrations import ProviderCategory, ProviderConfigurationError, default_registry
+    try:
+        res = default_registry.search(
+            category=ProviderCategory.CURRENCY,
+            amount=amount,
+            from_currency=from_currency,
+            to_currency=to_currency,
+            custom_rate=custom_rate,
+            mode=mode,
+        )
+        return res.model_dump()
+    except ProviderConfigurationError as err:
+        return {
+            "status": "error",
+            "error_type": "ProviderConfigurationError",
+            "error": str(err),
+            "category": "currency",
+            "mode": mode,
+            "requires_booking_verification": False,
+        }
+
+
+def search_travel_sources(
+    query: str,
+    category: Optional[str] = None,
+    mode: str = "offline",
+) -> Dict[str, Any]:
+    """Query travel guide knowledge, local etiquette, and social discovery trends.
+
+    STRICT SAFETY: Results from social media are strictly marked 'social_discovery_only'
+    and require independent verification.
+
+    Args:
+        query: Destination city or topic keyword.
+        category: 'guide' (Wikivoyage editorial) or 'social' (community trends).
+        mode: 'offline', 'mock', or 'live'.
+
+    Returns:
+        Standardized search result with provenance metadata and verification levels.
+    """
+    from ultimate_travel_agent.integrations import ProviderCategory, ProviderConfigurationError, default_registry
+    cat = ProviderCategory.SOCIAL if category == "social" else ProviderCategory.GUIDE
+    try:
+        res = default_registry.search(
+            category=cat,
+            city=query,
+            keyword=query,
+            mode=mode,
+        )
+        return res.model_dump()
+    except ProviderConfigurationError as err:
+        return {
+            "status": "error",
+            "error_type": "ProviderConfigurationError",
+            "error": str(err),
+            "category": cat.value,
+            "mode": mode,
+            "requires_booking_verification": False,
+        }
