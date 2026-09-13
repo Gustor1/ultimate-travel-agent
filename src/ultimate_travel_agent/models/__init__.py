@@ -6,7 +6,12 @@ from ultimate_travel_agent.models.enums import (
     AgentStatus,
     ChecklistCategory,
     CrowdSensitivity,
+    DifficultyLevel,
+    EnvironmentType,
     PacingPreference,
+    RouteOptionStatus,
+    RoutePreference,
+    RouteTransportMode,
     TransportMode,
     TravelerProfile,
     TripType,
@@ -16,6 +21,7 @@ from ultimate_travel_agent.models.source import SourceReference
 from ultimate_travel_agent.models.traveler import Traveler
 from ultimate_travel_agent.models.destination import Destination
 from ultimate_travel_agent.models.transport import TransportSegment
+from ultimate_travel_agent.models.route import InterCityRoute, RouteOption
 from ultimate_travel_agent.models.accommodation import Accommodation
 from ultimate_travel_agent.models.activity import Activity
 from ultimate_travel_agent.models.checklist import ChecklistItem
@@ -41,8 +47,15 @@ __all__ = [
     "CrowdSensitivity",
     "Destination",
     "DaySchedule",
+    "DifficultyLevel",
+    "EnvironmentType",
+    "InterCityRoute",
     "ItineraryItem",
     "PacingPreference",
+    "RouteOption",
+    "RouteOptionStatus",
+    "RoutePreference",
+    "RouteTransportMode",
     "SourceReference",
     "TransportMode",
     "TransportSegment",
@@ -53,3 +66,4 @@ __all__ = [
     "TripType",
     "VerificationLevel",
 ]
+

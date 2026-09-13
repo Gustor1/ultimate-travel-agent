@@ -6,6 +6,7 @@
         "nature",
         "landscape",
         "culture",
+        "history",
         "gastronomy",
         "adventure",
         "relaxation",
@@ -16,6 +17,26 @@
         "nightlife"
       ],
       "title": "ActivityCategory",
+      "type": "string"
+    },
+    "DifficultyLevel": {
+      "description": "Physical difficulty of an activity or trail.",
+      "enum": [
+        "easy",
+        "moderate",
+        "demanding"
+      ],
+      "title": "DifficultyLevel",
+      "type": "string"
+    },
+    "EnvironmentType": {
+      "description": "Physical environment type for an activity or POI.",
+      "enum": [
+        "indoor",
+        "outdoor",
+        "hybrid"
+      ],
+      "title": "EnvironmentType",
       "type": "string"
     },
     "SourceReference": {
@@ -97,7 +118,7 @@
       "type": "string"
     }
   },
-  "description": "Activity, museum, landmark, or dining experience.",
+  "description": "Activity, museum, landmark, or dining experience with rich context.",
   "properties": {
     "id": {
       "description": "Unique activity identifier",
@@ -124,11 +145,125 @@
       "title": "Description",
       "type": "string"
     },
+    "country": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Country where the activity is located",
+      "title": "Country"
+    },
+    "region": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Region or province",
+      "title": "Region"
+    },
+    "city": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "City name",
+      "title": "City"
+    },
+    "neighborhood": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Neighborhood or district",
+      "title": "Neighborhood"
+    },
+    "anecdote": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Anecdote, local story, or cultural context about the venue",
+      "title": "Anecdote"
+    },
+    "environment": {
+      "$ref": "#/$defs/EnvironmentType",
+      "default": "indoor",
+      "description": "Indoor, outdoor, or hybrid environment"
+    },
+    "difficulty_level": {
+      "$ref": "#/$defs/DifficultyLevel",
+      "default": "easy",
+      "description": "Physical difficulty: easy, moderate, demanding"
+    },
+    "accessibility": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Accessibility features (wheelchair, reduced mobility, stroller, sensory)",
+      "title": "Accessibility"
+    },
     "duration_minutes": {
       "default": 90,
       "description": "Recommended visit duration in minutes",
       "title": "Duration Minutes",
       "type": "integer"
+    },
+    "best_time_slot": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Best time of day or slot to visit (e.g. '08:30 - 10:00' or 'sunset')",
+      "title": "Best Time Slot"
+    },
+    "opening_hours": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Standard operating hours and opening days",
+      "title": "Opening Hours"
     },
     "estimated_cost": {
       "default": 0.0,
@@ -141,6 +276,64 @@
       "description": "Currency ISO code",
       "title": "Currency",
       "type": "string"
+    },
+    "access_method": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "How to reach the venue (e.g. 'Metro L3 to Fontana, then 7 min walk')",
+      "title": "Access Method"
+    },
+    "transit_duration_minutes": {
+      "anyOf": [
+        {
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Estimated transit time from lodging/hub in minutes",
+      "title": "Transit Duration Minutes"
+    },
+    "transit_cost": {
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Estimated transit fare per person",
+      "title": "Transit Cost"
+    },
+    "advance_booking_required": {
+      "default": false,
+      "description": "Whether advance timed tickets are strictly mandatory",
+      "title": "Advance Booking Required",
+      "type": "boolean"
+    },
+    "official_booking_url": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Direct link to official ticketing box office",
+      "title": "Official Booking Url"
     },
     "crowd_level": {
       "anyOf": [
@@ -168,13 +361,7 @@
       "description": "Advice on optimal slot to avoid peak crowds (e.g. 'Enter at 08:30 or after 17:00')",
       "title": "Quiet Slot Advice"
     },
-    "advance_booking_required": {
-      "default": false,
-      "description": "Whether advance timed tickets are strictly mandatory",
-      "title": "Advance Booking Required",
-      "type": "boolean"
-    },
-    "official_booking_url": {
+    "crowd_avoidance_strategy": {
       "anyOf": [
         {
           "type": "string"
@@ -184,14 +371,40 @@
         }
       ],
       "default": null,
-      "description": "Direct link to official ticketing box office",
-      "title": "Official Booking Url"
+      "description": "Specific strategy to bypass peak crowds or queues",
+      "title": "Crowd Avoidance Strategy"
     },
     "indoor_contingency": {
       "default": false,
-      "description": "Whether this activity is suitable as a rainy-day backup",
+      "description": "Whether this activity itself serves as a rainy-day indoor backup",
       "title": "Indoor Contingency",
       "type": "boolean"
+    },
+    "weather_alternative": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Recommended indoor alternative activity if weather is poor",
+      "title": "Weather Alternative"
+    },
+    "closure_alternative": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Recommended alternative activity in case of unexpected closure or strike",
+      "title": "Closure Alternative"
     },
     "verification_level": {
       "$ref": "#/$defs/VerificationLevel",

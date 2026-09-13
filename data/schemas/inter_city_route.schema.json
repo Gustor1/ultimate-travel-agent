@@ -1,0 +1,305 @@
+{
+  "$defs": {
+    "RouteOption": {
+      "description": "Specific transit option between two cities or waypoints.",
+      "properties": {
+        "id": {
+          "description": "Unique route option identifier",
+          "title": "Id",
+          "type": "string"
+        },
+        "origin": {
+          "description": "Departure city or hub",
+          "title": "Origin",
+          "type": "string"
+        },
+        "destination": {
+          "description": "Arrival city or hub",
+          "title": "Destination",
+          "type": "string"
+        },
+        "mode": {
+          "$ref": "#/$defs/RouteTransportMode",
+          "description": "Transport mode"
+        },
+        "carrier": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Transport company, airline or rail operator",
+          "title": "Carrier"
+        },
+        "estimated_duration_minutes": {
+          "description": "Total estimated door-to-door duration in minutes",
+          "title": "Estimated Duration Minutes",
+          "type": "integer"
+        },
+        "transfers_count": {
+          "default": 0,
+          "description": "Number of connections or vehicle changes",
+          "title": "Transfers Count",
+          "type": "integer"
+        },
+        "estimated_cost": {
+          "default": 0.0,
+          "description": "Estimated fare or cost per person",
+          "title": "Estimated Cost",
+          "type": "number"
+        },
+        "currency": {
+          "default": "EUR",
+          "description": "Currency code for cost",
+          "title": "Currency",
+          "type": "string"
+        },
+        "comfort_level": {
+          "default": 3,
+          "description": "Estimated comfort index from 1 (basic) to 5 (high comfort)",
+          "maximum": 5,
+          "minimum": 1,
+          "title": "Comfort Level",
+          "type": "integer"
+        },
+        "carbon_footprint_kg": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Estimated CO2 emission per passenger in kg",
+          "title": "Carbon Footprint Kg"
+        },
+        "booking_required": {
+          "default": false,
+          "description": "Whether reservation is required in advance",
+          "title": "Booking Required",
+          "type": "boolean"
+        },
+        "official_booking_url": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Direct link to official booking portal",
+          "title": "Official Booking Url"
+        },
+        "confidence_level": {
+          "$ref": "#/$defs/VerificationLevel",
+          "default": "cross_checked",
+          "description": "Verification/confidence level of route data"
+        },
+        "status": {
+          "$ref": "#/$defs/RouteOptionStatus",
+          "default": "estimated",
+          "description": "Status: confirmed, estimated, needs_verification"
+        },
+        "notes": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Strategic route notes (e.g. scenic views, luggage limits, check-in buffer)",
+          "title": "Notes"
+        },
+        "sources": {
+          "description": "Sources used for route and price estimation",
+          "items": {
+            "$ref": "#/$defs/SourceReference"
+          },
+          "title": "Sources",
+          "type": "array"
+        }
+      },
+      "required": [
+        "id",
+        "origin",
+        "destination",
+        "mode",
+        "estimated_duration_minutes"
+      ],
+      "title": "RouteOption",
+      "type": "object"
+    },
+    "RouteOptionStatus": {
+      "description": "Data reliability status of a route option.",
+      "enum": [
+        "confirmed",
+        "estimated",
+        "needs_verification"
+      ],
+      "title": "RouteOptionStatus",
+      "type": "string"
+    },
+    "RouteTransportMode": {
+      "description": "Inter-city transit modes.",
+      "enum": [
+        "flight",
+        "train",
+        "bus",
+        "car",
+        "ferry",
+        "public_transport",
+        "walking"
+      ],
+      "title": "RouteTransportMode",
+      "type": "string"
+    },
+    "SourceReference": {
+      "description": "Reference to an authoritative, guidebook, or community source.",
+      "properties": {
+        "title": {
+          "description": "Title or name of the source",
+          "title": "Title",
+          "type": "string"
+        },
+        "url": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Direct URL to the source",
+          "title": "Url"
+        },
+        "source_type": {
+          "default": "official",
+          "description": "Type of source: official, guidebook, community, social_media, local_knowledge",
+          "title": "Source Type",
+          "type": "string"
+        },
+        "verification_level": {
+          "$ref": "#/$defs/VerificationLevel",
+          "default": "unverified",
+          "description": "Verification level of this source"
+        },
+        "notes": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Contextual notes on reliability",
+          "title": "Notes"
+        },
+        "retrieved_at": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "ISO date when information was verified",
+          "title": "Retrieved At"
+        }
+      },
+      "required": [
+        "title"
+      ],
+      "title": "SourceReference",
+      "type": "object"
+    },
+    "VerificationLevel": {
+      "description": "Trust and verification levels for travel data.",
+      "enum": [
+        "official_verified",
+        "cross_checked",
+        "community_recommended",
+        "social_discovery_only",
+        "unverified",
+        "outdated"
+      ],
+      "title": "VerificationLevel",
+      "type": "string"
+    }
+  },
+  "description": "Collection of competing route options between two key journey points.",
+  "properties": {
+    "id": {
+      "description": "Unique inter-city route identifier",
+      "title": "Id",
+      "type": "string"
+    },
+    "origin": {
+      "description": "Departure city or stage",
+      "title": "Origin",
+      "type": "string"
+    },
+    "destination": {
+      "description": "Destination city or stage",
+      "title": "Destination",
+      "type": "string"
+    },
+    "options": {
+      "description": "Available transit options",
+      "items": {
+        "$ref": "#/$defs/RouteOption"
+      },
+      "title": "Options",
+      "type": "array"
+    },
+    "recommended_option_id": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "ID of the currently recommended option",
+      "title": "Recommended Option Id"
+    },
+    "recommendation_reason": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Explanation of why this option was chosen",
+      "title": "Recommendation Reason"
+    }
+  },
+  "required": [
+    "id",
+    "origin",
+    "destination"
+  ],
+  "title": "InterCityRoute",
+  "type": "object"
+}

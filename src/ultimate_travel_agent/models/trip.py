@@ -11,6 +11,7 @@ from ultimate_travel_agent.models.checklist import ChecklistItem
 from ultimate_travel_agent.models.destination import Destination
 from ultimate_travel_agent.models.enums import TripType, VerificationLevel
 from ultimate_travel_agent.models.itinerary import DaySchedule
+from ultimate_travel_agent.models.route import InterCityRoute
 from ultimate_travel_agent.models.stage import TripStage
 from ultimate_travel_agent.models.transport import TransportSegment
 from ultimate_travel_agent.models.traveler import Traveler
@@ -30,6 +31,10 @@ class Trip(BaseModel):
     destinations: List[Destination] = Field(default_factory=list, description="Target destinations")
     stages: List[TripStage] = Field(default_factory=list, description="Stages or stops of the journey (étapes)")
     transports: List[TransportSegment] = Field(default_factory=list, description="Transit connections")
+    inter_city_routes: List[InterCityRoute] = Field(
+        default_factory=list,
+        description="Multi-option inter-city transit alternatives"
+    )
     accommodations: List[Accommodation] = Field(default_factory=list, description="Lodging arrangements")
     activities: List[Activity] = Field(default_factory=list, description="Curated activities and POIs")
     itinerary: List[DaySchedule] = Field(default_factory=list, description="Chronological day schedules")
@@ -167,6 +172,8 @@ class Trip(BaseModel):
                 | {s.id for s in self.stages}
                 | {chk.id for chk in self.checklists}
                 | {r.id for r in self.reservations}
+                | {r.id for r in self.inter_city_routes}
+                | {opt.id for r in self.inter_city_routes for opt in r.options}
             )
 
             expected_day = 1

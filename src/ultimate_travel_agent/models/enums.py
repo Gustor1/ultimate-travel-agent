@@ -83,6 +83,7 @@ class ActivityCategory(str, Enum):
     NATURE = "nature"
     LANDSCAPE = "landscape"
     CULTURE = "culture"
+    HISTORY = "history"
     GASTRONOMY = "gastronomy"
     ADVENTURE = "adventure"
     RELAXATION = "relaxation"
@@ -91,6 +92,54 @@ class ActivityCategory(str, Enum):
     PHOTOGRAPHY = "photography"
     SHOPPING = "shopping"
     NIGHTLIFE = "nightlife"
+
+
+class EnvironmentType(str, Enum):
+    """Physical environment type for an activity or POI."""
+
+    INDOOR = "indoor"
+    OUTDOOR = "outdoor"
+    HYBRID = "hybrid"
+
+
+class DifficultyLevel(str, Enum):
+    """Physical difficulty of an activity or trail."""
+
+    EASY = "easy"
+    MODERATE = "moderate"
+    DEMANDING = "demanding"
+
+
+class RouteTransportMode(str, Enum):
+    """Inter-city transit modes."""
+
+    FLIGHT = "flight"
+    TRAIN = "train"
+    BUS = "bus"
+    CAR = "car"
+    FERRY = "ferry"
+    PUBLIC_TRANSPORT = "public_transport"
+    WALKING = "walking"
+
+
+class RouteOptionStatus(str, Enum):
+    """Data reliability status of a route option."""
+
+    CONFIRMED = "confirmed"
+    ESTIMATED = "estimated"
+    NEEDS_VERIFICATION = "needs_verification"
+
+
+class RoutePreference(str, Enum):
+    """Routing optimization preference."""
+
+    CHEAPEST = "cheapest"
+    FASTEST = "fastest"
+    FEWEST_TRANSFERS = "fewest_transfers"
+    MOST_COMFORTABLE = "most_comfortable"
+    MOST_ECO_FRIENDLY = "most_eco_friendly"
+    RELAXED = "relaxed"
+    PACKED = "packed"
 
 
 class ChecklistCategory(str, Enum):
@@ -110,3 +159,4 @@ class AgentStatus(str, Enum):
     COMPLETE = "complete"
     PARTIAL = "partial"
     BLOCKED = "blocked"
+
