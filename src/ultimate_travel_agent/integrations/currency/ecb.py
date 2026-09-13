@@ -53,6 +53,16 @@ LOCAL_RATE_FALLBACK: Dict[str, float] = {
 }
 
 
+class RateTuple(tuple):
+    """A 3-tuple (rates, rate_date, cache_status) that also exposes .retrieved_at."""
+
+    def __new__(cls, rates: Dict[str, float], rate_date: str, cache_status: str, retrieved_at: Optional[str] = None):
+        return super().__new__(cls, (rates, rate_date, cache_status))
+
+    def __init__(self, rates: Dict[str, float], rate_date: str, cache_status: str, retrieved_at: Optional[str] = None):
+        self.retrieved_at = retrieved_at or datetime.now(timezone.utc).isoformat()
+
+
 class ECBCurrencyProvider(Provider):
     """European Central Bank official reference exchange rates provider (public, keyless)."""
 
@@ -98,13 +108,16 @@ class ECBCurrencyProvider(Provider):
         Returns:
             Tuple of (rates_dict, rate_date_str, cache_status)
         """
-        xml_content, cache_status = self.http_client.get(
+        resp = self.http_client.get(
             self.endpoint_url,
             ttl_seconds=43200,  # 12 hours cache
             service_name="ecb",
             min_interval_seconds=0.5,
             parse_json=False,
         )
+        xml_content = resp[0]
+        cache_status = resp[1]
+        retrieved_at = getattr(resp, "retrieved_at", datetime.now(timezone.utc).isoformat())
 
         rates: Dict[str, float] = {"EUR": 1.0}
         rate_date = datetime.now(timezone.utc).strftime("%Y-%m-%d")
@@ -128,7 +141,7 @@ class ECBCurrencyProvider(Provider):
         except ET.ParseError as parse_err:
             raise ProviderConfigurationError(f"Failed to parse ECB XML rates: {str(parse_err)}") from parse_err
 
-        return rates, rate_date, cache_status
+        return RateTuple(rates, rate_date, cache_status, retrieved_at)
 
     def convert_amount(
         self,
@@ -146,16 +159,22 @@ class ECBCurrencyProvider(Provider):
             rate = custom_rate
             rate_date = "custom_override"
             cache_status = CacheStatus.HIT.value
+            retrieved_at = datetime.now(timezone.utc).isoformat()
             verif_level = VerificationLevel.CROSS_CHECKED.value
             res_status = ResultStatus.LIVE.value
         else:
             try:
-                rates, rate_date, cache_status = self.fetch_ecb_rates()
+                rate_data = self.fetch_ecb_rates()
+                rates = rate_data[0]
+                rate_date = rate_data[1]
+                cache_status = rate_data[2]
+                retrieved_at = getattr(rate_data, "retrieved_at", datetime.now(timezone.utc).isoformat())
             except Exception as err:
                 # Network or parsing failure fallback
                 rates = LOCAL_RATE_FALLBACK
                 rate_date = "2026-09-01 (fallback)"
                 cache_status = CacheStatus.STALE.value
+                retrieved_at = datetime.now(timezone.utc).isoformat()
                 warnings.append(f"Live ECB feed unavailable ({type(err).__name__}); static fallback table used.")
 
             from_rate = rates.get(from_curr)
@@ -188,7 +207,7 @@ class ECBCurrencyProvider(Provider):
             provider=self.name,
             category=self.category.value,
             mode=self.mode.value,
-            retrieved_at=datetime.now(timezone.utc).isoformat(),
+            retrieved_at=retrieved_at,
             source_url=ECB_SOURCE_URL,
             verification_level=verif_level,
             currency=to_curr,
@@ -217,7 +236,7 @@ class ECBCurrencyProvider(Provider):
             provider=self.name,
             category=self.category.value,
             mode=self.mode.value,
-            retrieved_at=datetime.now(timezone.utc).isoformat(),
+            retrieved_at=retrieved_at,
             query={
                 "amount": amount,
                 "from_currency": from_curr,
@@ -233,6 +252,7 @@ class ECBCurrencyProvider(Provider):
                 "attribution": ECB_ATTRIBUTION,
                 "source_url": ECB_SOURCE_URL,
                 "cache_status": cache_status,
+                "retrieved_at": retrieved_at,
             },
             warnings=warnings,
             requires_booking_verification=False,
@@ -240,6 +260,7 @@ class ECBCurrencyProvider(Provider):
             cache_status=cache_status,
             result_status=res_status,
             source_url=ECB_SOURCE_URL,
+            verification_level=verif_level,
         )
 
     def search(self, **kwargs: Any) -> ProviderSearchResult:
@@ -268,6 +289,7 @@ class ECBCurrencyProvider(Provider):
         res.source_url = ECB_SOURCE_URL
         res.cache_status = CacheStatus.HIT.value
         res.result_status = ResultStatus.NEEDS_VERIFICATION.value
+        res.verification_level = VerificationLevel.CROSS_CHECKED.value
         for it in res.items:
             it.provider = self.name
             it.attribution = ECB_ATTRIBUTION

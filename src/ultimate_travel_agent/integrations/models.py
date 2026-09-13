@@ -114,6 +114,7 @@ class ProviderSearchResult(BaseModel):
     cache_status: Optional[str] = None
     result_status: Optional[str] = None
     source_url: Optional[str] = None
+    verification_level: Optional[str] = None
 
 
 class ProviderError(Exception):

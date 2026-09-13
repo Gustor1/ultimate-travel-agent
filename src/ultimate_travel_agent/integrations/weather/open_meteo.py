@@ -111,13 +111,16 @@ class OpenMeteoProvider(Provider):
             return None
 
         clean_name = name.strip()
-        data, _ = self.http_client.get(
+        resp = self.http_client.get(
             self.geocoding_url,
             params={"name": clean_name, "count": 1, "language": "en", "format": "json"},
             ttl_seconds=604800,  # 7 days cache for geocoding
             service_name="open_meteo",
             min_interval_seconds=0.2,
         )
+        data = resp[0]
+        cache_status = resp[1]
+        retrieved_at = getattr(resp, "retrieved_at", datetime.now(timezone.utc).isoformat())
 
         if isinstance(data, dict) and "results" in data and isinstance(data["results"], list) and data["results"]:
             top = data["results"][0]
@@ -129,6 +132,8 @@ class OpenMeteoProvider(Provider):
                 "country_code": top.get("country_code"),
                 "timezone": top.get("timezone", "UTC"),
                 "admin1": top.get("admin1"),
+                "cache_status": cache_status,
+                "retrieved_at": retrieved_at,
             }
         return None
 
@@ -156,6 +161,7 @@ class OpenMeteoProvider(Provider):
         res.source_url = OPEN_METEO_SOURCE_URL
         res.cache_status = CacheStatus.HIT.value
         res.result_status = ResultStatus.NEEDS_VERIFICATION.value
+        res.verification_level = VerificationLevel.OFFICIAL_VERIFIED.value
         for it in res.items:
             it.provider = self.name
             it.attribution = OPEN_METEO_ATTRIBUTION
@@ -180,6 +186,7 @@ class OpenMeteoProvider(Provider):
                 source_url=OPEN_METEO_SOURCE_URL,
                 cache_status=CacheStatus.MISS.value,
                 result_status=ResultStatus.UNAVAILABLE.value,
+                verification_level=VerificationLevel.OFFICIAL_VERIFIED.value,
             )
 
         lat = geo["latitude"]
@@ -194,13 +201,16 @@ class OpenMeteoProvider(Provider):
             "timezone": tz,
         }
 
-        data, cache_status = self.http_client.get(
+        resp = self.http_client.get(
             self.endpoint_url,
             params=forecast_params,
             ttl_seconds=1800,  # 30 min cache
             service_name="open_meteo",
             min_interval_seconds=0.2,
         )
+        data = resp[0]
+        cache_status = resp[1]
+        retrieved_at = getattr(resp, "retrieved_at", datetime.now(timezone.utc).isoformat())
 
         items: List[ProviderResultItem] = []
         warnings: List[str] = []
@@ -222,7 +232,7 @@ class OpenMeteoProvider(Provider):
             provider=self.name,
             category=self.category.value,
             mode=self.mode.value,
-            retrieved_at=datetime.now(timezone.utc).isoformat(),
+            retrieved_at=retrieved_at,
             source_url=OPEN_METEO_SOURCE_URL,
             verification_level=VerificationLevel.OFFICIAL_VERIFIED.value,
             price_status=PriceStatus.ESTIMATED.value,
@@ -282,7 +292,7 @@ class OpenMeteoProvider(Provider):
                 provider=self.name,
                 category=self.category.value,
                 mode=self.mode.value,
-                retrieved_at=datetime.now(timezone.utc).isoformat(),
+                retrieved_at=retrieved_at,
                 source_url=OPEN_METEO_SOURCE_URL,
                 verification_level=VerificationLevel.OFFICIAL_VERIFIED.value,
                 title=f"Forecast for {d_str} in {geo['name']}",
@@ -316,7 +326,7 @@ class OpenMeteoProvider(Provider):
             provider=self.name,
             category=self.category.value,
             mode=self.mode.value,
-            retrieved_at=datetime.now(timezone.utc).isoformat(),
+            retrieved_at=retrieved_at,
             query={"city": city, "date": date_str, "days": days},
             total_results=len(items),
             items=items,
@@ -327,7 +337,7 @@ class OpenMeteoProvider(Provider):
                 "attribution": OPEN_METEO_ATTRIBUTION,
                 "source_url": OPEN_METEO_SOURCE_URL,
                 "cache_status": cache_status,
-                "retrieved_at": datetime.now(timezone.utc).isoformat(),
+                "retrieved_at": retrieved_at,
             },
             warnings=warnings,
             requires_booking_verification=False,
@@ -335,4 +345,5 @@ class OpenMeteoProvider(Provider):
             cache_status=cache_status,
             result_status=ResultStatus.LIVE.value,
             source_url=OPEN_METEO_SOURCE_URL,
+            verification_level=VerificationLevel.OFFICIAL_VERIFIED.value,
         )

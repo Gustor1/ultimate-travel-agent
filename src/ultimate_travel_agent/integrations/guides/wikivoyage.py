@@ -32,6 +32,15 @@ WIKIVOYAGE_COMMUNITY_ADVISORY = (
 )
 
 
+class SearchResultList(list):
+    """List of destination search results that also exposes .cache_status and .retrieved_at."""
+
+    def __init__(self, items: List[Dict[str, str]], cache_status: str = "miss", retrieved_at: Optional[str] = None) -> None:
+        super().__init__(items)
+        self.cache_status = cache_status
+        self.retrieved_at = retrieved_at or datetime.now(timezone.utc).isoformat()
+
+
 class WikivoyageProvider(Provider):
     """Wikivoyage destination guide provider (open content, keyless)."""
 
@@ -74,7 +83,7 @@ class WikivoyageProvider(Provider):
     def search_destinations(self, query: str, limit: int = 5) -> List[Dict[str, str]]:
         """Search Wikivoyage for matching destination articles using opensearch."""
         if not query or not query.strip():
-            return []
+            return SearchResultList([])
 
         params = {
             "action": "opensearch",
@@ -83,13 +92,16 @@ class WikivoyageProvider(Provider):
             "namespace": 0,
             "format": "json",
         }
-        data, _ = self.http_client.get(
+        resp = self.http_client.get(
             self.endpoint_url,
             params=params,
             ttl_seconds=86400,  # 24 hours cache
             service_name="wikivoyage",
             min_interval_seconds=0.33,
         )
+        data = resp[0]
+        cache_status = resp[1]
+        retrieved_at = getattr(resp, "retrieved_at", datetime.now(timezone.utc).isoformat())
 
         results: List[Dict[str, str]] = []
         # OpenSearch returns [query, [titles], [descriptions], [urls]]
@@ -103,7 +115,7 @@ class WikivoyageProvider(Provider):
                 url = urls[i] if i < len(urls) else f"https://en.wikivoyage.org/wiki/{urllib.parse.quote(title)}"
                 results.append({"title": title, "description": desc, "url": url})
 
-        return results
+        return SearchResultList(results, cache_status=cache_status, retrieved_at=retrieved_at)
 
     def get_destination_summary(self, destination: str) -> Dict[str, Any]:
         """Fetch introductory extract and canonical metadata for a destination article."""
@@ -117,13 +129,16 @@ class WikivoyageProvider(Provider):
             "redirects": 1,
             "format": "json",
         }
-        data, cache_status = self.http_client.get(
+        resp = self.http_client.get(
             self.endpoint_url,
             params=params,
             ttl_seconds=86400,
             service_name="wikivoyage",
             min_interval_seconds=0.33,
         )
+        data = resp[0]
+        cache_status = resp[1]
+        retrieved_at = getattr(resp, "retrieved_at", datetime.now(timezone.utc).isoformat())
 
         summary_text = ""
         canonical_title = clean_dest
@@ -146,6 +161,7 @@ class WikivoyageProvider(Provider):
             "url": canonical_url,
             "found": page_id is not None,
             "cache_status": cache_status,
+            "retrieved_at": retrieved_at,
         }
 
     def search(self, **kwargs: Any) -> ProviderSearchResult:
@@ -161,6 +177,7 @@ class WikivoyageProvider(Provider):
 
             summary_info = self.get_destination_summary(city)
             cache_status = summary_info.get("cache_status", CacheStatus.MISS.value)
+            retrieved_at = summary_info.get("retrieved_at", datetime.now(timezone.utc).isoformat())
             warnings: List[str] = [WIKIVOYAGE_COMMUNITY_ADVISORY]
 
             items: List[ProviderResultItem] = []
@@ -169,7 +186,7 @@ class WikivoyageProvider(Provider):
                     provider=self.name,
                     category=self.category.value,
                     mode=self.mode.value,
-                    retrieved_at=datetime.now(timezone.utc).isoformat(),
+                    retrieved_at=retrieved_at,
                     source_url=summary_info["url"],
                     verification_level=VerificationLevel.COMMUNITY_RECOMMENDED.value,
                     price_status=PriceStatus.ESTIMATED.value,
@@ -197,7 +214,7 @@ class WikivoyageProvider(Provider):
                 provider=self.name,
                 category=self.category.value,
                 mode=self.mode.value,
-                retrieved_at=datetime.now(timezone.utc).isoformat(),
+                retrieved_at=retrieved_at,
                 query={"city": city},
                 total_results=len(items),
                 items=items,
@@ -208,6 +225,7 @@ class WikivoyageProvider(Provider):
                     "attribution": WIKIVOYAGE_ATTRIBUTION,
                     "cache_status": cache_status,
                     "verification_level": VerificationLevel.COMMUNITY_RECOMMENDED.value,
+                    "retrieved_at": retrieved_at,
                 },
                 warnings=warnings,
                 requires_booking_verification=False,
@@ -215,6 +233,7 @@ class WikivoyageProvider(Provider):
                 cache_status=cache_status,
                 result_status=ResultStatus.LIVE.value if items else ResultStatus.UNAVAILABLE.value,
                 source_url=summary_info["url"],
+                verification_level=VerificationLevel.COMMUNITY_RECOMMENDED.value,
             )
 
         res = self._mock_delegate.search(**kwargs)
@@ -223,6 +242,7 @@ class WikivoyageProvider(Provider):
         res.source_url = f"https://en.wikivoyage.org/wiki/{urllib.parse.quote(city.replace(' ', '_'))}"
         res.cache_status = CacheStatus.HIT.value
         res.result_status = ResultStatus.NEEDS_VERIFICATION.value
+        res.verification_level = VerificationLevel.COMMUNITY_RECOMMENDED.value
         for it in res.items:
             it.provider = self.name
             it.attribution = WIKIVOYAGE_ATTRIBUTION

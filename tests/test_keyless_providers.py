@@ -416,3 +416,47 @@ def test_http_client_5xx_server_error_handling() -> None:
         with pytest.raises(ProviderNetworkError) as exc_info:
             client.get(url)
         assert "502" in str(exc_info.value)
+
+
+def test_cache_response_retrieved_at_and_unpacking() -> None:
+    """Test CacheResponse preserves retrieved_at while remaining 2-tuple unpackable."""
+    from ultimate_travel_agent.integrations.http_client import CacheResponse
+
+    resp = CacheResponse({"temp": 20}, "hit", "2026-09-13T20:00:00Z")
+    # Unpack as 2-tuple (data, cache_status)
+    data, cache_status = resp
+    assert data == {"temp": 20}
+    assert cache_status == "hit"
+    assert resp.retrieved_at == "2026-09-13T20:00:00Z"
+
+
+def test_rate_tuple_and_search_result_list_metadata() -> None:
+    """Test RateTuple and SearchResultList preserve retrieved_at and cache_status."""
+    from ultimate_travel_agent.integrations.currency.ecb import RateTuple
+    from ultimate_travel_agent.integrations.guides.wikivoyage import SearchResultList
+
+    rt = RateTuple({"USD": 1.1}, "2026-09-13", "hit", "2026-09-13T12:00:00Z")
+    rates, rate_date, cache_status = rt
+    assert rates == {"USD": 1.1}
+    assert rate_date == "2026-09-13"
+    assert cache_status == "hit"
+    assert rt.retrieved_at == "2026-09-13T12:00:00Z"
+
+    srl = SearchResultList([{"title": "Tokyo"}], cache_status="miss", retrieved_at="2026-09-13T12:00:00Z")
+    assert len(srl) == 1
+    assert srl[0]["title"] == "Tokyo"
+    assert srl.cache_status == "miss"
+    assert srl.retrieved_at == "2026-09-13T12:00:00Z"
+
+
+def test_osrm_unresolvable_coordinates_handling(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Test OSRMProvider handles unknown city coordinates gracefully by returning UNAVAILABLE."""
+    monkeypatch.setenv("TRAVEL_MCP_ENABLE_KEYLESS_LIVE_PROVIDERS", "true")
+    monkeypatch.setenv("TRAVEL_MCP_ENABLE_OSRM", "true")
+
+    provider = OSRMProvider(mode=ProviderMode.LIVE)
+    res = provider.search(origin="NonExistentCityA", destination="NonExistentCityB")
+    assert res.result_status == ResultStatus.UNAVAILABLE.value
+    assert len(res.items) == 0
+    assert any("Could not resolve coordinates" in w for w in res.warnings)
+

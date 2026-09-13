@@ -783,61 +783,95 @@ def geocode_destination(destination: str, mode: str = "offline") -> Dict[str, An
     from ultimate_travel_agent.integrations import default_registry, ProviderConfigurationError
     from ultimate_travel_agent.integrations.weather.open_meteo import OpenMeteoProvider, OPEN_METEO_ATTRIBUTION, OPEN_METEO_SOURCE_URL
 
-    clean_dest = destination.strip()
+    clean_dest = (destination or "").strip()
     now_iso = datetime.now(timezone.utc).isoformat()
+
+    if not clean_dest:
+        return {
+            "status": "error",
+            "error_type": "ValueError",
+            "error": "Destination parameter cannot be empty.",
+            "provider": "open_meteo",
+            "mode": mode,
+            "requires_booking_verification": False,
+        }
 
     if mode.lower() == "live":
         prov = default_registry.get_provider("open_meteo")
-        if isinstance(prov, OpenMeteoProvider) and prov.is_configured():
-            geo = prov.geocode_destination(clean_dest)
-            if geo:
+        if prov and prov.is_configured() and hasattr(prov, "geocode_destination"):
+            try:
+                geo = prov.geocode_destination(clean_dest)
+                if geo:
+                    return {
+                        "provider": "open_meteo",
+                        "mode": "live",
+                        "retrieved_at": geo.get("retrieved_at", now_iso),
+                        "source_url": OPEN_METEO_SOURCE_URL,
+                        "attribution": OPEN_METEO_ATTRIBUTION,
+                        "verification_level": "official_verified",
+                        "cache_status": geo.get("cache_status", "miss"),
+                        "result_status": "live",
+                        "destination": geo["name"],
+                        "latitude": geo["latitude"],
+                        "longitude": geo["longitude"],
+                        "country": geo.get("country"),
+                        "timezone": geo.get("timezone", "UTC"),
+                        "admin_region": geo.get("admin1"),
+                        "requires_booking_verification": False,
+                    }
                 return {
                     "provider": "open_meteo",
                     "mode": "live",
                     "retrieved_at": now_iso,
                     "source_url": OPEN_METEO_SOURCE_URL,
                     "attribution": OPEN_METEO_ATTRIBUTION,
-                    "verification_level": "official_verified",
-                    "cache_status": "hit" if prov.http_client else "miss",
-                    "result_status": "live",
-                    "destination": geo["name"],
-                    "latitude": geo["latitude"],
-                    "longitude": geo["longitude"],
-                    "country": geo.get("country"),
-                    "timezone": geo.get("timezone", "UTC"),
-                    "admin_region": geo.get("admin1"),
+                    "verification_level": "unverified",
+                    "cache_status": "miss",
+                    "result_status": "unavailable",
+                    "error": f"Destination '{clean_dest}' could not be resolved by geocoding.",
                     "requires_booking_verification": False,
                 }
-            return {
-                "provider": "open_meteo",
-                "mode": "live",
-                "retrieved_at": now_iso,
-                "source_url": OPEN_METEO_SOURCE_URL,
-                "attribution": OPEN_METEO_ATTRIBUTION,
-                "verification_level": "unverified",
-                "cache_status": "miss",
-                "result_status": "unavailable",
-                "error": f"Destination '{clean_dest}' could not be resolved by geocoding.",
-                "requires_booking_verification": False,
-            }
+            except Exception as err:
+                return {
+                    "status": "error",
+                    "error_type": type(err).__name__,
+                    "error": f"Geocoding error from Open-Meteo: {str(err)}",
+                    "provider": "open_meteo",
+                    "mode": mode,
+                    "retrieved_at": now_iso,
+                    "source_url": OPEN_METEO_SOURCE_URL,
+                    "attribution": OPEN_METEO_ATTRIBUTION,
+                    "requires_booking_verification": False,
+                }
+
         # If open_meteo not configured in live mode, check if nominatim is configured
         prov_nom = default_registry.get_provider("nominatim")
         if prov_nom and prov_nom.is_configured() and hasattr(prov_nom, "geocode"):
-            geo_nom = prov_nom.geocode(clean_dest)
-            if geo_nom:
+            try:
+                geo_nom = prov_nom.geocode(clean_dest)
+                if geo_nom:
+                    return {
+                        "provider": "nominatim",
+                        "mode": "live",
+                        "retrieved_at": geo_nom.get("retrieved_at", now_iso),
+                        "source_url": "https://nominatim.openstreetmap.org/",
+                        "attribution": "Geocoding data © OpenStreetMap contributors, ODbL 1.0",
+                        "verification_level": "cross_checked",
+                        "cache_status": geo_nom.get("cache_status", "miss"),
+                        "result_status": "live",
+                        "destination": clean_dest,
+                        "display_name": geo_nom.get("display_name"),
+                        "latitude": geo_nom.get("latitude"),
+                        "longitude": geo_nom.get("longitude"),
+                        "requires_booking_verification": False,
+                    }
+            except Exception as err:
                 return {
+                    "status": "error",
+                    "error_type": type(err).__name__,
+                    "error": f"Geocoding error from Nominatim: {str(err)}",
                     "provider": "nominatim",
-                    "mode": "live",
-                    "retrieved_at": now_iso,
-                    "source_url": "https://nominatim.openstreetmap.org/",
-                    "attribution": "Geocoding data © OpenStreetMap contributors, ODbL 1.0",
-                    "verification_level": "cross_checked",
-                    "cache_status": geo_nom.get("cache_status", "miss"),
-                    "result_status": "live",
-                    "destination": clean_dest,
-                    "display_name": geo_nom.get("display_name"),
-                    "latitude": geo_nom.get("latitude"),
-                    "longitude": geo_nom.get("longitude"),
+                    "mode": mode,
                     "requires_booking_verification": False,
                 }
 
@@ -883,7 +917,7 @@ def get_weather_forecast(city: str, days: int = 7, mode: str = "offline") -> Dic
     Returns:
         Structured weather forecast with rain probability, temperature ranges, and CC BY 4.0 attribution.
     """
-    from ultimate_travel_agent.integrations import ProviderCategory, ProviderConfigurationError, default_registry
+    from ultimate_travel_agent.integrations import ProviderCategory, ProviderError, default_registry
     try:
         res = default_registry.search(
             category=ProviderCategory.WEATHER,
@@ -893,10 +927,10 @@ def get_weather_forecast(city: str, days: int = 7, mode: str = "offline") -> Dic
             mode=mode,
         )
         return res.model_dump()
-    except (ProviderConfigurationError, KeyError) as err:
+    except (ProviderError, KeyError, ValueError, Exception) as err:
         return {
             "status": "error",
-            "error_type": "ProviderConfigurationError",
+            "error_type": type(err).__name__,
             "error": str(err),
             "provider": "open_meteo",
             "category": "weather",
@@ -929,6 +963,29 @@ def get_weather_activity_advice(
     if fc.get("status") == "error":
         return fc
 
+    if fc.get("result_status") == "unavailable" or not fc.get("items"):
+        return {
+            "provider": fc.get("provider", "open_meteo"),
+            "mode": fc.get("mode", mode),
+            "retrieved_at": fc.get("retrieved_at", now_iso),
+            "source_url": fc.get("source_url", "https://open-meteo.com/"),
+            "attribution": fc.get("attribution", "Weather data by Open-Meteo.com under CC BY 4.0"),
+            "verification_level": "unverified",
+            "cache_status": fc.get("cache_status", "miss"),
+            "result_status": "unavailable",
+            "city": city,
+            "date": date or "upcoming",
+            "condition": "Unavailable",
+            "precipitation_probability_pct": None,
+            "precipitation_sum_mm": None,
+            "rain_risk_detected": False,
+            "indoor_plan_b_recommended": False,
+            "recommended_indoor_backup": None,
+            "activity_advice": f"Weather forecast unavailable for '{city}'. Check local meteorological conditions manually.",
+            "requires_booking_verification": True,
+            "warnings": fc.get("warnings", [f"Destination '{city}' not found or weather unavailable."]),
+        }
+
     items = fc.get("items", [])
     target_item = None
     if date:
@@ -945,7 +1002,7 @@ def get_weather_activity_advice(
     p_prob = details.get("precipitation_probability_pct", 10)
     p_sum = details.get("precipitation_sum_mm", 0.0)
     cond = details.get("condition", "Mild conditions")
-    rain_risk = details.get("rain_risk", p_prob >= 40 or p_sum >= 2.0)
+    rain_risk = details.get("rain_risk", (p_prob is not None and p_prob >= 40) or (p_sum is not None and p_sum >= 2.0))
 
     if rain_risk:
         advice = (
@@ -1009,7 +1066,7 @@ def get_exchange_rates(
         LOCAL_RATE_FALLBACK,
     )
 
-    base = base_currency.strip().upper()
+    base = (base_currency or "EUR").strip().upper()
     now_iso = datetime.now(timezone.utc).isoformat()
     advisory = (
         "Official European Central Bank (ECB) reference rate. "
@@ -1021,33 +1078,56 @@ def get_exchange_rates(
         if isinstance(prov, ECBCurrencyProvider) and prov.is_configured():
             try:
                 rates_raw, rate_date, cache_status = prov.fetch_ecb_rates()
-                base_rate = rates_raw.get(base, 1.0)
+                retrieved_at = getattr(rates_raw, "retrieved_at", now_iso)
+                warnings: List[str] = []
+
+                if base == "EUR":
+                    base_rate = 1.0
+                elif base in rates_raw:
+                    base_rate = rates_raw[base]
+                elif base in LOCAL_RATE_FALLBACK:
+                    base_rate = LOCAL_RATE_FALLBACK[base]
+                    warnings.append(f"Base currency '{base}' not in daily ECB feed; static reference estimate applied.")
+                else:
+                    base_rate = 1.0
+                    warnings.append(f"Base currency '{base}' unknown; defaulting to 1.0 EUR base.")
+
                 rates_out: Dict[str, float] = {}
-                for curr, r in rates_raw.items():
-                    if not symbols or curr in [s.upper() for s in symbols]:
-                        rates_out[curr] = round(r / base_rate, 5)
+                target_currencies = [s.upper() for s in symbols] if symbols else list(rates_raw.keys())
+                for curr in target_currencies:
+                    if curr in rates_raw:
+                        rates_out[curr] = round(rates_raw[curr] / base_rate, 5)
+                    elif curr in LOCAL_RATE_FALLBACK:
+                        rates_out[curr] = round(LOCAL_RATE_FALLBACK[curr] / base_rate, 5)
+                        warnings.append(f"Currency '{curr}' missing from daily ECB feed; static reference applied.")
+
                 return {
                     "provider": "ecb_currency",
                     "mode": "live",
-                    "retrieved_at": now_iso,
+                    "retrieved_at": retrieved_at,
                     "source_url": ECB_SOURCE_URL,
                     "attribution": ECB_ATTRIBUTION,
-                    "verification_level": "official_verified",
+                    "verification_level": "official_verified" if not warnings else "cross_checked",
                     "cache_status": cache_status,
                     "result_status": "live",
                     "base_currency": base,
                     "rate_date": rate_date,
                     "rates": rates_out,
                     "advisory": advisory,
+                    "warnings": warnings,
                     "requires_booking_verification": False,
                 }
             except Exception as err:
                 return {
                     "status": "error",
-                    "error_type": "ProviderNetworkError",
+                    "error_type": type(err).__name__,
                     "error": f"Failed to retrieve live ECB rates: {str(err)}",
                     "provider": "ecb_currency",
                     "mode": mode,
+                    "retrieved_at": now_iso,
+                    "source_url": ECB_SOURCE_URL,
+                    "attribution": ECB_ATTRIBUTION,
+                    "requires_booking_verification": False,
                 }
         return {
             "status": "error",
@@ -1055,6 +1135,7 @@ def get_exchange_rates(
             "error": "Live ECB feed requires TRAVEL_MCP_ENABLE_KEYLESS_LIVE_PROVIDERS=true and TRAVEL_MCP_ENABLE_ECB=true.",
             "provider": "ecb_currency",
             "mode": mode,
+            "requires_booking_verification": False,
         }
 
     # Offline table
@@ -1098,7 +1179,7 @@ def convert_currency_live(
     Returns:
         Converted value, reference rate, publication date, and card markup advisory.
     """
-    from ultimate_travel_agent.integrations import ProviderCategory, ProviderConfigurationError, default_registry
+    from ultimate_travel_agent.integrations import ProviderCategory, ProviderError, default_registry
     try:
         res = default_registry.search(
             category=ProviderCategory.CURRENCY,
@@ -1109,10 +1190,10 @@ def convert_currency_live(
             mode=mode,
         )
         return res.model_dump()
-    except (ProviderConfigurationError, KeyError) as err:
+    except (ProviderError, KeyError, ValueError, Exception) as err:
         return {
             "status": "error",
-            "error_type": "ProviderConfigurationError",
+            "error_type": type(err).__name__,
             "error": str(err),
             "provider": "ecb_currency",
             "category": "currency",
@@ -1139,34 +1220,60 @@ def search_wikivoyage_destination(destination: str, mode: str = "offline") -> Di
         WIKIVOYAGE_COMMUNITY_ADVISORY,
     )
 
-    clean_dest = destination.strip()
+    clean_dest = (destination or "").strip()
     now_iso = datetime.now(timezone.utc).isoformat()
+
+    if not clean_dest:
+        return {
+            "status": "error",
+            "error_type": "ValueError",
+            "error": "Destination parameter cannot be empty.",
+            "provider": "wikivoyage",
+            "mode": mode,
+            "requires_booking_verification": False,
+        }
 
     if mode.lower() == "live":
         prov = default_registry.get_provider("wikivoyage")
-        if isinstance(prov, WikivoyageProvider) and prov.is_configured():
-            articles = prov.search_destinations(clean_dest)
-            return {
-                "provider": "wikivoyage",
-                "mode": "live",
-                "retrieved_at": now_iso,
-                "source_url": "https://en.wikivoyage.org/",
-                "attribution": WIKIVOYAGE_ATTRIBUTION,
-                "verification_level": "community_recommended",
-                "cache_status": "hit" if prov.http_client else "miss",
-                "result_status": "live",
-                "query": clean_dest,
-                "total_results": len(articles),
-                "articles": articles,
-                "advisory": WIKIVOYAGE_COMMUNITY_ADVISORY,
-                "requires_booking_verification": False,
-            }
+        if prov and prov.is_configured() and hasattr(prov, "search_destinations"):
+            try:
+                articles = prov.search_destinations(clean_dest)
+                cache_status = getattr(articles, "cache_status", "miss")
+                retrieved_at = getattr(articles, "retrieved_at", now_iso)
+                return {
+                    "provider": "wikivoyage",
+                    "mode": "live",
+                    "retrieved_at": retrieved_at,
+                    "source_url": "https://en.wikivoyage.org/",
+                    "attribution": WIKIVOYAGE_ATTRIBUTION,
+                    "verification_level": "community_recommended",
+                    "cache_status": cache_status,
+                    "result_status": "live",
+                    "query": clean_dest,
+                    "total_results": len(articles),
+                    "articles": list(articles),
+                    "advisory": WIKIVOYAGE_COMMUNITY_ADVISORY,
+                    "requires_booking_verification": False,
+                }
+            except Exception as err:
+                return {
+                    "status": "error",
+                    "error_type": type(err).__name__,
+                    "error": f"Wikivoyage destination search error: {str(err)}",
+                    "provider": "wikivoyage",
+                    "mode": mode,
+                    "retrieved_at": now_iso,
+                    "source_url": "https://en.wikivoyage.org/",
+                    "attribution": WIKIVOYAGE_ATTRIBUTION,
+                    "requires_booking_verification": False,
+                }
         return {
             "status": "error",
             "error_type": "ProviderConfigurationError",
             "error": "Live Wikivoyage requires TRAVEL_MCP_ENABLE_KEYLESS_LIVE_PROVIDERS=true and TRAVEL_MCP_ENABLE_WIKIVOYAGE=true.",
             "provider": "wikivoyage",
             "mode": mode,
+            "requires_booking_verification": False,
         }
 
     # Offline / mock response
@@ -1203,7 +1310,7 @@ def get_wikivoyage_summary(destination: str, mode: str = "offline") -> Dict[str,
     Returns:
         Structured destination summary, canonical URL, and CC BY-SA 4.0 license attribution.
     """
-    from ultimate_travel_agent.integrations import ProviderCategory, ProviderConfigurationError, default_registry
+    from ultimate_travel_agent.integrations import ProviderCategory, ProviderError, default_registry
     try:
         res = default_registry.search(
             category=ProviderCategory.GUIDE,
@@ -1212,10 +1319,10 @@ def get_wikivoyage_summary(destination: str, mode: str = "offline") -> Dict[str,
             mode=mode,
         )
         return res.model_dump()
-    except (ProviderConfigurationError, KeyError) as err:
+    except (ProviderError, KeyError, ValueError, Exception) as err:
         return {
             "status": "error",
-            "error_type": "ProviderConfigurationError",
+            "error_type": type(err).__name__,
             "error": str(err),
             "provider": "wikivoyage",
             "category": "guide",
@@ -1235,7 +1342,7 @@ def get_limited_route_options(origin: str, destination: str, mode: str = "offlin
     Returns:
         Distance, driving duration, fatigue alerts, and OSRM/OSM attribution.
     """
-    from ultimate_travel_agent.integrations import ProviderCategory, ProviderConfigurationError, default_registry
+    from ultimate_travel_agent.integrations import ProviderCategory, ProviderError, default_registry
     try:
         res = default_registry.search(
             category=ProviderCategory.MAP,
@@ -1245,10 +1352,10 @@ def get_limited_route_options(origin: str, destination: str, mode: str = "offlin
             mode=mode,
         )
         return res.model_dump()
-    except ProviderConfigurationError as err:
+    except (ProviderError, KeyError, ValueError, Exception) as err:
         return {
             "status": "error",
-            "error_type": "ProviderConfigurationError",
+            "error_type": type(err).__name__,
             "error": str(err),
             "provider": "osrm",
             "category": "map",
@@ -1272,11 +1379,17 @@ def get_keyless_provider_status() -> Dict[str, Any]:
                      os.getenv("ENABLE_LIVE_KEYLESS_APIS", "").lower() in ("true", "1", "yes")
     user_agent = os.getenv("TRAVEL_MCP_HTTP_USER_AGENT", "UltimateTravelAgent/1.0 (https://github.com/Gustor1/ultimate-travel-agent)")
 
+    open_meteo_prov = default_registry.get_provider("open_meteo")
+    ecb_prov = default_registry.get_provider("ecb_currency")
+    wiki_prov = default_registry.get_provider("wikivoyage")
+    nom_prov = default_registry.get_provider("nominatim")
+    osrm_prov = default_registry.get_provider("osrm")
+
     providers_info = [
         {
             "provider": "open_meteo",
             "category": "weather",
-            "status": "live_ready" if (keyless_active and os.getenv("TRAVEL_MCP_ENABLE_OPEN_METEO", "true").lower() in ("true", "1", "yes")) else "offline_mock",
+            "status": "live_ready" if (open_meteo_prov and open_meteo_prov.is_configured()) else "offline_mock",
             "decision": "approved",
             "rate_limit": "5 req/s max",
             "requires_key": False,
@@ -1286,7 +1399,7 @@ def get_keyless_provider_status() -> Dict[str, Any]:
         {
             "provider": "ecb_currency",
             "category": "currency",
-            "status": "live_ready" if (keyless_active and os.getenv("TRAVEL_MCP_ENABLE_ECB", "true").lower() in ("true", "1", "yes")) else "offline_mock",
+            "status": "live_ready" if (ecb_prov and ecb_prov.is_configured()) else "offline_mock",
             "decision": "approved",
             "rate_limit": "2 req/s max",
             "requires_key": False,
@@ -1296,7 +1409,7 @@ def get_keyless_provider_status() -> Dict[str, Any]:
         {
             "provider": "wikivoyage",
             "category": "guide",
-            "status": "live_ready" if (keyless_active and os.getenv("TRAVEL_MCP_ENABLE_WIKIVOYAGE", "true").lower() in ("true", "1", "yes")) else "offline_mock",
+            "status": "live_ready" if (wiki_prov and wiki_prov.is_configured()) else "offline_mock",
             "decision": "approved",
             "rate_limit": "3 req/s max",
             "requires_key": False,
@@ -1306,7 +1419,7 @@ def get_keyless_provider_status() -> Dict[str, Any]:
         {
             "provider": "nominatim",
             "category": "map",
-            "status": "live_ready" if (keyless_active and os.getenv("TRAVEL_MCP_ENABLE_NOMINATIM", "false").lower() in ("true", "1", "yes")) else "disabled_by_default",
+            "status": "live_ready" if (nom_prov and nom_prov.is_configured()) else "disabled_by_default",
             "decision": "limited",
             "rate_limit": "1 req/s absolute max (single worker mutex)",
             "requires_key": False,
@@ -1316,7 +1429,7 @@ def get_keyless_provider_status() -> Dict[str, Any]:
         {
             "provider": "osrm",
             "category": "map",
-            "status": "live_ready" if (keyless_active and os.getenv("TRAVEL_MCP_ENABLE_OSRM", "false").lower() in ("true", "1", "yes")) else "disabled_by_default",
+            "status": "live_ready" if (osrm_prov and osrm_prov.is_configured()) else "disabled_by_default",
             "decision": "experimental",
             "rate_limit": "1 req/s max (public demo server, no SLA)",
             "requires_key": False,

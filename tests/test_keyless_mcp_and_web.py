@@ -183,3 +183,62 @@ def test_subagents_phase_10_assumptions_and_sources() -> None:
     # 5. quality-controller verifies coherence
     qc_res = results["quality-controller"]
     assert qc_res.status.value in ("complete", "partial")
+
+
+def test_mcp_weather_activity_advice_unresolvable_city() -> None:
+    """Test that get_weather_activity_advice does NOT hallucinate weather when destination is unknown."""
+    from unittest.mock import patch
+    from ultimate_travel_agent.integrations.models import ProviderSearchResult, ResultStatus
+
+    mock_empty_res = ProviderSearchResult(
+        provider="open_meteo",
+        category="weather",
+        mode="offline",
+        query={"city": "NonExistentCityXYZ"},
+        total_results=0,
+        items=[],
+        result_status=ResultStatus.UNAVAILABLE.value,
+    )
+
+    with patch("ultimate_travel_agent.mcp.tools.get_weather_forecast", return_value=mock_empty_res.model_dump()):
+        advice = tools.get_weather_activity_advice("NonExistentCityXYZ", date="2026-10-15", planned_activity="Hike", mode="offline")
+        assert advice["rain_risk_detected"] is False
+        assert advice["result_status"] == "unavailable"
+        assert "unavailable" in advice["activity_advice"]
+
+
+def test_mcp_limited_route_options_unknown_locations_live(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Test get_limited_route_options in live mode handles unknown locations gracefully without crashing."""
+    monkeypatch.setenv("TRAVEL_MCP_ENABLE_KEYLESS_LIVE_PROVIDERS", "true")
+    monkeypatch.setenv("TRAVEL_MCP_ENABLE_OSRM", "true")
+
+    res = tools.get_limited_route_options(origin="UnknownOrigin999", destination="UnknownDest999", mode="live")
+    assert res["result_status"] == "unavailable"
+    assert len(res["items"]) == 0
+    assert any("Could not resolve coordinates" in w for w in res["warnings"])
+
+
+def test_mcp_resilience_to_network_errors(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Test geocode_destination and search_wikivoyage_destination catch ProviderNetworkError gracefully."""
+    from unittest.mock import patch
+    from ultimate_travel_agent.integrations.models import ProviderNetworkError
+
+    monkeypatch.setenv("TRAVEL_MCP_ENABLE_KEYLESS_LIVE_PROVIDERS", "true")
+    monkeypatch.setenv("TRAVEL_MCP_ENABLE_OPEN_METEO", "true")
+    monkeypatch.setenv("TRAVEL_MCP_ENABLE_WIKIVOYAGE", "true")
+
+    with patch("ultimate_travel_agent.integrations.registry.default_registry.get_provider") as mock_get:
+        mock_provider = mock_get.return_value
+        mock_provider.is_configured.return_value = True
+        mock_provider.geocode_destination.side_effect = ProviderNetworkError("Simulated network timeout")
+        mock_provider.search_destinations.side_effect = ProviderNetworkError("Simulated network timeout")
+
+        geo_err = tools.geocode_destination("Paris", mode="live")
+        assert geo_err["status"] == "error"
+        assert "ProviderNetworkError" in geo_err["error_type"]
+
+        wiki_err = tools.search_wikivoyage_destination("Paris", mode="live")
+        assert wiki_err["status"] == "error"
+        assert "ProviderNetworkError" in wiki_err["error_type"]
+
+

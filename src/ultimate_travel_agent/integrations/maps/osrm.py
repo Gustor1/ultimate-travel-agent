@@ -104,7 +104,7 @@ class OSRMProvider(Provider):
 
         if not coord_orig or not coord_dest:
             raise ValueError(
-                f"Cannot resolve coordinates for route '{origin}' -> '{destination}'. "
+                f"Could not resolve coordinates for route '{origin}' -> '{destination}'. "
                 "Provide known cities or numeric 'lat,lon' strings."
             )
 
@@ -112,13 +112,16 @@ class OSRMProvider(Provider):
         url = f"{self.backend_url.rstrip('/')}/route/v1/driving/{coord_orig[1]},{coord_orig[0]};{coord_dest[1]},{coord_dest[0]}"
         params = {"overview": "false", "steps": "false"}
 
-        data, cache_status = self.http_client.get(
+        resp = self.http_client.get(
             url,
             params=params,
             ttl_seconds=7200,  # 2 hours cache
             service_name="osrm",
             min_interval_seconds=1.0,
         )
+        data = resp[0]
+        cache_status = resp[1]
+        retrieved_at = getattr(resp, "retrieved_at", datetime.now(timezone.utc).isoformat())
 
         if not isinstance(data, dict) or data.get("code") != "Ok":
             raise ProviderConfigurationError(f"OSRM returned unexpected route status: {data.get('code', 'Unknown')}")
@@ -139,6 +142,7 @@ class OSRMProvider(Provider):
             "duration_hours": round(duration_minutes / 60.0, 2),
             "fatigue_warning": duration_minutes > 240.0,
             "cache_status": cache_status,
+            "retrieved_at": retrieved_at,
         }
 
     def search(self, **kwargs: Any) -> ProviderSearchResult:
@@ -154,8 +158,27 @@ class OSRMProvider(Provider):
                     "For production use, deploy a self-hosted OSRM container or use OpenRouteService."
                 )
 
-            route_info = self.calculate_driving_route(origin, destination)
+            try:
+                route_info = self.calculate_driving_route(origin, destination)
+            except ValueError as err:
+                return ProviderSearchResult(
+                    provider=self.name,
+                    category=self.category.value,
+                    mode=self.mode.value,
+                    retrieved_at=datetime.now(timezone.utc).isoformat(),
+                    query={"origin": origin, "destination": destination},
+                    total_results=0,
+                    items=[],
+                    warnings=[str(err), OSRM_EXPERIMENTAL_NOTICE],
+                    attribution=OSRM_ATTRIBUTION,
+                    cache_status=CacheStatus.MISS.value,
+                    result_status=ResultStatus.UNAVAILABLE.value,
+                    source_url=OSRM_SOURCE_URL,
+                    verification_level=VerificationLevel.CROSS_CHECKED.value,
+                )
+
             cache_status = route_info.get("cache_status", CacheStatus.MISS.value)
+            retrieved_at = route_info.get("retrieved_at", datetime.now(timezone.utc).isoformat())
             warnings: List[str] = [OSRM_EXPERIMENTAL_NOTICE]
 
             if route_info["fatigue_warning"]:
@@ -168,7 +191,7 @@ class OSRMProvider(Provider):
                 provider=self.name,
                 category=self.category.value,
                 mode=self.mode.value,
-                retrieved_at=datetime.now(timezone.utc).isoformat(),
+                retrieved_at=retrieved_at,
                 source_url=OSRM_SOURCE_URL,
                 verification_level=VerificationLevel.CROSS_CHECKED.value,
                 price_status=PriceStatus.ESTIMATED.value,
@@ -186,7 +209,7 @@ class OSRMProvider(Provider):
                 provider=self.name,
                 category=self.category.value,
                 mode=self.mode.value,
-                retrieved_at=datetime.now(timezone.utc).isoformat(),
+                retrieved_at=retrieved_at,
                 query={"origin": origin, "destination": destination},
                 total_results=1,
                 items=[item],
@@ -196,6 +219,7 @@ class OSRMProvider(Provider):
                     "attribution": OSRM_ATTRIBUTION,
                     "source_url": OSRM_SOURCE_URL,
                     "cache_status": cache_status,
+                    "retrieved_at": retrieved_at,
                     "notice": OSRM_EXPERIMENTAL_NOTICE,
                 },
                 warnings=warnings,
@@ -204,6 +228,7 @@ class OSRMProvider(Provider):
                 cache_status=cache_status,
                 result_status=ResultStatus.LIVE.value,
                 source_url=OSRM_SOURCE_URL,
+                verification_level=VerificationLevel.CROSS_CHECKED.value,
             )
 
         res = self._mock_delegate.search(**kwargs)
@@ -212,6 +237,7 @@ class OSRMProvider(Provider):
         res.source_url = OSRM_SOURCE_URL
         res.cache_status = CacheStatus.HIT.value
         res.result_status = ResultStatus.NEEDS_VERIFICATION.value
+        res.verification_level = VerificationLevel.CROSS_CHECKED.value
         for it in res.items:
             it.provider = self.name
             it.attribution = OSRM_ATTRIBUTION

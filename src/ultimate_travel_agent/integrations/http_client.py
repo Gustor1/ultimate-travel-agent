@@ -41,6 +41,18 @@ class RateLimiter:
             self.last_call = time.time()
 
 
+class CacheResponse(tuple):
+    """A 2-tuple (data, cache_status) preserving backwards compatibility while exposing .retrieved_at, .data, .cache_status."""
+
+    def __new__(cls, data: Any, cache_status: str, retrieved_at: Optional[str] = None):
+        return super().__new__(cls, (data, cache_status))
+
+    def __init__(self, data: Any, cache_status: str, retrieved_at: Optional[str] = None) -> None:
+        self.data = data
+        self.cache_status = cache_status
+        self.retrieved_at = retrieved_at or datetime.now(timezone.utc).isoformat()
+
+
 class KeylessHttpClient:
     """Standard client for public keyless APIs with caching, rate limiting, and timeout safety."""
 
@@ -58,12 +70,23 @@ class KeylessHttpClient:
         )
         self._cache: Dict[str, Dict[str, Any]] = {}
         self._cache_lock = threading.Lock()
+        self._limiters_lock = threading.Lock()
         self._limiters: Dict[str, RateLimiter] = {
             "nominatim": RateLimiter(min_interval_seconds=1.0),   # OSM Nominatim policy: 1 req/sec max
             "open_meteo": RateLimiter(min_interval_seconds=0.2),  # 5 req/sec burst
             "ecb": RateLimiter(min_interval_seconds=0.5),         # 2 req/sec
             "wikivoyage": RateLimiter(min_interval_seconds=0.33), # 3 req/sec
             "osrm": RateLimiter(min_interval_seconds=1.0),        # 1 req/sec demo server
+        }
+        self._domain_aliases: Dict[str, str] = {
+            "nominatim.openstreetmap.org": "nominatim",
+            "api.open-meteo.com": "open_meteo",
+            "geocoding-api.open-meteo.com": "open_meteo",
+            "www.ecb.europa.eu": "ecb",
+            "ecb.europa.eu": "ecb",
+            "en.wikivoyage.org": "wikivoyage",
+            "router.project-osrm.org": "osrm",
+            "project-osrm.org": "osrm",
         }
 
     @classmethod
@@ -81,9 +104,11 @@ class KeylessHttpClient:
 
     def _get_limiter(self, domain_or_service: str, min_interval: float = 0.0) -> RateLimiter:
         key = domain_or_service.lower()
-        if key not in self._limiters:
-            self._limiters[key] = RateLimiter(min_interval_seconds=min_interval)
-        return self._limiters[key]
+        target_key = self._domain_aliases.get(key, key)
+        with self._limiters_lock:
+            if target_key not in self._limiters:
+                self._limiters[target_key] = RateLimiter(min_interval_seconds=min_interval)
+            return self._limiters[target_key]
 
     def get(
         self,
@@ -125,7 +150,11 @@ class KeylessHttpClient:
             if cached:
                 now = time.time()
                 if now < cached["expires_at"]:
-                    return cached["data"], CacheStatus.HIT.value
+                    return CacheResponse(
+                        cached["data"],
+                        CacheStatus.HIT.value,
+                        cached.get("retrieved_at", datetime.now(timezone.utc).isoformat()),
+                    )
 
         # Apply rate limiting
         svc = service_name or parsed.netloc
@@ -161,36 +190,49 @@ class KeylessHttpClient:
                 else:
                     data = text
 
+                retrieved_at = datetime.now(timezone.utc).isoformat()
                 # Update cache
                 with self._cache_lock:
                     self._cache[cache_key] = {
                         "data": data,
                         "expires_at": time.time() + ttl_seconds,
-                        "retrieved_at": datetime.now(timezone.utc).isoformat(),
+                        "retrieved_at": retrieved_at,
                     }
 
-                return data, CacheStatus.MISS.value
+                return CacheResponse(data, CacheStatus.MISS.value, retrieved_at)
 
         except urllib.error.HTTPError as http_err:
             if http_err.code == 429:
                 # Rate limited
                 with self._cache_lock:
                     if cached:
-                        return cached["data"], CacheStatus.STALE.value
+                        return CacheResponse(
+                            cached["data"],
+                            CacheStatus.STALE.value,
+                            cached.get("retrieved_at", datetime.now(timezone.utc).isoformat()),
+                        )
                 raise ProviderRateLimitError(
                     f"External rate limit encountered (HTTP 429) for provider '{svc}' at {url}."
                 ) from http_err
             elif http_err.code >= 500:
                 with self._cache_lock:
                     if cached:
-                        return cached["data"], CacheStatus.STALE.value
+                        return CacheResponse(
+                            cached["data"],
+                            CacheStatus.STALE.value,
+                            cached.get("retrieved_at", datetime.now(timezone.utc).isoformat()),
+                        )
                 raise ProviderNetworkError(
                     f"External server error (HTTP {http_err.code}) from provider '{svc}'."
                 ) from http_err
             else:
                 with self._cache_lock:
                     if cached:
-                        return cached["data"], CacheStatus.STALE.value
+                        return CacheResponse(
+                            cached["data"],
+                            CacheStatus.STALE.value,
+                            cached.get("retrieved_at", datetime.now(timezone.utc).isoformat()),
+                        )
                 raise ProviderNetworkError(
                     f"HTTP error {http_err.code} ({http_err.reason}) from provider '{svc}'."
                 ) from http_err
@@ -199,7 +241,11 @@ class KeylessHttpClient:
             # Fallback to stale cache if available
             with self._cache_lock:
                 if cached:
-                    return cached["data"], CacheStatus.STALE.value
+                    return CacheResponse(
+                        cached["data"],
+                        CacheStatus.STALE.value,
+                        cached.get("retrieved_at", datetime.now(timezone.utc).isoformat()),
+                    )
             raise ProviderNetworkError(
                 f"Network communication failure for '{svc}' at {url}: {str(net_err)}"
             ) from net_err

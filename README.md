@@ -150,7 +150,7 @@ python examples/demo_run.py
 
 ### 3. Serveur MCP Local (Model Context Protocol) 🔌
 
-Le système inclut un serveur MCP standard stdio (version **1.2.0**) exposant **21 outils en lecture seule** pour Claude Desktop, Cursor ou tout client MCP :
+Le système inclut un serveur MCP standard stdio (version **1.2.0**) exposant **30 outils en lecture seule** pour Claude Desktop, Cursor ou tout client MCP :
 
 ```bash
 python -m ultimate_travel_agent.mcp.server
@@ -168,9 +168,10 @@ Configuration Claude Desktop (`mcp-config.json`) :
 }
 ```
 
-**21 Outils disponibles :**
+**30 Outils disponibles :**
 - **Planification & Vérification (V1.0 / V1.1) :** `list_trips`, `get_trip`, `validate_trip`, `get_itinerary`, `validate_itinerary`, `calculate_budget`, `list_booking_requirements`, `export_trip_summary`, `get_inter_city_routes`, `get_contingency_dossier`.
 - **Hub d'Intégrations & Consultation Voyage (V1.2) :** `list_integration_providers`, `get_provider_status`, `search_flight_options`, `search_train_options`, `search_accommodation_options`, `search_hotel_reviews`, `search_activity_options`, `get_route_options`, `get_weather_outlook`, `convert_currency`, `search_travel_sources`.
+- **Données Publiques Ouvertes / Keyless (Phase 10) :** `geocode_destination` (Nominatim/OSM), `get_weather_forecast` (Open-Meteo), `get_weather_activity_advice` (Open-Meteo), `get_exchange_rates` (BCE/ECB), `convert_currency_live` (BCE/ECB), `search_wikivoyage_destination` (Wikivoyage), `get_wikivoyage_summary` (Wikivoyage), `get_limited_route_options` (OSRM), `get_keyless_provider_status` (Audit statut).
 
 ---
 

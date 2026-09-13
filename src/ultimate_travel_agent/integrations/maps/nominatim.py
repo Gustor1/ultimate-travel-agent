@@ -78,13 +78,16 @@ class NominatimProvider(Provider):
         }
 
         with _NOMINATIM_WORKER_LOCK:
-            data, cache_status = self.http_client.get(
+            resp = self.http_client.get(
                 self.endpoint_url,
                 params=params,
                 ttl_seconds=604800,  # 7 days compulsory caching
                 service_name="nominatim",
                 min_interval_seconds=1.0,  # Absolute 1.0s interval
             )
+            data = resp[0]
+            cache_status = resp[1]
+            retrieved_at = getattr(resp, "retrieved_at", datetime.now(timezone.utc).isoformat())
 
         if isinstance(data, list) and data:
             top = data[0]
@@ -96,6 +99,7 @@ class NominatimProvider(Provider):
                 "osm_id": top.get("osm_id"),
                 "address": top.get("address", {}),
                 "cache_status": cache_status,
+                "retrieved_at": retrieved_at,
             }
         return None
 
@@ -113,6 +117,7 @@ class NominatimProvider(Provider):
 
             geo = self.geocode(query)
             cache_status = geo.get("cache_status", CacheStatus.MISS.value) if geo else CacheStatus.MISS.value
+            retrieved_at = geo.get("retrieved_at", datetime.now(timezone.utc).isoformat()) if geo else datetime.now(timezone.utc).isoformat()
             items: List[ProviderResultItem] = []
             warnings: List[str] = [
                 "Nominatim public instance is strictly rate-limited to 1 req/sec. Do not use for bulk queries."
@@ -123,7 +128,7 @@ class NominatimProvider(Provider):
                     provider=self.name,
                     category=self.category.value,
                     mode=self.mode.value,
-                    retrieved_at=datetime.now(timezone.utc).isoformat(),
+                    retrieved_at=retrieved_at,
                     source_url=NOMINATIM_SOURCE_URL,
                     verification_level=VerificationLevel.CROSS_CHECKED.value,
                     price_status=PriceStatus.ESTIMATED.value,
@@ -144,7 +149,7 @@ class NominatimProvider(Provider):
                 provider=self.name,
                 category=self.category.value,
                 mode=self.mode.value,
-                retrieved_at=datetime.now(timezone.utc).isoformat(),
+                retrieved_at=retrieved_at,
                 query={"query": query},
                 total_results=len(items),
                 items=items,
@@ -154,6 +159,7 @@ class NominatimProvider(Provider):
                     "attribution": NOMINATIM_ATTRIBUTION,
                     "source_url": NOMINATIM_SOURCE_URL,
                     "cache_status": cache_status,
+                    "retrieved_at": retrieved_at,
                 },
                 warnings=warnings,
                 requires_booking_verification=False,
@@ -161,6 +167,7 @@ class NominatimProvider(Provider):
                 cache_status=cache_status,
                 result_status=ResultStatus.LIVE.value if items else ResultStatus.UNAVAILABLE.value,
                 source_url=NOMINATIM_SOURCE_URL,
+                verification_level=VerificationLevel.CROSS_CHECKED.value,
             )
 
         res = self._mock_delegate.search(**kwargs)
@@ -169,6 +176,7 @@ class NominatimProvider(Provider):
         res.source_url = NOMINATIM_SOURCE_URL
         res.cache_status = CacheStatus.HIT.value
         res.result_status = ResultStatus.NEEDS_VERIFICATION.value
+        res.verification_level = VerificationLevel.CROSS_CHECKED.value
         for it in res.items:
             it.provider = self.name
             it.attribution = NOMINATIM_ATTRIBUTION

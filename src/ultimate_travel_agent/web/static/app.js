@@ -871,18 +871,27 @@ async function queryLiveWeather() {
     const cDet = currentItem.details || {};
     const rainItem = items.find(it => it.details && it.details.rain_risk) || items[1] || {};
     const rDet = rainItem.details || {};
+    const verifLevel = data.verification_level || (currentItem && currentItem.verification_level) || "official_verified";
+    const cacheInfo = data.cache_status ? `cache: ${data.cache_status}` : "live";
+    const timeStr = data.retrieved_at ? new Date(data.retrieved_at).toLocaleTimeString() : "récent";
 
     resultDiv.innerHTML = `
       <div style="margin-top: 0.25rem;">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.35rem;">
-          <strong style="color: #fff;">${city} (${data.mode || 'live'})</strong>
-          <span class="badge ${data.mode === 'live' ? 'badge-official' : 'badge-cross_checked'}">${data.mode || 'offline'}</span>
+          <strong style="color: #fff;">${city} (${data.provider || 'open_meteo'})</strong>
+          <div style="display: flex; gap: 0.35rem;">
+            <span class="badge ${verifLevel === 'official_verified' ? 'badge-official' : 'badge-cross_checked'}">${verifLevel.replace('_', ' ').toUpperCase()}</span>
+            <span class="badge ${data.mode === 'live' ? 'badge-official' : 'badge-cross_checked'}">${data.mode || 'offline'}</span>
+          </div>
         </div>
         <div style="font-size: 0.85rem; margin-bottom: 0.35rem;">
           🌡️ <strong>${cDet.temperature !== undefined ? cDet.temperature + '°C' : 'N/A'}</strong> — ${cDet.condition || 'Temps de saison'}
         </div>
         <div style="font-size: 0.8rem; color: ${rDet.rain_risk ? 'var(--warning-text)' : 'var(--success-text)'}; margin-bottom: 0.35rem;">
           🌧️ Risque de pluie : ${rDet.rain_risk ? 'Plan B conseillé (' + rDet.precipitation_probability_pct + '%)' : 'Faible (' + (rDet.precipitation_probability_pct || 0) + '%)'}
+        </div>
+        <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.25rem;">
+          ⏱️ Reçu à : <strong>${timeStr}</strong> (${cacheInfo})
         </div>
         <div style="font-size: 0.75rem; color: var(--text-muted); border-top: 1px solid var(--border-light); padding-top: 0.25rem;">
           ${data.attribution || 'Open-Meteo CC BY 4.0'}
@@ -913,15 +922,24 @@ async function queryLiveCurrency() {
 
     const item = (data.items && data.items[0]) || {};
     const det = item.details || {};
+    const verifLevel = data.verification_level || (item && item.verification_level) || "official_verified";
+    const cacheInfo = data.cache_status ? `cache: ${data.cache_status}` : "live";
+    const timeStr = data.retrieved_at ? new Date(data.retrieved_at).toLocaleTimeString() : "récent";
 
     resultDiv.innerHTML = `
       <div style="margin-top: 0.25rem;">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.35rem;">
           <strong style="color: #fff;">${amount.toFixed(2)} EUR = ${det.converted_amount !== undefined ? det.converted_amount.toFixed(2) : 'N/A'} ${toCurr}</strong>
-          <span class="badge ${data.mode === 'live' ? 'badge-official' : 'badge-cross_checked'}">${data.mode || 'offline'}</span>
+          <div style="display: flex; gap: 0.35rem;">
+            <span class="badge ${verifLevel === 'official_verified' ? 'badge-official' : 'badge-cross_checked'}">${verifLevel.replace('_', ' ').toUpperCase()}</span>
+            <span class="badge ${data.mode === 'live' ? 'badge-official' : 'badge-cross_checked'}">${data.mode || 'offline'}</span>
+          </div>
         </div>
         <div style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.35rem;">
-          Date du taux : <strong>${det.rate_date || 'Aujourd\'hui'}</strong> (1 EUR = ${det.exchange_rate || 'N/A'})
+          Fournisseur : <strong>${data.provider || 'ecb_currency'}</strong> | Date du taux : <strong>${det.rate_date || 'Aujourd\'hui'}</strong> (1 EUR = ${det.exchange_rate || 'N/A'})
+        </div>
+        <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.25rem;">
+          ⏱️ Reçu à : <strong>${timeStr}</strong> (${cacheInfo})
         </div>
         <div style="font-size: 0.75rem; color: var(--warning-text); margin-bottom: 0.35rem;">
           ⚠️ Taux de référence indicatif (les cartes bancaires appliquent +1.5% à 3.5% de commission).
@@ -953,12 +971,21 @@ async function queryLiveGuide() {
 
     const item = (data.items && data.items[0]) || {};
     const det = item.details || {};
+    const verifLevel = data.verification_level || (item && item.verification_level) || "community_recommended";
+    const cacheInfo = data.cache_status ? `cache: ${data.cache_status}` : "live";
+    const timeStr = data.retrieved_at ? new Date(data.retrieved_at).toLocaleTimeString() : "récent";
 
     resultDiv.innerHTML = `
       <div style="margin-top: 0.25rem;">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.35rem;">
           <strong style="color: #fff;">${det.title || dest}</strong>
-          <span class="badge badge-community">Wikivoyage CC BY-SA</span>
+          <div style="display: flex; gap: 0.35rem;">
+            <span class="badge badge-community">${verifLevel.replace('_', ' ').toUpperCase()}</span>
+            <span class="badge ${data.mode === 'live' ? 'badge-official' : 'badge-cross_checked'}">${data.mode || 'offline'}</span>
+          </div>
+        </div>
+        <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.35rem;">
+          Fournisseur : <strong>${data.provider || 'wikivoyage'}</strong> | Reçu à : <strong>${timeStr}</strong> (${cacheInfo})
         </div>
         <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.35rem; max-height: 80px; overflow-y: auto;">
           ${item.description || 'Guide éditorial communautaire.'}
