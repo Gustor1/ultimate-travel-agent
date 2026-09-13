@@ -1,0 +1,40 @@
+{
+  "name": "travel-skills",
+  "version": "1.0.0",
+  "description": "Reusable travel planning, source verification, budgeting, safety, multi-agent orchestration, and MCP auditing skills pack for Antigravity and compatible AI agents.",
+  "author": "Ultimate Travel Agent Contributors",
+  "license": "MIT",
+  "homepage": "https://github.com/Gustor1/ultimate-travel-agent",
+  "skills": [
+    {
+      "name": "travel-planning",
+      "description": "Best practices and structured protocols for assembling end-to-end travel itineraries across city-trips, road-trips, and nature expeditions.",
+      "path": "skills/travel-planning/SKILL.md"
+    },
+    {
+      "name": "source-verification",
+      "description": "Protocols for grading information reliability, verifying travel facts, cross-referencing sources, and tagging verification levels.",
+      "path": "skills/source-verification/SKILL.md"
+    },
+    {
+      "name": "budget-validation",
+      "description": "Rules and formulas for estimating total trip expenditure, applying multi-currency conversions, factoring safety reserves, and detecting cost overruns.",
+      "path": "skills/budget-validation/SKILL.md"
+    },
+    {
+      "name": "travel-safety",
+      "description": "Safety protocols, emergency contact verification, embassy registries, outdoor hazard warnings, and health compliance.",
+      "path": "skills/travel-safety/SKILL.md"
+    },
+    {
+      "name": "multi-agent-orchestration",
+      "description": "Directives for scheduling, wave synchronization, context budget management, and DAG pipeline execution across specialized sub-agents.",
+      "path": "skills/multi-agent-orchestration/SKILL.md"
+    },
+    {
+      "name": "mcp-skill-auditing",
+      "description": "Guidelines and automated checks for auditing external MCP servers, tool definitions, URL allowlists, and prompt injection vectors.",
+      "path": "skills/mcp-skill-auditing/SKILL.md"
+    }
+  ]
+}
