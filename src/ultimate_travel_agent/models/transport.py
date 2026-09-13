@@ -23,6 +23,14 @@ class TransportSegment(BaseModel):
         description="Whether cost is per passenger (True) or for the vehicle/group (False). Defaults to False for car_rental/taxi, True otherwise."
     )
     currency: str = Field(default="EUR", description="Currency code for cost")
+    price_status: Optional[str] = Field(
+        default="estimated",
+        description="Price status: confirmed | estimated | needs_verification"
+    )
+    availability_status: Optional[str] = Field(
+        default="estimated",
+        description="Availability status: live | estimated | unavailable | unknown"
+    )
     official_booking_url: Optional[str] = Field(None, description="Direct URL to official ticketing operator")
     door_to_door_notes: Optional[str] = Field(
         None,

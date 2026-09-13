@@ -517,7 +517,7 @@ def create_app() -> FastAPI:
     """Create and configure the FastAPI web service."""
     app = FastAPI(
         title="Ultimate Travel Agent Web UI",
-        description="Local-first, privacy-focused travel planning interface with visible multi-agent verification.",
+        description="Local-first, privacy-focused travel planning interface with visible multi-agent verification and Provider Hub.",
         version="1.1.0",
     )
 
@@ -531,10 +531,27 @@ def create_app() -> FastAPI:
         return {
             "status": "healthy",
             "version": "1.1.0",
+            "provider_hub_version": "1.2.0",
             "mode": "offline-first-local",
             "disclaimer": "Offline local planning mode: No live availability, price, opening-hour or booking verification.",
             "auto_booking_capability": False,
         }
+
+    @app.get("/api/integrations/providers")
+    async def api_list_providers(category: Optional[str] = None, mode: Optional[str] = None) -> List[Dict[str, Any]]:
+        """List registered travel integration providers and their modes."""
+        from ultimate_travel_agent.integrations import default_registry
+        return default_registry.list_providers(category=category, mode=mode)
+
+    @app.get("/api/integrations/status/{provider_name}")
+    async def api_provider_status(provider_name: str) -> Dict[str, Any]:
+        """Check status and readiness of a travel data provider."""
+        from ultimate_travel_agent.integrations import default_registry
+        try:
+            res = default_registry.get_provider_status(provider_name)
+            return res.model_dump()
+        except KeyError:
+            raise HTTPException(status_code=404, detail=f"Provider '{provider_name}' not found")
 
     @app.get("/api/trips")
     async def api_list_trips() -> List[Dict[str, Any]]:

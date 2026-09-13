@@ -30,5 +30,4 @@ class WeatherAdapter(BaseIntegrationAdapter):
         }
 
     def fetch_live_data(self, **kwargs: Any) -> Dict[str, Any]:
-        # Live fetch would use requests / httpx to api.open-meteo.com
         return self.get_mock_data(**kwargs)

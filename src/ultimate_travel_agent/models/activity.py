@@ -137,6 +137,14 @@ class Activity(BaseModel):
     # Costs
     estimated_cost: float = Field(default=0.0, description="Cost per person in currency")
     currency: str = Field(default="EUR", description="Currency ISO code")
+    price_status: Optional[str] = Field(
+        default="estimated",
+        description="Price status: confirmed | estimated | needs_verification"
+    )
+    availability_status: Optional[str] = Field(
+        default="estimated",
+        description="Availability status: live | estimated | unavailable | unknown"
+    )
 
     # Transit access
     access_method: Optional[str] = Field(

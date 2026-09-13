@@ -20,6 +20,14 @@ class Accommodation(BaseModel):
     cost_per_night: float = Field(..., description="Estimated cost per night")
     total_nights: int = Field(default=1, description="Number of nights booked or planned")
     currency: str = Field(default="EUR", description="Currency code for cost")
+    price_status: Optional[str] = Field(
+        default="estimated",
+        description="Price status: confirmed | estimated | needs_verification"
+    )
+    availability_status: Optional[str] = Field(
+        default="estimated",
+        description="Availability status: live | estimated | unavailable | unknown"
+    )
     quietness_rating: Optional[str] = Field(
         None,
         description="Quietness assessment: high, medium, noisy"
