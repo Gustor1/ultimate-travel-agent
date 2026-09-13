@@ -25,16 +25,16 @@ def _effective_carbon(option: RouteOption) -> float:
 
 def recommend_route_option(
     route: InterCityRoute,
-    preference: Union[RoutePreference, str] = RoutePreference.BALANCED if hasattr(RoutePreference, "BALANCED") else "cheapest",
+    preference: Union[RoutePreference, str] = RoutePreference.CHEAPEST,
 ) -> Tuple[Optional[RouteOption], str]:
     """Recommend the optimal RouteOption for an InterCityRoute given user preference.
 
-    Supported preferences:
-    - 'cheapest': Minimal estimated financial cost
-    - 'fastest': Minimal total door-to-door transit duration
-    - 'fewest_transfers': Fewest connections, then fastest duration
-    - 'most_comfortable': Highest comfort score, then fewest transfers
-    - 'most_eco_friendly': Lowest carbon footprint (kg CO2)
+    Supported preferences (in English or French):
+    - 'cheapest' / 'moins chère': Minimal estimated financial cost
+    - 'fastest' / 'plus rapide': Minimal total door-to-door transit duration
+    - 'fewest_transfers' / 'moins de correspondances': Fewest connections, then fastest duration
+    - 'most_comfortable' / 'plus confortable': Highest comfort score, then fewest transfers
+    - 'most_eco_friendly' / 'plus écologique': Lowest carbon footprint (kg CO2)
     - 'relaxed': High comfort, minimal connections (<=1), peaceful travel
     - 'packed': Fastest transit to maximize sightseeing time at destination
     """
@@ -42,39 +42,46 @@ def recommend_route_option(
         return None, "No route options available between these destinations."
 
     pref_val = preference.value if isinstance(preference, RoutePreference) else str(preference).lower()
+    norm = (
+        pref_val.strip()
+        .replace(" ", "_")
+        .replace("-", "_")
+        .replace("é", "e")
+        .replace("è", "e")
+    )
 
-    if pref_val == "cheapest":
+    if norm in ("cheapest", "moins_chere", "moins_cher", "economique"):
         sorted_opts = sorted(route.options, key=lambda o: (o.estimated_cost, o.estimated_duration_minutes))
         chosen = sorted_opts[0]
         reason = f"Cheapest option at {chosen.estimated_cost:.2f} {chosen.currency} ({chosen.mode.value})."
         return chosen, reason
 
-    if pref_val == "fastest" or pref_val == "packed":
+    if norm in ("fastest", "plus_rapide", "rapide", "packed", "intense"):
         sorted_opts = sorted(route.options, key=lambda o: (o.estimated_duration_minutes, o.transfers_count))
         chosen = sorted_opts[0]
         reason = f"Fastest door-to-door option at {chosen.estimated_duration_minutes} min ({chosen.mode.value})."
         return chosen, reason
 
-    if pref_val == "fewest_transfers":
+    if norm in ("fewest_transfers", "moins_de_correspondances", "direct"):
         sorted_opts = sorted(route.options, key=lambda o: (o.transfers_count, o.estimated_duration_minutes))
         chosen = sorted_opts[0]
         reason = f"Fewest transfers ({chosen.transfers_count} connection(s)) via {chosen.mode.value} in {chosen.estimated_duration_minutes} min."
         return chosen, reason
 
-    if pref_val == "most_comfortable":
+    if norm in ("most_comfortable", "plus_confortable", "confort"):
         sorted_opts = sorted(route.options, key=lambda o: (-o.comfort_level, o.transfers_count, o.estimated_duration_minutes))
         chosen = sorted_opts[0]
         reason = f"Most comfortable option (score {chosen.comfort_level}/5) via {chosen.mode.value}."
         return chosen, reason
 
-    if pref_val == "most_eco_friendly":
+    if norm in ("most_eco_friendly", "plus_ecologique", "ecologique", "eco"):
         sorted_opts = sorted(route.options, key=lambda o: (_effective_carbon(o), o.estimated_cost))
         chosen = sorted_opts[0]
         carbon = _effective_carbon(chosen)
         reason = f"Lowest environmental footprint (~{carbon:.1f} kg CO2) via {chosen.mode.value}."
         return chosen, reason
 
-    if pref_val == "relaxed":
+    if norm in ("relaxed", "detendu", "detente"):
         # Prefer comfort >= 3 and transfers <= 1, then least transfers and highest comfort
         def relaxed_score(o: RouteOption) -> Tuple[int, int, int]:
             # penalty if transfers > 1

@@ -177,3 +177,23 @@ def test_route_empty_options() -> None:
     chosen, reason = recommend_route_option(empty_route, RoutePreference.CHEAPEST)
     assert chosen is None
     assert "No route options" in reason
+
+
+def test_route_french_preferences() -> None:
+    """Verify that French preference names correctly map to optimal route options."""
+    route = _build_sample_route()
+
+    opt_cheapest, _ = recommend_route_option(route, "moins chère")
+    assert opt_cheapest is not None and opt_cheapest.id == "opt-bus"
+
+    opt_fastest, _ = recommend_route_option(route, "plus rapide")
+    assert opt_fastest is not None and opt_fastest.id == "opt-train"
+
+    opt_eco, _ = recommend_route_option(route, "plus écologique")
+    assert opt_eco is not None and opt_eco.id == "opt-train"
+
+    opt_transfers, _ = recommend_route_option(route, "moins de correspondances")
+    assert opt_transfers is not None and opt_transfers.transfers_count == 0
+
+    opt_comfort, _ = recommend_route_option(route, "plus confortable")
+    assert opt_comfort is not None and opt_comfort.comfort_level >= 4
