@@ -41,7 +41,7 @@ docker compose down
 ### A. Railway
 1. Push your repository to GitHub.
 2. In Railway Dashboard: **New Project** > **Deploy from GitHub Repo**.
-3. Railway automatically detects `deployment/railway.json` and builds from `Dockerfile`.
+3. Railway automatically detects `railway.json` at the root and builds from `Dockerfile`.
 4. In Railway **Variables**, add:
    - `TRAVEL_MCP_API_KEY`: Generate a random secret (e.g. `openssl rand -hex 24`).
    - `TRAVEL_MCP_AUTH_REQUIRED`: `true`.
