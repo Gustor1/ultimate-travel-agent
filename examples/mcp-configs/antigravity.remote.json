@@ -1,0 +1,10 @@
+{
+  "mcpServers": {
+    "ultimate-travel-agent-remote": {
+      "url": "https://YOUR-TRAVEL-MCP-DOMAIN/mcp",
+      "headers": {
+        "Authorization": "Bearer YOUR_TRAVEL_MCP_API_KEY"
+      }
+    }
+  }
+}

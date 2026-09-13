@@ -21,6 +21,18 @@ Contrairement aux chatbots conventionnels qui hallucinent des horaires, inventen
 
 ---
 
+## Concepts Clés & Différenciation
+
+Pour bien comprendre l'architecture du projet :
+
+- **Skills** : Des instructions et directives réutilisables (`SKILL.md`) installables dans tout projet IA compatible Antigravity (planification, vérification de sources, validation budgétaire, sécurité, orchestration, audit MCP).
+- **Sous-agents** : Les rôles d'IA spécialisés internes coordonnés en vagues DAG pour accomplir la synthèse du voyage de bout en bout.
+- **MCP local** : Le serveur Model Context Protocol exécuté sur la machine locale via le transport `stdio`.
+- **MCP distant** : Le serveur HTTP Streamable déployé en ligne (Cloud Run, Railway, Render, Fly.io, Docker), connectable à distance depuis n'importe quel IDE ou agent compatible MCP.
+- **Provider** : Une connexion optionnelle côté serveur vers une source de données externe (vols, trains, hôtels, avis, activités, cartes, météo, devises), toujours protégée par un repli déterministe hors-ligne.
+
+---
+
 ## Mode Hors-Ligne & Garantie de Non-Paiement
 
 > ⚠️ **Avertissement produit réglementaire :**  
@@ -259,8 +271,80 @@ Voir [docs/data-verification.md](docs/data-verification.md) pour les règles d'a
 
 ---
 
+## Use Ultimate Travel Agent in another project
+
+Ultimate Travel Agent can be seamlessly plugged into any external AI agent workspace (Antigravity, Claude Code, Cursor, Windsurf):
+
+### 1. Install Travel Skills
+Copy the 6 travel planning, safety, budgeting, and verification skills into your target project:
+```bash
+# Using CLI
+ultimate-travel-agent install-skills --target ../my-project
+
+# Or using the portable python script (zero dependencies)
+python packages/travel-skills/install.py --target ../my-project
+```
+
+### 2. Configure Local MCP Server (Stdio)
+Add to your client configuration (e.g. `~/.antigravity/mcp_config.json`):
+```json
+{
+  "mcpServers": {
+    "ultimate-travel-agent-local": {
+      "command": "python",
+      "args": ["-m", "ultimate_travel_agent.mcp.server"]
+    }
+  }
+}
+```
+
+### 3. Configure Remote MCP Server (HTTPS Streamable HTTP)
+Connect to your remote deployed instance (Railway, Render, Fly.io, Cloud Run):
+```json
+{
+  "mcpServers": {
+    "ultimate-travel-agent-remote": {
+      "url": "https://YOUR-TRAVEL-MCP-DOMAIN/mcp",
+      "headers": {
+        "Authorization": "Bearer YOUR_TRAVEL_MCP_API_KEY"
+      }
+    }
+  }
+}
+```
+
+### 4. Example Travel Query
+Ask your AI assistant:
+> "Plan a 4-day trip to Barcelona. Query `search_flight_options` from Paris, find lodging in quiet neighborhoods with `search_accommodation_options`, and calculate total expenditure with `calculate_budget` using a 12% buffer."
+
+### 5. Data Limitations in Offline/Mock Modes
+- All results in `offline` or `mock` mode are simulated or heuristic approximations.
+- Fares and hotel prices must be re-checked manually on the official portal links provided.
+- Zero automated bookings or financial transactions will ever be executed.
+
+### 6. Activating Live Providers
+To activate real-time API integrations on your deployed server:
+1. Set server environment variables (e.g. `AMADEUS_CLIENT_ID`, `SNCF_API_KEY`, `OPENROUTESERVICE_API_KEY`).
+2. Select active providers: `TRAVEL_PROVIDER_FLIGHTS=amadeus`, `TRAVEL_PROVIDER_WEATHER=open_meteo`.
+3. Query tools with `mode="live"`. If required credentials are missing, the server safely fails closed with `ProviderConfigurationError`.
+
+---
+
 ## Documentation Complète
 
+### Phase 9 — Remote MCP & Distribution Pack
+- [Audit de Transition Phase 9 (Remote MCP & Skills)](docs/phase-9-remote-mcp-audit.md)
+- [Guide de Connexion Trans-Projets](docs/connect-from-any-project.md)
+- [Pack de Skills Réutilisables](docs/reusable-skills.md)
+- [Sécurité du MCP Distant](docs/remote-mcp-security.md)
+- [Guide d'Authentification MCP](docs/authentication.md)
+- [Architecture de Limitation de Débit](docs/rate-limiting.md)
+- [Guide de Déploiement des Fournisseurs](docs/provider-deployment-guide.md)
+- [Matrice de Statut des Fournisseurs](docs/provider-status.md)
+- [Manifestes de Déploiement Cloud (Railway, Render, Cloud Run, Fly)](deployment/README.md)
+- [Package Travel Skills](packages/travel-skills/README.md)
+
+### Architecture & Base Locale
 - [Architecture Technique & Hub d'Intégrations](docs/architecture.md)
 - [Audit des Intégrations Réelles V1.2](docs/v1.2-live-integrations-audit.md)
 - [Configuration des Fournisseurs & Clés](docs/provider-configuration.md)

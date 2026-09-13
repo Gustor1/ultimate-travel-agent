@@ -4,21 +4,22 @@ Ce document liste l'état des livrables de la version V1.2 et les pistes d'évol
 
 ---
 
-## 1. État Actuel : V1.2 Live Integrations & Provider Hub Réalisé & Validé
+## 1. État Actuel : V1.3 Remote MCP & Travel Skills Pack Réalisé & Validé
 
-Toutes les étapes de la Phase 8 (V1.2) sont achevées et testées :
-- [x] **Audit des Intégrations V1.2** : Catégorisation exhaustive (réel, mock, potentiel, rejeté [ex. Google Flights], requis clés, partenaires) (`docs/v1.2-live-integrations-audit.md`).
-- [x] **Architecture Provider Hub Modulaire** : `src/ultimate_travel_agent/integrations/` avec `ProviderRegistry`, 10 domaines de voyage typés (Pydantic v2), gestion stricte des modes `offline`, `mock`, `live`.
-- [x] **Sécurité & Zéro Secret par Défaut** : `.env.example` vide de valeurs, `.gitignore` durci (`.env*`), zéro fuite de clés ou de chemins locaux.
-- [x] **Garanties Fermes de Confidentialité & Non-Achat** : Zéro capacité transactionnelle, zéro partage de PII, liens directs officiels exclusifs.
-- [x] **Serveur MCP V1.2 Étendu (21 outils)** : 11 nouveaux outils standardisés pour interroger le Provider Hub en lecture seule.
-- [x] **Sous-Agents & Moteur V1.2 Consolidés** : Prise en compte du temps de trajet porte-à-porte, dissociation avis vs inventaire, blocage strict des items sociaux maquillés en confirmés.
-- [x] **Documentation Complète des Politiques & Intégrations** : `provider-configuration.md`, `live-data-policy.md`, `provider-comparison.md`, `privacy-and-data-flow.md`, `credentials-request.md`.
-- [x] **Tests Automatisés à 100% Hors-Ligne** : 100 tests unitaires et d'intégration validés sans réseau ni clés requises.
+Toutes les étapes de la Phase 9 sont achevées et testées à 100% hors-ligne :
+- [x] **Audit de Transition Phase 9** : `docs/phase-9-remote-mcp-audit.md` documentant les capacités locales vs mock vs live vs cloud.
+- [x] **Pack de Skills Réutilisables** : `packages/travel-skills/` avec manifest, installateur et désinstallateur multiplateforme, exemples et documentation.
+- [x] **Commandes CLI de Gestion des Skills** : `list-skills`, `install-skills`, `uninstall-skills`, `mcp-http`.
+- [x] **Serveur MCP Streamable HTTP Sécurisé** : `src/ultimate_travel_agent/mcp/http_server.py` (`/mcp`, `/health`, `/ready`, `/version`).
+- [x] **Architecture de Sécurité Robuste** : Token Bearer/API Key en temps constant, limitation de débit in-memory, limite 1 Mo, traçage `X-Request-ID`, assainissement automatique des logs, CORS configurable.
+- [x] **Registry de Providers Dynamique** : Sélection par variables d'environnement (`TRAVEL_PROVIDER_*`) et fichier YAML avec replis mock sécurisés.
+- [x] **Manifestes de Conteneurisation & Cloud** : `Dockerfile` (utilisateur non-root), `docker-compose.yml`, Railway, Render, Cloud Run, Fly.io.
+- [x] **Configurations Clients Réutilisables** : Antigravity, Claude Code et Cursor avec placeholders sûrs.
+- [x] **Suite de Tests Validée** : 124 tests unitaires passants à 100% hors-ligne.
 
 ---
 
-## 2. Pistes d'Évolution Prioritaires pour une Future V1.3
+## 2. Pistes d'Évolution Prioritaires pour une Future Version
 
 Pour continuer d'enrichir le produit sans compromettre la sécurité et la gratuité locale :
 
