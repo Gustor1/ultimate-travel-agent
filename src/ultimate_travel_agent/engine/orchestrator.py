@@ -35,7 +35,7 @@ def _lowest_verification_level(
 
 
 class TravelOrchestrationEngine:
-    """Executes the 5-wave multi-agent orchestration workflow."""
+    """Executes the 5-wave multi-agent orchestration workflow and exposes the 9 canonical stages."""
 
     def __init__(self) -> None:
         self.agent_results: Dict[str, AgentResult] = {}
@@ -53,6 +53,11 @@ class TravelOrchestrationEngine:
             status=dest_status,
             summary=f"Researched {len(trip.destinations)} destination(s) with seasonal and crowd profiles.",
             findings=dest_findings,
+            assumptions=[
+                "Standard seasonal opening schedules and daylight hours assumed.",
+                "No severe weather disruptions forecasted in target travel window.",
+            ],
+            missing_information=[] if trip.destinations else ["Destination not specified."],
             risks=dest_risks,
             sources=[],
             verification_level=VerificationLevel.OFFICIAL_VERIFIED,
@@ -76,6 +81,11 @@ class TravelOrchestrationEngine:
             status=trans_status,
             summary=f"Curated {len(trip.transports)} transit connection(s) with official ticketing URLs.",
             findings=trans_findings,
+            assumptions=[
+                "Standard luggage allowance (1 cabin + 1 personal item) assumed.",
+                "Standard transfer buffers applied (30 min for high-speed rail, 120 min for flights).",
+            ],
+            missing_information=["Live seat availability and real-time delays unverified (offline mode)."],
             risks=trans_risks,
             sources=trans_sources,
             verification_level=trans_level,
@@ -103,6 +113,11 @@ class TravelOrchestrationEngine:
             status=acc_status,
             summary=f"Selected {len(trip.accommodations)} lodging options covering {trip.total_nights} night(s).",
             findings=acc_findings,
+            assumptions=[
+                "Standard double room or private family unit assumed.",
+                "Standard check-in from 15:00 and check-out at 11:00.",
+            ],
+            missing_information=["Real-time room inventory and promotional rates unverified (offline mode)."],
             risks=acc_risks,
             sources=acc_sources,
             verification_level=acc_level,
@@ -126,6 +141,11 @@ class TravelOrchestrationEngine:
             status=act_status,
             summary=f"Curated {len(trip.activities)} activities with crowd management guidance.",
             findings=act_findings,
+            assumptions=[
+                "Standard adult admission fare assumed unless student/senior concessions noted.",
+                "Advance timed-entry reservation strictly mandatory for primary monuments.",
+            ],
+            missing_information=["Live queue times and same-day box office availability unverified."],
             risks=act_risks,
             sources=act_sources,
             verification_level=act_level,
@@ -140,6 +160,9 @@ class TravelOrchestrationEngine:
             status=AgentStatus.COMPLETE,
             summary=f"Identified {len(dining_pois)} local culinary gems (flagged for manual verification).",
             findings=dining_pois,
+            assumptions=["Community and culinary guidebook consensus for authentic regional cuisine."],
+            missing_information=["Table reservation requirements and weekly closing days need manual confirmation."],
+            risks=[],
             sources=[],
             verification_level=VerificationLevel.SOCIAL_DISCOVERY_ONLY,
         )
@@ -159,6 +182,11 @@ class TravelOrchestrationEngine:
             status=chk_status,
             summary=f"Generated {len(trip.checklists)} pre-departure preparation and safety items.",
             findings=chk_findings,
+            assumptions=[
+                "Travelers hold valid passports or national IDs with >= 6 months validity.",
+                "Routine universal vaccinations are up to date.",
+            ],
+            missing_information=["Consular requirements and emergency contacts: Requires official source verification."],
             risks=chk_risks,
             sources=[],
             verification_level=chk_level,
@@ -179,8 +207,14 @@ class TravelOrchestrationEngine:
         r_budget = AgentResult(
             agent="budget-analyst",
             status=status,
-            summary=f"Consolidated budget: Grand Total {budget.grand_total} {budget.currency} (incl. {budget.safety_buffer_amount} reserve).",
+            summary=f"Consolidated budget: Grand Total {budget.grand_total:.2f} {budget.currency} (incl. {budget.safety_buffer_amount:.2f} {budget.currency} reserve).",
             findings=[budget.model_dump()],
+            assumptions=[
+                f"Safety reserve buffer applied: {budget.safety_buffer_percentage}%.",
+                f"Daily baseline dining allowance: 40.00 {trip.currency}/day/traveler.",
+                f"Miscellaneous and city transit buffer: 15.00 {trip.currency}/day/traveler.",
+            ],
+            missing_information=["Fluctuations in dynamic pricing, optional tips, and local city tourist taxes."],
             risks=risks,
             verification_level=VerificationLevel.CROSS_CHECKED,
         )
@@ -207,6 +241,11 @@ class TravelOrchestrationEngine:
             status=itin_status,
             summary=f"Sequenced {len(trip.itinerary)} daily schedules with geographic clustering and weather contingencies.",
             findings=itin_findings,
+            assumptions=[
+                "Activities clustered within geographic walking corridors to minimize commute.",
+                "Pacing capped at 2-3 major visits per day with dedicated dining breaks.",
+            ],
+            missing_information=["Unexpected public transport strikes or municipal road closures on travel dates."],
             risks=risks,
             verification_level=VerificationLevel.CROSS_CHECKED,
         )
@@ -270,6 +309,8 @@ class TravelOrchestrationEngine:
             status=qc_status,
             summary=qc_summary,
             findings=qc_findings,
+            assumptions=["Static domain consistency rules and date coverage rules evaluated."],
+            missing_information=["Human confirmation of reservation deadlines and passport validity."],
             risks=qc_risks,
             verification_level=VerificationLevel.OFFICIAL_VERIFIED,
         )
@@ -305,6 +346,8 @@ class TravelOrchestrationEngine:
                 else f"Security audit failed: {len(suspicious_urls)} suspicious URL(s) detected."
             ),
             findings=[{"suspicious_urls": suspicious_urls, "auto_booking_detected": False}],
+            assumptions=["Read-only protocol enforcement; no outbound write operations allowed."],
+            missing_information=[],
             risks=[f"Suspicious URL: {u}" for u in suspicious_urls],
             verification_level=VerificationLevel.OFFICIAL_VERIFIED,
         )
@@ -346,6 +389,8 @@ class TravelOrchestrationEngine:
             status=orch_status,
             summary=f"Trip dossier '{trip.title}' compiled ({status_text}) with {total_items} items across 5 waves.",
             findings=[{"trip_id": trip.id, "title": trip.title, "total_days": trip.total_days}],
+            assumptions=["All upstream wave constraints synthesized."],
+            missing_information=[],
             verification_level=overall_level,
         )
         self.agent_results["travel-orchestrator"] = r_orch
@@ -359,3 +404,57 @@ class TravelOrchestrationEngine:
         self.run_wave_4_quality_and_security(trip)
         self.run_wave_5_orchestrator(trip)
         return self.agent_results
+
+    def get_nine_stage_pipeline(self, trip: Trip) -> List[Dict[str, Any]]:
+        """Return the 9 canonical user-facing multi-agent execution steps with full transparency."""
+        if not self.agent_results:
+            self.execute_full_pipeline(trip)
+
+        r_dest = self.agent_results.get("destination-researcher")
+        r_trans = self.agent_results.get("transport-planner")
+        r_acc = self.agent_results.get("accommodation-researcher")
+        r_act = self.agent_results.get("activity-curator")
+        r_disc = self.agent_results.get("local-discovery-agent")
+        r_prep = self.agent_results.get("travel-preparation-agent")
+        r_bud = self.agent_results.get("budget-analyst")
+        r_itin = self.agent_results.get("itinerary-optimizer")
+        r_qc = self.agent_results.get("quality-controller")
+
+        def _format_step(num: int, name: str, res: Optional[AgentResult]) -> Dict[str, Any]:
+            if not res:
+                return {
+                    "step_number": num,
+                    "name": name,
+                    "agent": "unknown",
+                    "status": "partial",
+                    "summary": "Step not yet executed.",
+                    "assumptions": [],
+                    "missing_information": [],
+                    "risks": [],
+                    "verification_level": "unverified",
+                    "sources": [],
+                }
+            return {
+                "step_number": num,
+                "name": name,
+                "agent": res.agent,
+                "status": res.status.value,
+                "summary": res.summary,
+                "assumptions": res.assumptions,
+                "missing_information": res.missing_information,
+                "risks": res.risks,
+                "verification_level": res.verification_level.value,
+                "sources": [s.model_dump() for s in res.sources],
+            }
+
+        return [
+            _format_step(1, "Destination research", r_dest),
+            _format_step(2, "Transport planning", r_trans),
+            _format_step(3, "Accommodation research", r_acc),
+            _format_step(4, "Activity curation", r_act),
+            _format_step(5, "Local discovery", r_disc),
+            _format_step(6, "Travel preparation", r_prep),
+            _format_step(7, "Budget analysis", r_bud),
+            _format_step(8, "Itinerary optimization", r_itin),
+            _format_step(9, "Quality control", r_qc),
+        ]
