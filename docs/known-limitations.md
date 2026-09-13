@@ -1,12 +1,18 @@
 # Limitations Connues — `ultimate-travel-agent`
 
-Ce document dresse un inventaire transparent des limitations techniques, fonctionnelles et architecturales actuelles du système `ultimate-travel-agent` en version `v1.0.0`.
+Ce document dresse un inventaire transparent des limitations techniques, fonctionnelles et architecturales actuelles du système `ultimate-travel-agent` en version `v1.1`.
 
 ---
 
 ## 1. Données Mock et Mode Hors-Ligne par Défaut
 
-- **Données Déterministes Locales** : En mode standard (`TRAVEL_AGENT_MODE=offline`), les prix, horaires et disponibilités proviennent de jeux de données mock ou de données de référence statiques. Ils reflètent des ordres de grandeur réels mais ne constituent pas des disponibilités en temps réel.
+> **Avertissement produit obligatoire :**  
+> ```text
+> Offline local planning mode:
+> No live availability, price, opening-hour or booking verification.
+> ```
+
+- **Données Déterministes Locales** : En mode standard (`TRAVEL_AGENT_MODE=offline`), les prix, horaires et disponibilités proviennent de modèles locaux et de données de référence statiques. Ils reflètent des ordres de grandeur réels mais ne constituent pas des disponibilités en temps réel.
 - **Variation Saisonnière des Tarifs** : Les prix réels des vols et des hôtels fluctuent dynamiquement en fonction de la demande et du calendrier. Une marge de sécurité budgétaire (10% à 15%) est systématiquement appliquée pour absorber ces écarts.
 
 ---

@@ -1,146 +1,219 @@
 # Ultimate Travel Agent 🌍✈️
 
-> **A generic, privacy-first, multi-agent travel planning system generating verified, realistic, day-by-day itineraries with budget estimation and zero required external accounts.**
+> **A generic, privacy-first, local-first multi-agent travel planning system generating verified, realistic, day-by-day itineraries with budget estimation and zero required external accounts.**
 
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Code style: ruff](https://img.shields.io/badge/code%20style-ruff-000000.svg)](https://github.com/astral-sh/ruff)
+[![Architecture: Local-First](https://img.shields.io/badge/Architecture-Local--First-green.svg)](docs/offline-mode.md)
 
 ---
 
-## Highlights
+## Qu'est-ce que Ultimate Travel Agent ? (En bref)
 
-- **Universal & Generic**: Adapts to any trip style (city-trip, road-trip, nature/landscape, multi-city, solo, couple, family, friends, slow travel).
-- **11 Specialized Agents**: Coordinated in structured waves (exploration, budgeting, scheduling, quality control, orchestration).
-- **Offline & Privacy-First**: 100% functional out-of-the-box using local mock data. No mandatory API keys, no tracking, zero sensitive credentials stored in Git.
-- **Evidence-Based & Sourced**: Every recommendation flags its verification level (`official_verified`, `cross_checked`, `community_recommended`, `social_discovery_only`, `unverified`, `outdated`).
-- **Safety First**: **Never** books or makes irreversible payments automatically. All recommendations provide verified official booking links for user control.
-- **MCP Server Included**: Model Context Protocol interface exposing read-only and computation tools for Claude Desktop, Cursor, or any MCP client.
+**Ultimate Travel Agent** est un système open source conçu pour aider n'importe qui à planifier un voyage complet et réaliste, sans risquer ses données personnelles et sans dépendre d'abonnements cloud ou de clés d'API payantes.
+
+Contrairement aux chatbots conventionnels qui hallucinent des horaires, inventent des prix ou poussent vers des liens sponsorisés, ce système :
+1. **Modélise fidèlement la réalité** : Regroupement géographique des visites, temps de trajet porte-à-porte, pauses déjeuner respectées, alternatives en cas de pluie ou de fermeture.
+2. **Fonctionne 100% hors-ligne par défaut** : Zéro compte requis, zéro fuite de données, reproductibilité totale.
+3. **Sécurise vos démarches** : **Ne réserve et ne paye jamais automatiquement**. Il fournit des liens officiels directs vers les billetteries réelles des monuments et compagnies de transport.
+4. **Offre 3 interfaces** : Une interface web locale intuitive (FastAPI), une CLI puissante et un serveur MCP compatible Claude Desktop / Cursor.
 
 ---
 
-## Multi-Agent Architecture
+## Mode Hors-Ligne & Garantie de Non-Paiement
+
+> ⚠️ **Avertissement produit réglementaire :**  
+> ```text
+> Offline local planning mode:
+> No live availability, price, opening-hour or booking verification.
+> ```
+
+- **Zéro transaction financière** : Le système n'a aucun accès bancaire et ne déclenche aucun paiement direct.
+- **Zéro inventaire en direct** : Les disponibilités réelles de sièges ou de chambres d'hôtel doivent être vérifiées sur les portails officiels avant départ.
+- **Zéro fabrication d'urgence** : Les numéros d'urgence et coordonnées diplomatiques portent la mention légale *« Requires official source verification. »*.
+
+---
+
+## Le Rôle des 11 Sous-Agents Spécialisés
+
+Pour garantir une rigueur absolue et éviter l'amplification d'erreurs, le système coordonne 11 agents ordonnancés en 5 vagues rigides, couvrant 9 étapes métier transparentes :
 
 ```text
 Wave 1 (Parallel Exploration)
-  ├── destination-researcher       Geographic context & quiet travel periods
-  ├── transport-planner            Door-to-door transit & official booking links
-  ├── accommodation-researcher     Strategic neighborhood curation
-  ├── activity-curator             Crowd-aware activity planning
-  ├── local-discovery-agent        Local gems & authentic dining (flagged as unverified)
-  └── travel-preparation-agent     Visa, health, and entry requirements checklist
+  ├── 1. destination-researcher       Geographic context & quiet travel periods
+  ├── 2. transport-planner            Door-to-door transit & official booking links
+  ├── 3. accommodation-researcher     Strategic neighborhood curation (quiet areas)
+  ├── 4. activity-curator             26-dimension activity modeling & crowd avoidance
+  ├── 5. local-discovery-agent        Authentic culinary gems (flagged for manual verification)
+  └── 6. travel-preparation-agent     Passports, health, visas, and pre-departure checklists
 
 Wave 2 (Budget Consolidation)
-  └── budget-analyst               Multi-currency breakdown & safety buffers
+  └── 7. budget-analyst               Itemized multi-currency budget & safety buffer (+10-15%)
 
 Wave 3 (Itinerary Optimization)
-  └── itinerary-optimizer          Day-by-day scheduling with weather contingency
+  └── 8. itinerary-optimizer          Day-by-day scheduling with geographic clustering & weather backup
 
 Wave 4 (Quality & Safety Gate)
-  ├── quality-controller           Consistency checks & pacing balance
-  └── mcp-skill-auditor            URL allowlist audit & prompt injection defense
+  ├── 9. quality-controller           Coherence checks, pacing fatigue alerts & proof audit
+  └── mcp-skill-auditor               URL allowlist inspection & prompt injection defense
 
 Wave 5 (Synthesis)
-  └── travel-orchestrator          Final trip dossier compilation
+  └── travel-orchestrator             Final trip dossier compilation & Markdown export
 ```
 
 ---
 
-## Quick Start
+## Installation Rapide
 
-### 1. Installation
+### Prérequis
+- Python 3.10 ou supérieur
+- Git
 
 ```bash
-git clone https://github.com/ultimate-travel-agent/ultimate-travel-agent.git
+git clone https://github.com/Gustor1/ultimate-travel-agent.git
 cd ultimate-travel-agent
 
-# Create and activate virtual environment (optional but recommended)
+# Création et activation de l'environnement virtuel
 python -m venv .venv
-source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+source .venv/bin/activate  # Sur Windows : .venv\Scripts\activate
 
-# Install package and dependencies
-pip install -e .
+# Installation du package avec dépendances Web et MCP
+pip install -e ".[dev,mcp,web]"
 ```
 
-### 2. Run Tests
-
+### Lancer la suite de tests
 ```bash
 pytest
 ```
 
-### 3. Run a Trip Planning Workflow
+---
+
+## Les 3 Façons d'Utiliser le Système
+
+### 1. Interface Web Locale (Recommandé) 🌐
+
+Lancez l'application locale légère avec FastAPI et ouvrez votre navigateur sur `http://127.0.0.1:8000` :
 
 ```bash
-# Run the automated 5-wave demo with local mock data
-python examples/demo_run.py
-
-# Validate an example trip
-python -m ultimate_travel_agent.cli validate examples/city-trip/trip.json
-
-# Calculate budget for a trip
-python -m ultimate_travel_agent.cli budget examples/city-trip/trip.json
-
-# Generate itinerary summary across all 5 waves
-python -m ultimate_travel_agent.cli plan examples/city-trip/trip.json
-
-# Export complete Markdown travel dossier
-python -m ultimate_travel_agent.cli export examples/city-trip/trip.json --output reports/barcelona.md
+python -m ultimate_travel_agent.cli serve --port 8000
+# ou directement :
+python -m ultimate_travel_agent.web --port 8000
 ```
 
-### 4. Start Local MCP Server
+Dans l'interface, vous pouvez :
+- Charger les exemples de référence en 1 clic (City-trip Barcelone ou Road-trip Islande).
+- Renseigner vos critères (destination, dates, nombre de voyageurs, style d'hébergement, rythme, affluence).
+- Visualiser les étapes, le planning jour par jour et les fiches activités enrichies.
+- Comparer des options d'itinéraires inter-villes selon 7 préférences (`cheapest`, `fastest`, `eco`, etc.).
+- Inspecter la ventilation budgétaire et les alertes de surcoût.
+- Suivre les 9 étapes du pipeline multi-agents avec leurs hypothèses et niveaux de preuve.
+- Consulter les plans B (intempéries, fermetures) et la fiche d'urgence générique.
+- Exporter ou copier le dossier en Markdown.
+
+Voir la documentation dédiée : [docs/web-interface.md](docs/web-interface.md).
+
+---
+
+### 2. Ligne de Commande (CLI) 💻
+
+```bash
+# Valider la cohérence et l'intégrité d'un voyage JSON
+python -m ultimate_travel_agent.cli validate examples/city-trip/trip.json
+
+# Calculer le budget prévisionnel consolidé avec marge de sécurité
+python -m ultimate_travel_agent.cli budget examples/city-trip/trip.json
+
+# Exécuter l'orchestration multi-agents en 5 vagues
+python -m ultimate_travel_agent.cli plan examples/city-trip/trip.json
+
+# Exporter le dossier complet de voyage en Markdown
+python -m ultimate_travel_agent.cli export examples/city-trip/trip.json --output reports/barcelone.md
+
+# Lancer la démo scriptée complète
+python examples/demo_run.py
+```
+
+---
+
+### 3. Serveur MCP Local (Model Context Protocol) 🔌
+
+Le système inclut un serveur MCP standard stdio exposant 8 outils en lecture seule pour Claude Desktop, Cursor ou tout client MCP :
 
 ```bash
 python -m ultimate_travel_agent.mcp.server
 ```
 
-See [docs/getting-started.md](docs/getting-started.md) and [docs/use-this-template.md](docs/use-this-template.md) for full setup guides.
-
----
-
-## Repository Structure
-
-```text
-ultimate-travel-agent/
-├── README.md                          # Project overview and quick start
-├── LICENSE                            # MIT License
-├── CONTRIBUTING.md                   # Contribution guidelines
-├── SECURITY.md                        # Security policy and threat model
-├── CODE_OF_CONDUCT.md                 # Contributor covenant
-├── .env.example                       # Sample environment variables
-├── pyproject.toml                     # Python dependencies & tooling
-├── .agents/
-│   ├── agents/                        # 11 Agent definitions and system prompts
-│   ├── skills/                        # Core capabilities
-│   └── workflows/                     # Multi-agent orchestrations
-├── data/
-│   ├── schemas/                       # JSON Schemas for validation
-│   └── examples/                      # Reference trip data
-├── src/ultimate_travel_agent/
-│   ├── models/                        # Pydantic v2 data models
-│   ├── agents/                        # Agent implementations
-│   ├── mcp/                           # Local MCP server
-│   └── integrations/                  # Optional external service adapters
-├── tests/                             # Pytest test suite
-├── docs/                              # Technical documentation
-└── examples/
-    ├── city-trip/                     # Barcelona 3-day example
-    └── road-trip/                     # Iceland / Norway road-trip example
+Configuration Claude Desktop (`mcp-config.json`) :
+```json
+{
+  "mcpServers": {
+    "ultimate-travel-agent": {
+      "command": "python",
+      "args": ["-m", "ultimate_travel_agent.mcp.server"]
+    }
+  }
+}
 ```
 
----
-
-## Verification Levels
-
-Every element (lodging, transport, activity, rule) carries an explicit verification status:
-- `official_verified`: Directly verified against official government or ticketing source.
-- `cross_checked`: Confirmed across multiple reputable guidebooks or platforms.
-- `community_recommended`: Highly rated by travel communities (e.g. forums, blogs).
-- `social_discovery_only`: Discovered via social media (TikTok, RedNote, Instagram), requiring verification.
-- `unverified`: Preliminary finding not yet independently corroborated.
-- `outdated`: Previously valid information that requires refreshing.
+Outils disponibles : `list_trips`, `get_trip`, `validate_trip`, `get_itinerary`, `validate_itinerary`, `calculate_budget`, `list_booking_requirements`, `export_trip_summary`.
 
 ---
 
-## License
+## Exemples Référents Inclus
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+### 🏙️ Exemple City-Trip : Barcelone Culturelle (3 Jours)
+- Fichier : [`examples/city-trip/trip.json`](examples/city-trip/trip.json)
+- Style : Découverte culturelle et gastronomique pour 2 personnes.
+- Spécificités : Billet horodaté Sagrada Família matinal (09h00), Park Güell en fin d'après-midi, hébergement boutique calme à Gràcia, trajets en TGV Paris-Barcelone, alternatives en cas de pluie.
+
+### 🚗 Exemple Road-Trip : Sud de l'Islande (5 Jours)
+- Fichier : [`examples/road-trip/trip.json`](examples/road-trip/trip.json)
+- Style : Itinérance nature & paysages en véhicule 4x4 (chutes de Skógafoss, plage de Reynisfjara, lagon de Jökulsárlón).
+- Spécificités : Distinction du coût véhicule vs passagers, réserve de sécurité à 15% pour variations de carburant/météo, consignes de sécurité sur les vagues traîtresses et l'état des routes (`road.is`).
+
+---
+
+## Intégrations Externes Optionnelles
+
+10 adaptateurs modulaires sont fournis dans `src/ultimate_travel_agent/integrations/` (Météo, Trajets routiers, Devises, Vols, Trains, Hôtels, Activités, Avis, Guides locaux, Découverte sociale).
+
+- **Désactivés par défaut** (`enabled = False`).
+- **Repli automatique (Graceful Fallback)** : Bascule sans erreur sur des profils de simulation typés locaux si aucune clé API n'est fournie.
+- **Zéro clé requise** pour le fonctionnement standard.
+
+Voir [docs/external-integrations.md](docs/external-integrations.md) pour la configuration en mode en ligne.
+
+---
+
+## Niveaux de Vérification des Données
+
+Chaque donnée porte un niveau de preuve transparent :
+- 🟢 `official_verified` : Certifié auprès d'un portail gouvernemental, consulaire ou de la billetterie officielle directe.
+- 🔵 `cross_checked` : Confirmé par au moins deux guides ou sources réputées indépendantes.
+- 🔷 `community_recommended` : Recommandé par consensus de communautés de voyageurs expérimentés.
+- 🟣 `social_discovery_only` : Issu des réseaux sociaux (TikTok, Instagram) — nécessite une vérification manuelle des horaires et prix réels.
+- 🟡 `unverified` : Estimation préliminaire non vérifiée.
+- 🔴 `outdated` : Donnée antérieure à une modification de grille tarifaire ou d'horaires.
+
+Voir [docs/data-verification.md](docs/data-verification.md) pour les règles d'audit.
+
+---
+
+## Documentation Complète
+
+- [Architecture Technique](docs/architecture.md)
+- [Audit Produit V1.1](docs/v1.1-product-audit.md)
+- [Interface Web Locale](docs/web-interface.md)
+- [Mode Hors-Ligne & Garanties](docs/offline-mode.md)
+- [Modèle de Preuve & Niveaux de Vérification](docs/data-verification.md)
+- [Flux Multi-Agents en 5 Vagues](docs/travel-workflow.md)
+- [Limitations Connues](docs/known-limitations.md)
+- [Prochaines Étapes](docs/next-steps.md)
+- [Registre des Décisions d'Architecture (ADR)](docs/decisions.md)
+
+---
+
+## Licence
+
+Ce projet est distribué sous la [Licence MIT](LICENSE). Vous êtes libre de l'utiliser, le modifier et le distribuer.

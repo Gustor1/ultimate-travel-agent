@@ -86,3 +86,18 @@ Ce registre consigne les décisions structurantes prises au cours de la concepti
   3. Suppression de la note brute en racine `note pour skill.txt`, dont le contenu intégral est rigoureusement et historiquement préservé dans `research/raw-notes.md`.
   4. Création des documents de publication (`docs/github-publication-checklist.md`, `docs/release-notes-v1.0.0.md`, `docs/known-limitations.md`).
 - **Conséquences :** Dépôt parfaitement propre, anonymisé, prêt pour une distribution communautaire sous licence MIT.
+
+---
+
+## ADR 010 : Architecture Produit V1.1 — Interface Locale FastAPI, Modèle Enrichi et Plans B
+- **Date :** 2026-09-13
+- **Statut :** Validé
+- **Contexte :** Transformer le socle v1.0 en un produit directement utilisable sans CLI obligatoire, tout en restant local-first, open-source, sécurisé, sans compte externe ni clé API obligatoire.
+- **Décision :**
+  1. **Interface web locale** : Implémentée avec FastAPI + Uvicorn + HTML5/CSS3/JavaScript pur (sans framework lourd, sans Node.js, sans CDN externe obligatoire, respectant la confidentialité totale).
+  2. **Modèle d'activité enrichi** : Extension de `Activity` avec 26 dimensions (pays, région, ville, quartier, anecdote, catégorie étendue, environnement intérieur/extérieur, accessibilité, difficulté, créneaux, transport d'accès, horaires, alternatives météo et fermeture). Les nouveaux champs disposent de valeurs par défaut pour préserver la rétrocompatibilité stricte avec les fichiers existants.
+  3. **Itinéraires inter-villes multi-options** : Modélisation formelle d'options de transport concurrentes (`RouteOption`) entre étapes et moteur déterministe de recommandation selon 7 critères (`cheapest`, `fastest`, `fewest_transfers`, `most_comfortable`, `most_eco_friendly`, `relaxed`, `packed`).
+  4. **Plans B et Trousse de Préparation** : Module dédié générant checklists pré-départ, checklist réservations, vérification de documents, plan B météo, plan B fermeture, liste de confirmation pré-réservation, et synthèse d'urgence générique avec mention explicite *« Requires official source verification »*.
+  5. **Visibilité multi-agent** : Rendu visuel transparent des 9 étapes d'analyse avec leurs statuts, hypothèses, risques, niveaux de vérification et notification claire du mode hors-ligne.
+- **Conséquences :** Expérience utilisateur fluide et accessible, respect sans compromis de l'éthique de sécurité et du fonctionnement local sans dépendance externe.
+

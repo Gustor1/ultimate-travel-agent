@@ -1,39 +1,33 @@
 # Prochaines Étapes — `ultimate-travel-agent`
 
-Ce document liste les tâches de transition post-V1 et les pistes d'évolution future du système.
+Ce document liste l'état des livrables de la version V1.1 et les pistes d'évolution future prioritaires pour une future version V1.2.
 
 ---
 
-## 1. État Actuel : V1 Intégralement Réalisée & Validée
+## 1. État Actuel : V1.1 Product Experience Réalisée & Validée
 
-Toutes les phases 0 à 6 du plan directeur sont achevées :
-- [x] **Phase 0** : Recherche et audit des composants externes.
-- [x] **Phase 1** : Squelette de projet Python, gouvernance et packaging.
-- [x] **Phase 2** : Modèles Pydantic v2, schémas JSON, 2 exemples complets (Barcelone & Islande).
-- [x] **Phase 3** : 11 sous-agents, 6 skills, 4 workflows, moteur d'orchestration 5 vagues, CLI.
-- [x] **Phase 4** : Serveur MCP stdio local avec 8 outils et tests unitaires.
-- [x] **Phase 5** : 10 adaptateurs modulaires (incluant Guides & contexte) avec repli mock gracieux.
-- [x] **Phase 6** : Démo autonome, contrôle des secrets, audit des licences, CI GitHub Actions, 41 tests automatisés.
-
----
-
-## 2. Actions Requérant la Décision du Propriétaire (Human-in-the-Loop)
-
-1. **Publication GitHub Publique** :
-   - Création du dépôt distant officiel sur GitHub (ex: `https://github.com/ultimate-travel-agent/ultimate-travel-agent`).
-   - Push initial de la branche `main`.
-2. **Fourniture de clés API Optionnelles (Mode En Ligne)** :
-   - Clé Amadeus Sandbox pour consultation des tarifs de vol en direct.
-   - Clé Composio / TripAdvisor pour avis touristiques en temps réel.
+Toutes les étapes de la Phase 7 (V1.1) sont achevées et testées :
+- [x] **Audit Produit V1.1** : Identification rigoureuse du réel vs mocké vs non implémenté (`docs/v1.1-product-audit.md`).
+- [x] **Interface Web Locale Légère** : Application FastAPI + HTML5/CSS3/JavaScript autonome (`python -m ultimate_travel_agent.cli serve` ou `python -m ultimate_travel_agent.web`).
+- [x] **Visibilité Multi-Agents Déterministe** : Restitution claire des 9 étapes du pipeline (hypothèses, risques, informations manquantes, niveaux de preuve, bannière hors-ligne).
+- [x] **Modèle d'Activité Enrichi (26 dimensions)** : Quartier, anecdote locale, accessibilité PMR, difficulté, créneaux optimaux, transport d'accès, alternative météo et plan en cas de fermeture.
+- [x] **Itinéraires Inter-Villes Multi-Options** : Modèle `RouteOption` et moteur de recommandation selon 7 profils de préférences (`cheapest`, `fastest`, `fewest_transfers`, `most_comfortable`, `most_eco_friendly`, `relaxed`, `packed`).
+- [x] **Plans B et Trousse de Préparation** : Checklists avant départ et réservations, vérification documentaire avec mention *« Requires official source verification. »*, plan B météo, plan B fermeture, liste de confirmation pré-paiement, fiche d'urgence générique.
+- [x] **Documentation Complète** : `web-interface.md`, `offline-mode.md`, `data-verification.md`, `travel-workflow.md`, `decisions.md` (ADR 010), README enrichi.
+- [x] **Qualité et Sécurité** : 64 tests automatisés passants, audit de secrets propre, zéro chemin machine Windows personnel dans le code committé.
 
 ---
 
-## 3. Pistes d'Évolution Future (V2)
+## 2. Pistes d'Évolution Prioritaires pour une Future V1.2
 
-1. **Interface Utilisateur Graphique Interactive (Web / PWA)** :
-   - Frontend Streamlit ou FastAPI + React/Leaflet pour visualisation cartographique sur carte OpenStreetMap interactive.
-2. **Export aux Formats Mobiles & Calendrier** :
-   - Génération de fichiers de calendrier `.ics` synchronisables sur smartphone.
-   - Export PDF vectoriel prêt à imprimer pour consultation hors-ligne en voyage.
-3. **Moteur OSRM Local Embarqué** :
-   - Conteneur Docker optionnel ou binaire léger pour calcul d'itinéraires routiers réels 100% hors-ligne.
+Pour continuer d'enrichir le produit sans alourdir la stack technique ni compromettre la sécurité et la gratuité locale :
+
+1. **Génération de Fichiers de Calendrier `.ics` et Cartes Hors-Ligne `.geojson`** :
+   - Exporter l'itinéraire jour par jour sous forme d'événements de calendrier universels `.ics` (avec rappels d'embarquement et créneaux coupe-file).
+   - Générer un fichier `.geojson` téléchargeable importable directement dans Organic Maps / OsmAnd pour une navigation cartographique 100% hors-ligne.
+
+2. **Génération de Dossier PDF Stylisé Imprimable** :
+   - Rendu HTML-vers-PDF (ou typographie print CSS) pour imprimer un carnet de voyage physique complet en format livret de poche (fiches d'urgence, billets, plans B, horaires).
+
+3. **Calculateur d'Émissions et d'Éco-Trajets Multi-Modaux Avancé** :
+   - Affiner l'estimation de l'empreinte carbone en intégrant le comparatif train électrique vs vol court-courrier vs covoiturage pour chaque étape du voyage.
