@@ -91,6 +91,20 @@ def cmd_export(args: argparse.Namespace) -> None:
         print(report)
 
 
+def cmd_serve(args: argparse.Namespace) -> None:
+    """Launch the local web UI."""
+    try:
+        import uvicorn
+    except ImportError:
+        print("Error: uvicorn and fastapi are required to run the local web interface.", file=sys.stderr)
+        print("Install them with: pip install fastapi uvicorn", file=sys.stderr)
+        sys.exit(1)
+    print(f"🌍 Starting Ultimate Travel Agent Web Interface at http://{args.host}:{args.port}")
+    print("🔒 Running in 100% offline-local mode. Zero personal data collected or transmitted.")
+    print("💡 Press Ctrl+C to stop the server.")
+    uvicorn.run("ultimate_travel_agent.web.app:app", host=args.host, port=args.port, reload=args.reload)
+
+
 def main() -> None:
     """CLI entry point."""
     parser = argparse.ArgumentParser(
@@ -119,6 +133,13 @@ def main() -> None:
     p_exp.add_argument("trip_file", help="Path to trip.json")
     p_exp.add_argument("--output", "-o", help="Output file path (default: stdout)")
     p_exp.set_defaults(func=cmd_export)
+
+    # serve
+    p_srv = subparsers.add_parser("serve", help="Launch the local web user interface")
+    p_srv.add_argument("--host", default="127.0.0.1", help="Host binding (default: 127.0.0.1)")
+    p_srv.add_argument("--port", type=int, default=8000, help="Port binding (default: 8000)")
+    p_srv.add_argument("--reload", action="store_true", help="Enable auto-reload")
+    p_srv.set_defaults(func=cmd_serve)
 
     args = parser.parse_args()
     args.func(args)
