@@ -330,14 +330,21 @@ def _generate_local_trip_dossier(req: TripCreationRequest) -> Trip:
         notes="Option économique mais trajet nettement plus long.",
     )
 
+    route_pref = RoutePreference.MOST_ECO_FRIENDLY
+    if req.pacing == PacingPreference.PACKED:
+        route_pref = RoutePreference.PACKED
+    elif req.pacing == PacingPreference.RELAXED:
+        route_pref = RoutePreference.RELAXED
+
     inter_city_route = InterCityRoute(
         id=f"route-access-{dest_slug}",
         origin="Point de départ",
         destination=req.destination,
         options=[route_option_train, route_option_flight, route_option_bus],
-        recommended_option_id=route_option_train.id,
-        recommendation_reason="Train recommandé : bilan carbone exemplaire, confort optimal et arrivée directe en centre-ville.",
     )
+    chosen_opt, rec_reason = recommend_route_option(inter_city_route, route_pref)
+    inter_city_route.recommended_option_id = chosen_opt.id if chosen_opt else route_option_train.id
+    inter_city_route.recommendation_reason = rec_reason
 
     # Itinerary days
     itinerary: List[DaySchedule] = []

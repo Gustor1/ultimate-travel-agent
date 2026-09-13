@@ -27,6 +27,35 @@ function renderVerificationBadge(level) {
   return `<span class="badge ${badgeClass}">${lvl}</span>`;
 }
 
+// Import Local JSON Trip File
+function importLocalTrip(event) {
+  const file = event.target.files && event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    try {
+      const trip = JSON.parse(e.target.result);
+      if (!trip || !trip.id) {
+        throw new Error("Le fichier JSON n'est pas un dossier de voyage valide (identifiant manquant).");
+      }
+      currentTrip = trip;
+      populateTripData(currentTrip);
+      alert(`Voyage '${trip.title || trip.id}' importé avec succès !`);
+    } catch (err) {
+      alert(`Erreur d'importation : ${err.message}`);
+    }
+  };
+  reader.readAsText(file, "UTF-8");
+  event.target.value = "";
+}
+
+// Revalidate Current Trip
+function revalidateCurrentTrip() {
+  if (currentTrip) {
+    updateValidationView(currentTrip);
+  }
+}
+
 // Load Example
 async function loadExample(exampleKey) {
   try {
@@ -46,7 +75,7 @@ async function populateTripData(trip) {
   // Header and title
   document.getElementById("trip-header-title").textContent = trip.title || "Voyage Sans Titre";
   document.getElementById("trip-header-subtitle").textContent = 
-    `${trip.trip_type} • Du ${trip.start_date} au ${trip.end_date} • ${trip.total_days || (trip.itinerary ? trip.itinerary.length : 0)} jours`;
+    `${trip.trip_type} • Du ${trip.start_date} au ${trip.end_date} • ${trip.total_days || (trip.itinerary ? trip.itinerary.length : 0)} jours • Devise : ${trip.currency || 'EUR'}`;
 
   // 1. Run Validation & Update Overview
   await updateValidationView(trip);
@@ -57,8 +86,8 @@ async function populateTripData(trip) {
   // 3. Populate Budget & Bookings
   await updateBudgetView(trip);
 
-  // 4. Populate Inter-City Routes
-  updateRoutesView(trip);
+  // 4. Populate Inter-City Routes (Async preference evaluation)
+  await updateRoutesView(trip);
 
   // 5. Populate Multi-Agent Pipeline (9 steps)
   await updateMultiAgentView(trip);
@@ -70,7 +99,7 @@ async function populateTripData(trip) {
   await updateExportView(trip);
 }
 
-// 1. Validation View
+// 1. Validation View (Handles all 6 categories + Trip Summary)
 async function updateValidationView(trip) {
   const container = document.getElementById("validation-container");
   if (!container) return;
@@ -99,32 +128,74 @@ async function updateValidationView(trip) {
           <div class="stat-label">Activités & POIs</div>
         </div>
         <div class="stat-box">
-          <div class="stat-val">${(stats.grand_total || 0).toFixed(2)} ${stats.currency || "EUR"}</div>
+          <div class="stat-val" style="color: var(--success-text);">${(stats.grand_total || 0).toFixed(2)} ${stats.currency || "EUR"}</div>
           <div class="stat-label">Budget Consolidé</div>
         </div>
       </div>
     `;
 
+    // 1 & 2: Errors and Warnings
     if (data.valid) {
-      html += `<div class="alert alert-success">✅ <strong>Cohérence validée :</strong> Aucun blocage critique détecté sur l'itinéraire, les dates ou l'intégrité référentielle.</div>`;
+      html += `<div class="alert alert-success" style="margin-bottom: 1rem;">✅ <strong>Cohérence validée :</strong> Aucun blocage critique détecté sur l'itinéraire, les dates ou l'intégrité référentielle.</div>`;
     } else {
-      html += `<div class="alert alert-danger">❌ <strong>Erreurs de cohérence (${data.errors.length}) :</strong><ul>${data.errors.map(e => `<li>${e}</li>`).join("")}</ul></div>`;
+      html += `<div class="alert alert-danger" style="margin-bottom: 1rem;">❌ <strong>Erreurs de cohérence (${data.errors.length}) :</strong><ul style="margin: 0.5rem 0 0 1.2rem;">${data.errors.map(e => `<li>${e}</li>`).join("")}</ul></div>`;
     }
 
     if (data.warnings && data.warnings.length > 0) {
-      html += `<div class="alert alert-warning">⚠️ <strong>Avertissements (${data.warnings.length}) :</strong><ul>${data.warnings.map(w => `<li>${w}</li>`).join("")}</ul></div>`;
+      html += `<div class="alert alert-warning" style="margin-bottom: 1rem;">⚠️ <strong>Avertissements (${data.warnings.length}) :</strong><ul style="margin: 0.5rem 0 0 1.2rem;">${data.warnings.map(w => `<li>${w}</li>`).join("")}</ul></div>`;
     }
 
-    html += `<div class="grid-2">
-      <div class="card" style="margin-bottom: 0;">
-        <div class="card-title">Données Confirmées (${data.confirmed_data ? data.confirmed_data.length : 0})</div>
-        <ul>${(data.confirmed_data || []).map(c => `<li><span style="color: var(--success-text);">✔</span> ${c}</li>`).join("")}</ul>
+    // 3, 4, 5, 6: Confirmed, Unverified, Missing Data, Estimated Recommendations
+    html += `
+      <div class="grid-2" style="margin-bottom: 1.5rem;">
+        <div class="card" style="margin-bottom: 0;">
+          <div class="card-title" style="color: var(--success-text);">✔ Données Confirmées (${data.confirmed_data ? data.confirmed_data.length : 0})</div>
+          <ul style="font-size: 0.88rem; padding-left: 1.2rem;">
+            ${(data.confirmed_data && data.confirmed_data.length > 0)
+              ? data.confirmed_data.map(c => `<li>${c}</li>`).join("")
+              : `<li style="color: var(--text-muted);">Aucune donnée formellement confirmée.</li>`}
+          </ul>
+        </div>
+        <div class="card" style="margin-bottom: 0;">
+          <div class="card-title" style="color: var(--warning-text);">⚠️ Informations Non Vérifiées (${data.unverified_data ? data.unverified_data.length : 0})</div>
+          <ul style="font-size: 0.88rem; padding-left: 1.2rem;">
+            ${(data.unverified_data && data.unverified_data.length > 0)
+              ? data.unverified_data.map(u => `<li>${u}</li>`).join("")
+              : `<li style="color: var(--text-muted);">Aucun élément non vérifié signalé.</li>`}
+          </ul>
+        </div>
       </div>
-      <div class="card" style="margin-bottom: 0;">
-        <div class="card-title">Données Non Vérifiées & Estimations (${data.unverified_data ? data.unverified_data.length : 0})</div>
-        <ul>${(data.unverified_data || []).map(u => `<li><span style="color: var(--warning-text);">⚠️</span> ${u}</li>`).join("")}</ul>
+
+      <div class="grid-2" style="margin-bottom: 1.5rem;">
+        <div class="card" style="margin-bottom: 0;">
+          <div class="card-title" style="color: var(--danger-text);">🔍 Données Manquantes (${data.missing_data ? data.missing_data.length : 0})</div>
+          <ul style="font-size: 0.88rem; padding-left: 1.2rem;">
+            ${(data.missing_data && data.missing_data.length > 0)
+              ? data.missing_data.map(m => `<li>${m}</li>`).join("")
+              : `<li style="color: var(--text-muted);">Aucune donnée manquante essentielle.</li>`}
+          </ul>
+        </div>
+        <div class="card" style="margin-bottom: 0;">
+          <div class="card-title" style="color: #93c5fd;">💡 Recommandations Estimées (${data.estimated_recommendations ? data.estimated_recommendations.length : 0})</div>
+          <ul style="font-size: 0.88rem; padding-left: 1.2rem;">
+            ${(data.estimated_recommendations && data.estimated_recommendations.length > 0)
+              ? data.estimated_recommendations.map(r => `<li>${r}</li>`).join("")
+              : `<li style="color: var(--text-muted);">Aucune recommandation estimée spécifique.</li>`}
+          </ul>
+        </div>
       </div>
-    </div>`;
+
+      <div class="card">
+        <div class="card-title">Résumé du Dossier de Voyage</div>
+        <div style="font-size: 0.9rem; line-height: 1.6;">
+          <div><strong>Destinations :</strong> ${(trip.destinations || []).map(d => `${d.name} (${d.country || 'N/A'})`).join(", ") || "Aucune"}</div>
+          <div><strong>Voyageurs :</strong> ${(trip.travelers || []).map(t => `${t.name} [${t.profile}] (Rythme: ${t.pacing_preference})`).join(", ") || "Aucun"}</div>
+          <div><strong>Hébergements prévus :</strong> ${(trip.accommodations || []).map(a => `${a.name} (${a.total_nights}n)`).join(", ") || "Aucun"}</div>
+          <div><strong>Transports :</strong> ${(trip.transports || []).map(t => `${t.origin} ➔ ${t.destination} [${t.mode}]`).join(", ") || "Aucun"}</div>
+          ${trip.budget_cap ? `<div><strong>Plafond budgétaire cible :</strong> ${trip.budget_cap.toFixed(2)} ${trip.currency || 'EUR'}</div>` : ""}
+        </div>
+      </div>
+    `;
 
     container.innerHTML = html;
   } catch (err) {
@@ -138,6 +209,24 @@ function updateItineraryView(trip) {
   if (!container) return;
 
   let html = "";
+
+  // Destinations Context
+  if (trip.destinations && trip.destinations.length > 0) {
+    html += `<div class="card"><div class="card-title">Destinations & Contexte Géographique</div><div class="grid-2">`;
+    trip.destinations.forEach(d => {
+      html += `
+        <div class="stat-box" style="text-align: left; padding: 1rem;">
+          <h4 style="color: #fff; font-size: 1.1rem; margin-bottom: 0.25rem;">${d.name} <span style="font-size: 0.85rem; color: var(--text-muted);">(${d.country || ''})</span></h4>
+          <p style="font-size: 0.88rem; margin-bottom: 0.5rem;">${d.description || ''}</p>
+          ${d.anecdote ? `<div style="font-size: 0.82rem; color: #cbd5e1; background: var(--bg-card); padding: 0.4rem; border-radius: var(--radius); margin-bottom: 0.5rem;">💡 <em>${d.anecdote}</em></div>` : ""}
+          ${d.quiet_periods && d.quiet_periods.length > 0 ? `<div style="font-size: 0.8rem; color: var(--text-muted);">🕒 Périodes calmes : ${d.quiet_periods.join(", ")}</div>` : ""}
+        </div>
+      `;
+    });
+    html += `</div></div>`;
+  }
+
+  // Stages
   if (trip.stages && trip.stages.length > 0) {
     html += `<div class="card">
       <div class="card-title">Étapes du Voyage (${trip.stages.length})</div>
@@ -158,6 +247,7 @@ function updateItineraryView(trip) {
     </div>`;
   }
 
+  // Day Schedules
   html += `<div class="card"><div class="card-title">Planning Chronologique Jour par Jour</div>`;
   if (trip.itinerary && trip.itinerary.length > 0) {
     trip.itinerary.forEach((day) => {
@@ -187,11 +277,12 @@ function updateItineraryView(trip) {
   }
   html += `</div>`;
 
-  // Detailed Activities with V1.1 Enriched fields
+  // Detailed Activities with 26 Enriched dimensions
   if (trip.activities && trip.activities.length > 0) {
     html += `<div class="card"><div class="card-title">Activités Curationnées & Fiches Détaillées (${trip.activities.length})</div><div class="grid-2">`;
     trip.activities.forEach(act => {
       const bookingLink = act.official_booking_url ? `<a href="${act.official_booking_url}" target="_blank" class="btn btn-sm btn-secondary" style="margin-top: 0.5rem;">Billetterie Officielle ↗</a>` : "";
+      const locationParts = [act.neighborhood, act.city, act.country].filter(Boolean).join(" • ");
       html += `
         <div class="stat-box" style="text-align: left; padding: 1.25rem;">
           <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 0.5rem; margin-bottom: 0.5rem;">
@@ -199,13 +290,17 @@ function updateItineraryView(trip) {
             ${renderVerificationBadge(act.verification_level)}
           </div>
           <div style="font-size: 0.85rem; color: var(--secondary); margin-bottom: 0.5rem;">
-            ${act.neighborhood || ''} • Catégorie : <strong>${act.category}</strong> • ${act.duration_minutes} min • ${act.estimated_cost} ${act.currency}
+            ${locationParts ? `${locationParts} • ` : ''}Catégorie : <strong>${act.category}</strong> • ${act.duration_minutes} min • ${act.estimated_cost} ${act.currency}
           </div>
           <p style="font-size: 0.9rem; margin-bottom: 0.75rem;">${act.description}</p>
           ${act.anecdote ? `<div style="font-size: 0.85rem; color: #cbd5e1; background: var(--bg-card); padding: 0.5rem; border-radius: var(--radius); margin-bottom: 0.5rem;">💡 <em>${act.anecdote}</em></div>` : ""}
-          <div style="font-size: 0.8rem; color: var(--text-muted);">
+          <div style="font-size: 0.8rem; color: var(--text-muted); display: flex; flex-direction: column; gap: 0.25rem;">
+            ${act.environment ? `<div>🏡 <strong>Cadre :</strong> ${act.environment} (${act.difficulty_level || 'facile'})</div>` : ""}
+            ${act.accessibility ? `<div>♿ <strong>Accessibilité :</strong> ${act.accessibility}</div>` : ""}
             ${act.best_time_slot ? `<div>🕒 <strong>Créneau optimal :</strong> ${act.best_time_slot}</div>` : ""}
-            ${act.quiet_slot_advice ? `<div>👥 <strong>Stratégie foule :</strong> ${act.quiet_slot_advice}</div>` : ""}
+            ${act.opening_hours ? `<div>🗓️ <strong>Horaires :</strong> ${act.opening_hours}</div>` : ""}
+            ${act.access_method ? `<div>🚶 <strong>Accès :</strong> ${act.access_method} (${act.transit_duration_minutes || 0} min)</div>` : ""}
+            ${act.quiet_slot_advice || act.crowd_avoidance_strategy ? `<div>👥 <strong>Stratégie foule :</strong> ${act.crowd_avoidance_strategy || act.quiet_slot_advice}</div>` : ""}
             ${act.weather_alternative ? `<div>☔ <strong>Plan B météo :</strong> ${act.weather_alternative}</div>` : ""}
             ${act.closure_alternative ? `<div>🚪 <strong>Si fermé :</strong> ${act.closure_alternative}</div>` : ""}
           </div>
@@ -254,7 +349,7 @@ async function updateBudgetView(trip) {
           <thead><tr><th>Poste</th><th>Montant</th><th>Part</th><th>Niveau de Preuve</th></tr></thead>
           <tbody>
             ${Object.entries(budget.categories || {}).map(([cat, val]) => {
-              const pct = ((val.amount / budget.total_estimated_cost) * 100).toFixed(1);
+              const pct = budget.total_estimated_cost > 0 ? ((val.amount / budget.total_estimated_cost) * 100).toFixed(1) : 0;
               return `
                 <tr>
                   <td><strong>${cat.toUpperCase()}</strong></td>
@@ -300,8 +395,8 @@ async function updateBudgetView(trip) {
   }
 }
 
-// 4. Inter-City Routes View
-function updateRoutesView(trip) {
+// 4. Inter-City Routes View with 7 Interactive Preference Profiles
+async function updateRoutesView(trip) {
   const container = document.getElementById("routes-container");
   if (!container) return;
 
@@ -316,20 +411,57 @@ function updateRoutesView(trip) {
   }
 
   let html = "";
-  trip.inter_city_routes.forEach((route) => {
+  for (const route of trip.inter_city_routes) {
+    let evals = {};
+    try {
+      const res = await fetch("/api/trips/routes/evaluate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(route),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        evals = data.preferences_evaluations || {};
+      }
+    } catch (e) {
+      console.warn("Could not evaluate preferences:", e);
+    }
+
+    const prefTranslations = {
+      "cheapest": "💰 Moins chère",
+      "fastest": "⚡ Plus rapide",
+      "fewest_transfers": "🔄 Moins de correspondances",
+      "most_comfortable": "🛋️ Plus confortable",
+      "most_eco_friendly": "🌱 Plus écologique",
+      "relaxed": "🧘 Rythme détendu",
+      "packed": "🏃 Rythme intense (packed)",
+    };
+
     html += `
-      <div class="card">
+      <div class="card" id="route-card-${route.id}">
         <div class="card-title">
           <span>Trajet : ${route.origin} ➔ ${route.destination}</span>
           <span class="badge badge-official">${route.options ? route.options.length : 0} options comparées</span>
         </div>
-        <table>
+
+        <div style="margin-bottom: 1rem;">
+          <div style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.5rem;">Filtrer et mettre en avant par profil voyageur :</div>
+          <div>
+            ${Object.keys(prefTranslations).map(prefKey => `
+              <button class="btn btn-sm btn-secondary pref-filter-btn" style="margin-right: 0.4rem; margin-bottom: 0.4rem;" onclick="highlightRouteOption('${route.id}', '${evals[prefKey] ? evals[prefKey].option_id : ''}', '${prefKey}')">
+                ${prefTranslations[prefKey]}
+              </button>
+            `).join("")}
+          </div>
+        </div>
+
+        <table id="table-${route.id}">
           <thead>
-            <tr><th>Option</th><th>Mode</th><th>Durée</th><th>Correspondances</th><th>Coût estimé</th><th>Confort</th><th>Bilan CO2</th><th>Lien officiel</th></tr>
+            <tr><th>Option</th><th>Mode</th><th>Durée</th><th>Correspondances</th><th>Coût estimé</th><th>Confort</th><th>Bilan CO2</th><th>Statut</th><th>Lien officiel</th></tr>
           </thead>
           <tbody>
             ${(route.options || []).map(opt => `
-              <tr>
+              <tr id="row-${route.id}-${opt.id}" class="${opt.id === route.recommended_option_id ? 'route-recommended-row' : ''}">
                 <td><strong>${opt.id}</strong></td>
                 <td><span class="badge badge-community">${opt.mode}</span></td>
                 <td>${opt.estimated_duration_minutes} min</td>
@@ -337,24 +469,52 @@ function updateRoutesView(trip) {
                 <td>${opt.estimated_cost.toFixed(2)} ${opt.currency}</td>
                 <td>${"★".repeat(opt.comfort_level)}${"☆".repeat(5 - opt.comfort_level)}</td>
                 <td>${opt.carbon_footprint_kg ? `${opt.carbon_footprint_kg} kg` : 'Éco'}</td>
+                <td>${renderVerificationBadge(opt.status)}</td>
                 <td>${opt.official_booking_url ? `<a href="${opt.official_booking_url}" target="_blank" class="btn btn-sm btn-secondary">Portail ↗</a>` : '-'}</td>
               </tr>
             `).join("")}
           </tbody>
         </table>
+
         ${route.recommendation_reason ? `
-          <div class="alert alert-info" style="margin-top: 1rem;">
-            💡 <strong>Recommandation du système :</strong> ${route.recommendation_reason}
+          <div id="rec-box-${route.id}" class="alert alert-info" style="margin-top: 1rem;">
+            💡 <strong>Recommandation initiale :</strong> ${route.recommendation_reason}
+          </div>
+        ` : ""}
+
+        ${Object.keys(evals).length > 0 ? `
+          <div style="margin-top: 1.25rem; background: rgba(255, 255, 255, 0.02); padding: 1rem; border-radius: var(--radius); border: 1px solid var(--border);">
+            <div style="font-weight: 700; font-size: 0.9rem; margin-bottom: 0.5rem; color: #fff;">Synthèse des 7 profils de préférence :</div>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 0.5rem; font-size: 0.82rem;">
+              ${Object.entries(evals).map(([pref, info]) => `
+                <div style="background: var(--bg-card); padding: 0.5rem; border-radius: var(--radius);">
+                  <strong style="color: #93c5fd;">${prefTranslations[pref] || pref} :</strong> ${info.reason}
+                </div>
+              `).join("")}
+            </div>
           </div>
         ` : ""}
       </div>
     `;
-  });
+  }
 
   container.innerHTML = html;
 }
 
-// 5. Multi-Agent Pipeline View (9 Steps)
+// Highlight Route Option Row interactively
+function highlightRouteOption(routeId, optionId, prefKey) {
+  if (!routeId || !optionId) return;
+  const table = document.getElementById(`table-${routeId}`);
+  if (!table) return;
+  table.querySelectorAll("tbody tr").forEach(tr => tr.classList.remove("route-recommended-row"));
+  const targetRow = document.getElementById(`row-${routeId}-${optionId}`);
+  if (targetRow) {
+    targetRow.classList.add("route-recommended-row");
+    targetRow.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  }
+}
+
+// 5. Multi-Agent Pipeline View (9 Steps) with Sources
 async function updateMultiAgentView(trip) {
   const container = document.getElementById("multiagent-container");
   if (!container) return;
@@ -402,6 +562,13 @@ async function updateMultiAgentView(trip) {
               </ul>
             </div>
           </div>
+
+          ${(st.sources && st.sources.length > 0) ? `
+            <div style="margin-top: 0.65rem; font-size: 0.82rem; color: var(--text-muted); border-top: 1px dashed var(--border); padding-top: 0.4rem;">
+              <strong>Sources vérifiées :</strong>
+              ${st.sources.map(s => s.url ? `<a href="${s.url}" target="_blank" style="color: var(--secondary); margin-right: 0.6rem;">[${s.title}] ↗</a>` : `<span style="margin-right: 0.6rem;">${s.title}</span>`).join("")}
+            </div>
+          ` : ""}
         </div>
       `;
     });
@@ -413,7 +580,7 @@ async function updateMultiAgentView(trip) {
   }
 }
 
-// 6. Contingency View
+// 6. Contingency & Preparation View (Checklists, Plans B, Pre-booking, Emergency)
 async function updateContingencyView(trip) {
   const container = document.getElementById("contingency-container");
   if (!container) return;
@@ -438,6 +605,26 @@ async function updateContingencyView(trip) {
                 <td><code>${item.deadline}</code></td>
                 <td>${item.mandatory ? '<span style="color: var(--danger-text); font-weight: 700;">OUI</span>' : 'Conseillé'}</td>
                 <td><span class="badge badge-unverified">${item.verification_note}</span></td>
+              </tr>
+            `).join("")}
+          </tbody>
+        </table>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Checklist des Réservations Nécessaires</div>
+        <div style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.75rem;">
+          🔒 Rappel : Vérifiez toujours les conditions d'annulation et réservez via les sites officiels.
+        </div>
+        <table>
+          <thead><tr><th>Titre</th><th>Coût estimé</th><th>Recommandation timing</th><th>Portail</th></tr></thead>
+          <tbody>
+            ${(c.booking_checklist || []).map(b => `
+              <tr>
+                <td><strong>${b.title}</strong></td>
+                <td>${b.estimated_cost ? `${b.estimated_cost.toFixed(2)} ${b.currency}` : 'Variable'}</td>
+                <td>${b.timing_advice}</td>
+                <td>${b.booking_url ? `<a href="${b.booking_url}" target="_blank" class="btn btn-sm btn-secondary">Portail Officiel ↗</a>` : '-'}</td>
               </tr>
             `).join("")}
           </tbody>
@@ -487,8 +674,25 @@ async function updateContingencyView(trip) {
       </div>
 
       <div class="card">
+        <div class="card-title">🔍 Points Critiques à Confirmer Avant Réservation Définitive</div>
+        <table>
+          <thead><tr><th>Poste</th><th>Point de Contrôle</th><th>Consigne Précise</th><th>Risque si non vérifié</th></tr></thead>
+          <tbody>
+            ${(c.pre_booking_confirmation_items || []).map(item => `
+              <tr>
+                <td><span class="badge badge-community">${item.category}</span></td>
+                <td><strong>${item.item}</strong></td>
+                <td>${item.checklist_point}</td>
+                <td><span style="color: var(--danger-text); font-size: 0.85rem;">⚠️ ${item.risk_if_unconfirmed}</span></td>
+              </tr>
+            `).join("")}
+          </tbody>
+        </table>
+      </div>
+
+      <div class="card">
         <div class="card-title">🚨 Fiche d'Urgence Générique</div>
-        <div class="alert alert-info">
+        <div class="alert alert-info" style="margin-bottom: 1rem;">
           🛡️ <em>${c.generic_emergency_summary.zero_fabrication_guarantee}</em>
         </div>
         <div style="font-size: 0.9rem; display: flex; flex-direction: column; gap: 0.5rem;">
@@ -533,7 +737,7 @@ function copyMarkdown() {
   }
 }
 
-// Form Submission for New Trip Creation
+// Form Submission for New Trip Creation with Real Interests
 function initForm() {
   const form = document.getElementById("trip-create-form");
   if (!form) return;
@@ -553,6 +757,12 @@ function initForm() {
     const crowd_preference = document.getElementById("form-crowd").value;
     const constraints = document.getElementById("form-constraints").value;
 
+    const checkedBoxes = Array.from(document.querySelectorAll('input[name="interest"]:checked')).map(cb => cb.value);
+    const customInput = document.getElementById("form-custom-interests");
+    const customTags = customInput ? customInput.value.split(",").map(s => s.trim().toLowerCase()).filter(Boolean) : [];
+    const allInterests = Array.from(new Set([...checkedBoxes, ...customTags]));
+    const interests = allInterests.length > 0 ? allInterests : ["culture", "gastronomy", "landscape"];
+
     const payload = {
       destination,
       country,
@@ -566,7 +776,7 @@ function initForm() {
       pacing,
       crowd_preference,
       constraints,
-      interests: ["culture", "gastronomy", "patrimoine"],
+      interests,
     };
 
     try {
@@ -579,7 +789,8 @@ function initForm() {
       currentTrip = await res.json();
       populateTripData(currentTrip);
       // Switch to validation tab
-      document.querySelector('[data-tab="tab-overview"]').click();
+      const ovTab = document.querySelector('[data-tab="tab-overview"]');
+      if (ovTab) ovTab.click();
     } catch (err) {
       alert(`Erreur : ${err.message}`);
     }

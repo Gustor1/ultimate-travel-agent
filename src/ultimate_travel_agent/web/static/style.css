@@ -426,6 +426,46 @@ tr:hover td {
   margin-bottom: 0.5rem;
 }
 
+/* Interest Checkbox */
+.interest-checkbox {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  background-color: rgba(255, 255, 255, 0.04);
+  padding: 0.35rem 0.65rem;
+  border-radius: var(--radius);
+  font-size: 0.85rem;
+  cursor: pointer;
+  border: 1px solid var(--border);
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+  user-select: none;
+}
+.interest-checkbox:hover {
+  background-color: rgba(255, 255, 255, 0.08);
+  border-color: var(--secondary);
+}
+.interest-checkbox input[type="checkbox"] {
+  accent-color: var(--primary);
+  cursor: pointer;
+}
+
+/* Route Preference Pill & Highlight */
+.pref-pill {
+  display: inline-block;
+  font-size: 0.75rem;
+  padding: 0.2rem 0.5rem;
+  border-radius: 999px;
+  background-color: rgba(59, 130, 246, 0.15);
+  color: #93c5fd;
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  margin-right: 0.35rem;
+  margin-bottom: 0.35rem;
+}
+.route-recommended-row {
+  background-color: rgba(16, 185, 129, 0.08) !important;
+  border-left: 3px solid var(--success-text);
+}
+
 /* Footer */
 footer {
   background-color: var(--bg-card);

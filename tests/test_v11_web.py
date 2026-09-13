@@ -149,3 +149,73 @@ def test_web_export_endpoint() -> None:
     assert "Mode Planification Locale Hors-Ligne" in text
     assert "Offline local planning mode" in text
     assert "Plans B et Trousse de Préparation" in text
+
+
+def test_web_route_evaluate_endpoint() -> None:
+    """Verify evaluating route options via POST /api/trips/routes/evaluate."""
+    route_payload = {
+        "id": "route-test",
+        "origin": "Paris",
+        "destination": "Lyon",
+        "options": [
+            {
+                "id": "opt-tgv",
+                "origin": "Paris Gare de Lyon",
+                "destination": "Lyon Part-Dieu",
+                "mode": "train",
+                "estimated_duration_minutes": 120,
+                "transfers_count": 0,
+                "estimated_cost": 45.0,
+                "currency": "EUR",
+                "comfort_level": 4,
+                "carbon_footprint_kg": 5.0,
+                "booking_required": True,
+                "confidence_level": "official_verified",
+                "status": "confirmed",
+            },
+            {
+                "id": "opt-bus",
+                "origin": "Paris Bercy",
+                "destination": "Lyon Perrache",
+                "mode": "bus",
+                "estimated_duration_minutes": 330,
+                "transfers_count": 0,
+                "estimated_cost": 15.0,
+                "currency": "EUR",
+                "comfort_level": 2,
+                "carbon_footprint_kg": 18.0,
+                "booking_required": True,
+                "confidence_level": "cross_checked",
+                "status": "estimated",
+            },
+        ],
+    }
+    res = client.post("/api/trips/routes/evaluate", json=route_payload)
+    assert res.status_code == 200
+    data = res.json()
+    assert data["route_id"] == "route-test"
+    assert "preferences_evaluations" in data
+    evals = data["preferences_evaluations"]
+    assert evals["cheapest"]["option_id"] == "opt-bus"
+    assert evals["fastest"]["option_id"] == "opt-tgv"
+    assert evals["most_eco_friendly"]["option_id"] == "opt-tgv"
+
+
+def test_web_validation_six_categories() -> None:
+    """Verify that validation endpoint returns all 6 required categories."""
+    with open("examples/city-trip/trip.json", "r", encoding="utf-8") as f:
+        data = json.load(f)
+
+    res = client.post("/api/trips/validate", json=data)
+    assert res.status_code == 200
+    val = res.json()
+    # 6 required categories: errors, warnings, missing_data, unverified_data, estimated_recommendations, confirmed_data
+    assert "errors" in val
+    assert "warnings" in val
+    assert "missing_data" in val
+    assert "unverified_data" in val
+    assert "estimated_recommendations" in val
+    assert "confirmed_data" in val
+    assert len(val["confirmed_data"]) >= 1
+    assert len(val["estimated_recommendations"]) >= 1
+
