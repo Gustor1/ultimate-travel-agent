@@ -1,26 +1,26 @@
 # Prochaines Étapes — `ultimate-travel-agent`
 
-Ce document liste l'état des livrables de la version V1.1 et les pistes d'évolution future prioritaires pour une future version V1.2.
+Ce document liste l'état des livrables de la version V1.2 et les pistes d'évolution future prioritaires pour une future version V1.3.
 
 ---
 
-## 1. État Actuel : V1.1 Product Experience Réalisée & Validée
+## 1. État Actuel : V1.2 Live Integrations & Provider Hub Réalisé & Validé
 
-Toutes les étapes de la Phase 7 (V1.1) sont achevées et testées :
-- [x] **Audit Produit V1.1** : Identification rigoureuse du réel vs mocké vs non implémenté (`docs/v1.1-product-audit.md`).
-- [x] **Interface Web Locale Légère** : Application FastAPI + HTML5/CSS3/JavaScript autonome (`python -m ultimate_travel_agent.cli serve` ou `python -m ultimate_travel_agent.web`).
-- [x] **Visibilité Multi-Agents Déterministe** : Restitution claire des 9 étapes du pipeline (hypothèses, risques, informations manquantes, niveaux de preuve, bannière hors-ligne).
-- [x] **Modèle d'Activité Enrichi (26 dimensions)** : Quartier, anecdote locale, accessibilité PMR, difficulté, créneaux optimaux, transport d'accès, alternative météo et plan en cas de fermeture.
-- [x] **Itinéraires Inter-Villes Multi-Options** : Modèle `RouteOption` et moteur de recommandation selon 7 profils de préférences (`cheapest`, `fastest`, `fewest_transfers`, `most_comfortable`, `most_eco_friendly`, `relaxed`, `packed`).
-- [x] **Plans B et Trousse de Préparation** : Checklists avant départ et réservations, vérification documentaire avec mention *« Requires official source verification. »*, plan B météo, plan B fermeture, liste de confirmation pré-paiement, fiche d'urgence générique.
-- [x] **Documentation Complète** : `web-interface.md`, `offline-mode.md`, `data-verification.md`, `travel-workflow.md`, `decisions.md` (ADR 010), README enrichi.
-- [x] **Qualité et Sécurité** : 64 tests automatisés passants, audit de secrets propre, zéro chemin machine Windows personnel dans le code committé.
+Toutes les étapes de la Phase 8 (V1.2) sont achevées et testées :
+- [x] **Audit des Intégrations V1.2** : Catégorisation exhaustive (réel, mock, potentiel, rejeté [ex. Google Flights], requis clés, partenaires) (`docs/v1.2-live-integrations-audit.md`).
+- [x] **Architecture Provider Hub Modulaire** : `src/ultimate_travel_agent/integrations/` avec `ProviderRegistry`, 10 domaines de voyage typés (Pydantic v2), gestion stricte des modes `offline`, `mock`, `live`.
+- [x] **Sécurité & Zéro Secret par Défaut** : `.env.example` vide de valeurs, `.gitignore` durci (`.env*`), zéro fuite de clés ou de chemins locaux.
+- [x] **Garanties Fermes de Confidentialité & Non-Achat** : Zéro capacité transactionnelle, zéro partage de PII, liens directs officiels exclusifs.
+- [x] **Serveur MCP V1.2 Étendu (21 outils)** : 11 nouveaux outils standardisés pour interroger le Provider Hub en lecture seule.
+- [x] **Sous-Agents & Moteur V1.2 Consolidés** : Prise en compte du temps de trajet porte-à-porte, dissociation avis vs inventaire, blocage strict des items sociaux maquillés en confirmés.
+- [x] **Documentation Complète des Politiques & Intégrations** : `provider-configuration.md`, `live-data-policy.md`, `provider-comparison.md`, `privacy-and-data-flow.md`, `credentials-request.md`.
+- [x] **Tests Automatisés à 100% Hors-Ligne** : 96 tests unitaires et d'intégration validés sans réseau ni clés requises.
 
 ---
 
-## 2. Pistes d'Évolution Prioritaires pour une Future V1.2
+## 2. Pistes d'Évolution Prioritaires pour une Future V1.3
 
-Pour continuer d'enrichir le produit sans alourdir la stack technique ni compromettre la sécurité et la gratuité locale :
+Pour continuer d'enrichir le produit sans compromettre la sécurité et la gratuité locale :
 
 1. **Génération de Fichiers de Calendrier `.ics` et Cartes Hors-Ligne `.geojson`** :
    - Exporter l'itinéraire jour par jour sous forme d'événements de calendrier universels `.ics` (avec rappels d'embarquement et créneaux coupe-file).
@@ -29,5 +29,5 @@ Pour continuer d'enrichir le produit sans alourdir la stack technique ni comprom
 2. **Génération de Dossier PDF Stylisé Imprimable** :
    - Rendu HTML-vers-PDF (ou typographie print CSS) pour imprimer un carnet de voyage physique complet en format livret de poche (fiches d'urgence, billets, plans B, horaires).
 
-3. **Calculateur d'Émissions et d'Éco-Trajets Multi-Modaux Avancé** :
-   - Affiner l'estimation de l'empreinte carbone en intégrant le comparatif train électrique vs vol court-courrier vs covoiturage pour chaque étape du voyage.
+3. **Activation Pilote d'une Première API Réelle avec Clé Gratuite** :
+   - Tester l'activation de `Open-Meteo` (sans clé) ou `OpenTripMap` (clé gratuite communautaire) pour valider le flux réseau réel dans un environnement dédié avec accord utilisateur.
