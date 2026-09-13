@@ -1,5 +1,7 @@
 """Provider Registry: Central hub managing and querying travel data integrations."""
 
+import os
+from pathlib import Path
 from typing import Any, Dict, List, Optional, Union
 from ultimate_travel_agent.integrations.accommodation import (
     AmadeusHotelProvider,
@@ -57,6 +59,78 @@ from ultimate_travel_agent.integrations.weather import (
     OpenWeatherMapProvider,
 )
 
+PROVIDER_ALIASES: Dict[str, str] = {
+    # Flights
+    "amadeus": "amadeus_flight",
+    "amadeus_flight": "amadeus_flight",
+    "aviation_edge": "aviation_edge",
+    "aviationedge": "aviation_edge",
+    "mock_flight": "mock_flight",
+    # Trains
+    "sncf": "sncf_train",
+    "sncf_train": "sncf_train",
+    "navitia": "navitia_train",
+    "mock_train": "mock_train",
+    # Accommodations
+    "amadeus_hotels": "amadeus_hotel",
+    "amadeus_hotel": "amadeus_hotel",
+    "booking": "booking",
+    "mock_hotel": "mock_accommodation",
+    "mock_accommodation": "mock_accommodation",
+    # Reviews
+    "stayapi": "stayapi_review",
+    "stayapi_review": "stayapi_review",
+    "tripadvisor": "tripadvisor_review",
+    "tripadvisor_review": "tripadvisor_review",
+    "mock_review": "mock_review",
+    # Activities
+    "viator": "viator_activity",
+    "viator_activity": "viator_activity",
+    "getyourguide": "getyourguide_activity",
+    "opentripmap": "opentripmap_activity",
+    "mock_activity": "mock_activity",
+    # Maps
+    "openrouteservice": "openrouteservice",
+    "ors": "openrouteservice",
+    "google": "google_maps",
+    "google_maps": "google_maps",
+    "osrm": "osrm",
+    "nominatim": "nominatim",
+    "mock_maps": "mock_maps",
+    # Weather
+    "open_meteo": "open_meteo",
+    "openmeteo": "open_meteo",
+    "openweathermap": "openweathermap",
+    "mock_weather": "mock_weather",
+    # Currency
+    "ecb": "ecb_currency",
+    "ecb_currency": "ecb_currency",
+    "mock_currency": "mock_currency",
+    # Guides
+    "wikivoyage": "wikivoyage",
+    "mock_guide": "mock_guide",
+    # Social
+    "social_discovery": "social_discovery",
+}
+
+CATEGORY_ENV_VARS: Dict[str, List[str]] = {
+    "flight": ["TRAVEL_PROVIDER_FLIGHTS", "TRAVEL_PROVIDER_FLIGHT"],
+    "train": ["TRAVEL_PROVIDER_TRAINS", "TRAVEL_PROVIDER_TRAIN"],
+    "hotel": [
+        "TRAVEL_PROVIDER_HOTELS",
+        "TRAVEL_PROVIDER_HOTEL",
+        "TRAVEL_PROVIDER_ACCOMMODATIONS",
+        "TRAVEL_PROVIDER_ACCOMMODATION",
+    ],
+    "review": ["TRAVEL_PROVIDER_REVIEWS", "TRAVEL_PROVIDER_REVIEW"],
+    "activity": ["TRAVEL_PROVIDER_ACTIVITIES", "TRAVEL_PROVIDER_ACTIVITY"],
+    "map": ["TRAVEL_PROVIDER_MAPS", "TRAVEL_PROVIDER_MAP"],
+    "weather": ["TRAVEL_PROVIDER_WEATHER"],
+    "currency": ["TRAVEL_PROVIDER_CURRENCY"],
+    "guide": ["TRAVEL_PROVIDER_GUIDES", "TRAVEL_PROVIDER_GUIDE"],
+    "social": ["TRAVEL_PROVIDER_SOCIAL", "TRAVEL_PROVIDER_SOCIAL_DISCOVERY"],
+}
+
 
 class ProviderRegistry:
     """Registry managing travel integration providers across offline, mock, and live modes."""
@@ -85,23 +159,39 @@ class ProviderRegistry:
             self._category_live_defaults[cat_str] = provider.name
 
     def get_provider(self, name: str) -> Optional[Provider]:
-        """Retrieve provider by unique name."""
-        return self._providers.get(name)
+        """Retrieve provider by unique name or registered alias."""
+        if name in self._providers:
+            return self._providers[name]
+        alias = PROVIDER_ALIASES.get(name.lower())
+        if alias and alias in self._providers:
+            return self._providers[alias]
+        return None
 
     def get_default_provider(
         self,
         category: Union[ProviderCategory, str],
         mode: Optional[Union[ProviderMode, str]] = None,
     ) -> Optional[Provider]:
-        """Retrieve default registered provider for a category based on mode."""
+        """Retrieve default registered provider for a category based on mode and server config."""
         cat_str = category.value if isinstance(category, ProviderCategory) else str(category)
         mode_str = mode.value if isinstance(mode, ProviderMode) else str(mode or "").lower()
 
+        # 1. Check environment variable override for this category
+        env_vars = CATEGORY_ENV_VARS.get(cat_str.lower(), [])
+        for env_var in env_vars:
+            val = os.environ.get(env_var)
+            if val:
+                prov = self.get_provider(val)
+                if prov:
+                    return prov
+
+        # 2. Check live defaults when in live mode
         if mode_str == "live":
             default_live = self._category_live_defaults.get(cat_str)
             if default_live and default_live in self._providers:
                 return self._providers[default_live]
 
+        # 3. Category default (mock/offline fallback)
         default_name = self._category_defaults.get(cat_str)
         if default_name:
             return self._providers.get(default_name)
@@ -164,6 +254,42 @@ class ProviderRegistry:
             raise ProviderConfigurationError(f"No provider available for category '{cat_str}'.")
 
         return target_provider.execute_query(mode=mode, **kwargs)
+
+    def load_config_file(self, config_path: Optional[Union[str, Path]] = None) -> None:
+        """Apply provider configuration from a YAML file."""
+        target = Path(config_path) if config_path else Path("config/providers.yaml")
+        if not target.exists():
+            return
+        try:
+            import yaml
+            with open(target, "r", encoding="utf-8") as f:
+                data = yaml.safe_load(f) or {}
+            providers_cfg = data.get("providers", {})
+            for cat, details in providers_cfg.items():
+                active = details.get("active_provider")
+                if active:
+                    norm_cat = cat.lower()
+                    if norm_cat in ("flights", "flight"):
+                        cat_key = "flight"
+                    elif norm_cat in ("trains", "train"):
+                        cat_key = "train"
+                    elif norm_cat in ("accommodations", "hotels", "hotel", "accommodation"):
+                        cat_key = "hotel"
+                    elif norm_cat in ("reviews", "review"):
+                        cat_key = "review"
+                    elif norm_cat in ("activities", "activity"):
+                        cat_key = "activity"
+                    elif norm_cat in ("maps", "map"):
+                        cat_key = "map"
+                    else:
+                        cat_key = norm_cat
+
+                    prov = self.get_provider(active)
+                    if prov:
+                        self._category_defaults[cat_key] = prov.name
+                        self._category_live_defaults[cat_key] = prov.name
+        except Exception:
+            pass
 
 
 def create_default_registry() -> ProviderRegistry:
@@ -247,6 +373,10 @@ def create_default_registry() -> ProviderRegistry:
     # 10. Social Discovery
     social_discovery = SocialDiscoveryProvider()
     registry.register(social_discovery, is_default_for_category=True)
+
+    # Check for optional YAML configuration override
+    cfg_file = os.environ.get("TRAVEL_PROVIDERS_CONFIG") or "config/providers.yaml"
+    registry.load_config_file(cfg_file)
 
     return registry
 

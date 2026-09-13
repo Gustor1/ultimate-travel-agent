@@ -1,0 +1,82 @@
+# ==============================================================================
+# Ultimate Travel Agent — Provider Hub Configuration (Example)
+# ==============================================================================
+# This file configures the active data integration providers for each category.
+# Live providers remain disabled by default until explicitly activated.
+#
+# DO NOT PUT REAL API KEYS IN THIS FILE.
+# All secrets must be supplied through server environment variables.
+# ==============================================================================
+
+# Global operational mode: "offline" (default), "mock", or "live"
+default_mode: "offline"
+
+# Provider selection per travel category:
+providers:
+  flights:
+    # Options: "mock_flight", "amadeus" (amadeus_flight), "aviation_edge"
+    active_provider: "amadeus"
+    fallback_to_mock: true
+    required_env_vars:
+      - AMADEUS_CLIENT_ID
+      - AMADEUS_CLIENT_SECRET
+
+  trains:
+    # Options: "mock_train", "sncf" (sncf_train), "navitia" (navitia_train)
+    active_provider: "sncf"
+    fallback_to_mock: true
+    required_env_vars:
+      - SNCF_API_KEY
+
+  accommodations:
+    # Options: "mock_accommodation", "amadeus_hotels", "booking"
+    active_provider: "amadeus_hotels"
+    fallback_to_mock: true
+    required_env_vars:
+      - AMADEUS_CLIENT_ID
+      - AMADEUS_CLIENT_SECRET
+
+  reviews:
+    # Options: "mock_review", "stayapi" (stayapi_review), "tripadvisor" (tripadvisor_review)
+    active_provider: "stayapi"
+    fallback_to_mock: true
+    required_env_vars:
+      - STAYAPI_KEY
+
+  activities:
+    # Options: "mock_activity", "viator", "getyourguide", "opentripmap"
+    active_provider: "viator"
+    fallback_to_mock: true
+    required_env_vars:
+      - VIATOR_API_KEY
+
+  maps:
+    # Options: "mock_maps", "openrouteservice", "google_maps", "osrm", "nominatim"
+    active_provider: "openrouteservice"
+    fallback_to_mock: true
+    required_env_vars:
+      - OPENROUTESERVICE_API_KEY
+
+  weather:
+    # Options: "mock_weather", "open_meteo" (no key required), "openweathermap"
+    active_provider: "open_meteo"
+    fallback_to_mock: true
+    required_env_vars: []
+
+  currency:
+    # Options: "mock_currency", "ecb" (no key required)
+    active_provider: "ecb"
+    fallback_to_mock: true
+    required_env_vars: []
+
+  guides:
+    # Options: "mock_guide", "wikivoyage" (no key required)
+    active_provider: "wikivoyage"
+    fallback_to_mock: true
+    required_env_vars: []
+
+  social_discovery:
+    # Curated culinary & photo trends; always tagged social_discovery_only
+    active_provider: "social_discovery"
+    fallback_to_mock: true
+    required_env_vars: []
