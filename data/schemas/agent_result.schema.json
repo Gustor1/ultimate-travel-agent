@@ -1,0 +1,162 @@
+{
+  "$defs": {
+    "AgentStatus": {
+      "description": "Execution status of a specialized sub-agent.",
+      "enum": [
+        "complete",
+        "partial",
+        "blocked"
+      ],
+      "title": "AgentStatus",
+      "type": "string"
+    },
+    "SourceReference": {
+      "description": "Reference to an authoritative, guidebook, or community source.",
+      "properties": {
+        "title": {
+          "description": "Title or name of the source",
+          "title": "Title",
+          "type": "string"
+        },
+        "url": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Direct URL to the source",
+          "title": "Url"
+        },
+        "source_type": {
+          "default": "official",
+          "description": "Type of source: official, guidebook, community, social_media, local_knowledge",
+          "title": "Source Type",
+          "type": "string"
+        },
+        "verification_level": {
+          "$ref": "#/$defs/VerificationLevel",
+          "default": "unverified",
+          "description": "Verification level of this source"
+        },
+        "notes": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Contextual notes on reliability",
+          "title": "Notes"
+        },
+        "retrieved_at": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "ISO date when information was verified",
+          "title": "Retrieved At"
+        }
+      },
+      "required": [
+        "title"
+      ],
+      "title": "SourceReference",
+      "type": "object"
+    },
+    "VerificationLevel": {
+      "description": "Trust and verification levels for travel data.",
+      "enum": [
+        "official_verified",
+        "cross_checked",
+        "community_recommended",
+        "social_discovery_only",
+        "unverified",
+        "outdated"
+      ],
+      "title": "VerificationLevel",
+      "type": "string"
+    }
+  },
+  "description": "Standardized result produced by every specialized travel sub-agent.",
+  "properties": {
+    "agent": {
+      "description": "Canonical agent name (e.g. 'destination-researcher')",
+      "title": "Agent",
+      "type": "string"
+    },
+    "status": {
+      "$ref": "#/$defs/AgentStatus",
+      "default": "complete",
+      "description": "Execution status"
+    },
+    "summary": {
+      "description": "High-level narrative summary of findings",
+      "title": "Summary",
+      "type": "string"
+    },
+    "findings": {
+      "description": "Structured domain data produced by this agent",
+      "items": {
+        "additionalProperties": true,
+        "type": "object"
+      },
+      "title": "Findings",
+      "type": "array"
+    },
+    "assumptions": {
+      "description": "Explicit assumptions made due to missing constraints",
+      "items": {
+        "type": "string"
+      },
+      "title": "Assumptions",
+      "type": "array"
+    },
+    "missing_information": {
+      "description": "Critical gaps or unconfirmed parameters",
+      "items": {
+        "type": "string"
+      },
+      "title": "Missing Information",
+      "type": "array"
+    },
+    "risks": {
+      "description": "Operational, logistical, or financial risks detected",
+      "items": {
+        "type": "string"
+      },
+      "title": "Risks",
+      "type": "array"
+    },
+    "sources": {
+      "description": "Authoritative references or documentation consulted",
+      "items": {
+        "$ref": "#/$defs/SourceReference"
+      },
+      "title": "Sources",
+      "type": "array"
+    },
+    "verification_level": {
+      "$ref": "#/$defs/VerificationLevel",
+      "default": "unverified",
+      "description": "Overall verification tier of the findings"
+    }
+  },
+  "required": [
+    "agent",
+    "summary"
+  ],
+  "title": "AgentResult",
+  "type": "object"
+}

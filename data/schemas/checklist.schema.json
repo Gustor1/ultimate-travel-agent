@@ -1,0 +1,96 @@
+{
+  "$defs": {
+    "ChecklistCategory": {
+      "description": "Categories for pre-travel and preparation tasks.",
+      "enum": [
+        "documents_visa",
+        "health_vaccines",
+        "finance_currency",
+        "connectivity_sim",
+        "luggage_gear",
+        "safety_emergency"
+      ],
+      "title": "ChecklistCategory",
+      "type": "string"
+    },
+    "VerificationLevel": {
+      "description": "Trust and verification levels for travel data.",
+      "enum": [
+        "official_verified",
+        "cross_checked",
+        "community_recommended",
+        "social_discovery_only",
+        "unverified",
+        "outdated"
+      ],
+      "title": "VerificationLevel",
+      "type": "string"
+    }
+  },
+  "description": "Preparation task or regulatory requirement.",
+  "properties": {
+    "id": {
+      "description": "Unique task identifier",
+      "title": "Id",
+      "type": "string"
+    },
+    "category": {
+      "$ref": "#/$defs/ChecklistCategory",
+      "default": "documents_visa",
+      "description": "Category of preparation task"
+    },
+    "title": {
+      "description": "Title of the task",
+      "title": "Title",
+      "type": "string"
+    },
+    "description": {
+      "description": "Details and actionable instructions",
+      "title": "Description",
+      "type": "string"
+    },
+    "is_mandatory": {
+      "default": true,
+      "description": "Whether completion is legally or logistically mandatory",
+      "title": "Is Mandatory",
+      "type": "boolean"
+    },
+    "due_before_departure_days": {
+      "default": 7,
+      "description": "Recommended deadline in days prior to departure date",
+      "title": "Due Before Departure Days",
+      "type": "integer"
+    },
+    "verification_level": {
+      "$ref": "#/$defs/VerificationLevel",
+      "default": "official_verified",
+      "description": "Confidence level of the requirement"
+    },
+    "official_reference_url": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Official embassy, consulate, or government advisory URL",
+      "title": "Official Reference Url"
+    },
+    "completed": {
+      "default": false,
+      "description": "User completion checkmark",
+      "title": "Completed",
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "id",
+    "title",
+    "description"
+  ],
+  "title": "ChecklistItem",
+  "type": "object"
+}

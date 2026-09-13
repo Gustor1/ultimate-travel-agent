@@ -1,0 +1,196 @@
+{
+  "$defs": {
+    "AccommodationType": {
+      "description": "Types of accommodations.",
+      "enum": [
+        "hotel",
+        "apartment",
+        "hostel",
+        "guesthouse",
+        "resort",
+        "campsite"
+      ],
+      "title": "AccommodationType",
+      "type": "string"
+    },
+    "SourceReference": {
+      "description": "Reference to an authoritative, guidebook, or community source.",
+      "properties": {
+        "title": {
+          "description": "Title or name of the source",
+          "title": "Title",
+          "type": "string"
+        },
+        "url": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Direct URL to the source",
+          "title": "Url"
+        },
+        "source_type": {
+          "default": "official",
+          "description": "Type of source: official, guidebook, community, social_media, local_knowledge",
+          "title": "Source Type",
+          "type": "string"
+        },
+        "verification_level": {
+          "$ref": "#/$defs/VerificationLevel",
+          "default": "unverified",
+          "description": "Verification level of this source"
+        },
+        "notes": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Contextual notes on reliability",
+          "title": "Notes"
+        },
+        "retrieved_at": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "ISO date when information was verified",
+          "title": "Retrieved At"
+        }
+      },
+      "required": [
+        "title"
+      ],
+      "title": "SourceReference",
+      "type": "object"
+    },
+    "VerificationLevel": {
+      "description": "Trust and verification levels for travel data.",
+      "enum": [
+        "official_verified",
+        "cross_checked",
+        "community_recommended",
+        "social_discovery_only",
+        "unverified",
+        "outdated"
+      ],
+      "title": "VerificationLevel",
+      "type": "string"
+    }
+  },
+  "description": "Accommodation recommendation or reservation details.",
+  "properties": {
+    "id": {
+      "description": "Unique accommodation identifier",
+      "title": "Id",
+      "type": "string"
+    },
+    "name": {
+      "description": "Name of the hotel, apartment, or lodging",
+      "title": "Name",
+      "type": "string"
+    },
+    "destination_id": {
+      "description": "Referenced destination identifier",
+      "title": "Destination Id",
+      "type": "string"
+    },
+    "neighborhood": {
+      "description": "Strategic neighborhood or district name",
+      "title": "Neighborhood",
+      "type": "string"
+    },
+    "accommodation_type": {
+      "$ref": "#/$defs/AccommodationType",
+      "default": "hotel",
+      "description": "Type of accommodation"
+    },
+    "cost_per_night": {
+      "description": "Estimated cost per night",
+      "title": "Cost Per Night",
+      "type": "number"
+    },
+    "total_nights": {
+      "default": 1,
+      "description": "Number of nights booked or planned",
+      "title": "Total Nights",
+      "type": "integer"
+    },
+    "currency": {
+      "default": "EUR",
+      "description": "Currency code for cost",
+      "title": "Currency",
+      "type": "string"
+    },
+    "quietness_rating": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Quietness assessment: high, medium, noisy",
+      "title": "Quietness Rating"
+    },
+    "criteria_matched": {
+      "description": "List of traveler criteria satisfied (e.g. ['metro proximity', 'quiet street', 'kitchen'])",
+      "items": {
+        "type": "string"
+      },
+      "title": "Criteria Matched",
+      "type": "array"
+    },
+    "official_booking_url": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Direct URL to hotel or official lodging site (never automated booking)",
+      "title": "Official Booking Url"
+    },
+    "verification_level": {
+      "$ref": "#/$defs/VerificationLevel",
+      "default": "unverified",
+      "description": "Level of verification of this listing"
+    },
+    "sources": {
+      "description": "Sources confirming price or reputation",
+      "items": {
+        "$ref": "#/$defs/SourceReference"
+      },
+      "title": "Sources",
+      "type": "array"
+    }
+  },
+  "required": [
+    "id",
+    "name",
+    "destination_id",
+    "neighborhood",
+    "cost_per_night"
+  ],
+  "title": "Accommodation",
+  "type": "object"
+}

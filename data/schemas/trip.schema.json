@@ -1,0 +1,1388 @@
+{
+  "$defs": {
+    "Accommodation": {
+      "description": "Accommodation recommendation or reservation details.",
+      "properties": {
+        "id": {
+          "description": "Unique accommodation identifier",
+          "title": "Id",
+          "type": "string"
+        },
+        "name": {
+          "description": "Name of the hotel, apartment, or lodging",
+          "title": "Name",
+          "type": "string"
+        },
+        "destination_id": {
+          "description": "Referenced destination identifier",
+          "title": "Destination Id",
+          "type": "string"
+        },
+        "neighborhood": {
+          "description": "Strategic neighborhood or district name",
+          "title": "Neighborhood",
+          "type": "string"
+        },
+        "accommodation_type": {
+          "$ref": "#/$defs/AccommodationType",
+          "default": "hotel",
+          "description": "Type of accommodation"
+        },
+        "cost_per_night": {
+          "description": "Estimated cost per night",
+          "title": "Cost Per Night",
+          "type": "number"
+        },
+        "total_nights": {
+          "default": 1,
+          "description": "Number of nights booked or planned",
+          "title": "Total Nights",
+          "type": "integer"
+        },
+        "currency": {
+          "default": "EUR",
+          "description": "Currency code for cost",
+          "title": "Currency",
+          "type": "string"
+        },
+        "quietness_rating": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Quietness assessment: high, medium, noisy",
+          "title": "Quietness Rating"
+        },
+        "criteria_matched": {
+          "description": "List of traveler criteria satisfied (e.g. ['metro proximity', 'quiet street', 'kitchen'])",
+          "items": {
+            "type": "string"
+          },
+          "title": "Criteria Matched",
+          "type": "array"
+        },
+        "official_booking_url": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Direct URL to hotel or official lodging site (never automated booking)",
+          "title": "Official Booking Url"
+        },
+        "verification_level": {
+          "$ref": "#/$defs/VerificationLevel",
+          "default": "unverified",
+          "description": "Level of verification of this listing"
+        },
+        "sources": {
+          "description": "Sources confirming price or reputation",
+          "items": {
+            "$ref": "#/$defs/SourceReference"
+          },
+          "title": "Sources",
+          "type": "array"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "destination_id",
+        "neighborhood",
+        "cost_per_night"
+      ],
+      "title": "Accommodation",
+      "type": "object"
+    },
+    "AccommodationType": {
+      "description": "Types of accommodations.",
+      "enum": [
+        "hotel",
+        "apartment",
+        "hostel",
+        "guesthouse",
+        "resort",
+        "campsite"
+      ],
+      "title": "AccommodationType",
+      "type": "string"
+    },
+    "Activity": {
+      "description": "Activity, museum, landmark, or dining experience.",
+      "properties": {
+        "id": {
+          "description": "Unique activity identifier",
+          "title": "Id",
+          "type": "string"
+        },
+        "title": {
+          "description": "Name of the activity or venue",
+          "title": "Title",
+          "type": "string"
+        },
+        "destination_id": {
+          "description": "Destination identifier where activity is located",
+          "title": "Destination Id",
+          "type": "string"
+        },
+        "category": {
+          "$ref": "#/$defs/ActivityCategory",
+          "default": "culture",
+          "description": "Category of activity"
+        },
+        "description": {
+          "description": "Description of the visit or experience",
+          "title": "Description",
+          "type": "string"
+        },
+        "duration_minutes": {
+          "default": 90,
+          "description": "Recommended visit duration in minutes",
+          "title": "Duration Minutes",
+          "type": "integer"
+        },
+        "estimated_cost": {
+          "default": 0.0,
+          "description": "Cost per person in currency",
+          "title": "Estimated Cost",
+          "type": "number"
+        },
+        "currency": {
+          "default": "EUR",
+          "description": "Currency ISO code",
+          "title": "Currency",
+          "type": "string"
+        },
+        "crowd_level": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": "medium",
+          "description": "Observed crowd density: low, medium, high, extreme",
+          "title": "Crowd Level"
+        },
+        "quiet_slot_advice": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Advice on optimal slot to avoid peak crowds (e.g. 'Enter at 08:30 or after 17:00')",
+          "title": "Quiet Slot Advice"
+        },
+        "advance_booking_required": {
+          "default": false,
+          "description": "Whether advance timed tickets are strictly mandatory",
+          "title": "Advance Booking Required",
+          "type": "boolean"
+        },
+        "official_booking_url": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Direct link to official ticketing box office",
+          "title": "Official Booking Url"
+        },
+        "indoor_contingency": {
+          "default": false,
+          "description": "Whether this activity is suitable as a rainy-day backup",
+          "title": "Indoor Contingency",
+          "type": "boolean"
+        },
+        "verification_level": {
+          "$ref": "#/$defs/VerificationLevel",
+          "default": "unverified",
+          "description": "Verification level of activity information"
+        },
+        "sources": {
+          "description": "Sources used to verify hours, ticketing, and crowding",
+          "items": {
+            "$ref": "#/$defs/SourceReference"
+          },
+          "title": "Sources",
+          "type": "array"
+        }
+      },
+      "required": [
+        "id",
+        "title",
+        "destination_id",
+        "description"
+      ],
+      "title": "Activity",
+      "type": "object"
+    },
+    "ActivityCategory": {
+      "description": "Categories of activities and attractions.",
+      "enum": [
+        "nature",
+        "landscape",
+        "culture",
+        "gastronomy",
+        "adventure",
+        "relaxation",
+        "city_sightseeing",
+        "family",
+        "photography",
+        "shopping",
+        "nightlife"
+      ],
+      "title": "ActivityCategory",
+      "type": "string"
+    },
+    "BookingRequirement": {
+      "description": "Booking requirement or confirmed reservation (réservation).\n\nStrict policy: Never triggers automated payment or purchase.\nAll actions must be executed manually by the traveler on official portals.",
+      "properties": {
+        "id": {
+          "description": "Unique booking requirement identifier",
+          "title": "Id",
+          "type": "string"
+        },
+        "category": {
+          "description": "Booking category: transport, accommodation, activity, permit, visa, other",
+          "title": "Category",
+          "type": "string"
+        },
+        "title": {
+          "description": "Title of the booking requirement",
+          "title": "Title",
+          "type": "string"
+        },
+        "status": {
+          "default": "needed",
+          "description": "Booking status: needed, booked, not_needed, optional",
+          "title": "Status",
+          "type": "string"
+        },
+        "mandatory": {
+          "default": true,
+          "description": "Whether this reservation is mandatory",
+          "title": "Mandatory",
+          "type": "boolean"
+        },
+        "reference_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Linked entity ID (e.g. transport_id, accommodation_id, activity_id)",
+          "title": "Reference Id"
+        },
+        "deadline_days_before": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Recommended advance booking deadline in days before departure",
+          "title": "Deadline Days Before"
+        },
+        "confirmation_code": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Official reservation reference or PNR (if already booked)",
+          "title": "Confirmation Code"
+        },
+        "estimated_cost": {
+          "default": 0.0,
+          "description": "Estimated total cost",
+          "title": "Estimated Cost",
+          "type": "number"
+        },
+        "currency": {
+          "default": "EUR",
+          "description": "Currency ISO code",
+          "title": "Currency",
+          "type": "string"
+        },
+        "official_booking_url": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Direct link to official ticketing or lodging reservation portal",
+          "title": "Official Booking Url"
+        },
+        "action_required": {
+          "default": "",
+          "description": "Human instructions for completing the reservation",
+          "title": "Action Required",
+          "type": "string"
+        },
+        "verification_level": {
+          "$ref": "#/$defs/VerificationLevel",
+          "default": "official_verified",
+          "description": "Confidence level of booking requirement and link"
+        },
+        "sources": {
+          "description": "Authoritative sources for ticketing and terms",
+          "items": {
+            "$ref": "#/$defs/SourceReference"
+          },
+          "title": "Sources",
+          "type": "array"
+        }
+      },
+      "required": [
+        "id",
+        "category",
+        "title"
+      ],
+      "title": "BookingRequirement",
+      "type": "object"
+    },
+    "Budget": {
+      "description": "Overall consolidated budget for the trip.",
+      "properties": {
+        "currency": {
+          "default": "EUR",
+          "description": "Primary currency",
+          "title": "Currency",
+          "type": "string"
+        },
+        "total_estimated_cost": {
+          "default": 0.0,
+          "description": "Sum of estimated itemized expenses",
+          "title": "Total Estimated Cost",
+          "type": "number"
+        },
+        "safety_buffer_percentage": {
+          "default": 12.0,
+          "description": "Recommended buffer percentage (10-15%)",
+          "title": "Safety Buffer Percentage",
+          "type": "number"
+        },
+        "safety_buffer_amount": {
+          "default": 0.0,
+          "description": "Calculated contingency reserve amount",
+          "title": "Safety Buffer Amount",
+          "type": "number"
+        },
+        "grand_total": {
+          "default": 0.0,
+          "description": "Total including contingency buffer",
+          "title": "Grand Total",
+          "type": "number"
+        },
+        "categories": {
+          "additionalProperties": {
+            "$ref": "#/$defs/BudgetCategoryBreakdown"
+          },
+          "description": "Breakdown mapped by category name",
+          "title": "Categories",
+          "type": "object"
+        },
+        "warnings": {
+          "description": "Budget warnings (e.g. over budget cap, unverified estimates)",
+          "items": {
+            "type": "string"
+          },
+          "title": "Warnings",
+          "type": "array"
+        }
+      },
+      "title": "Budget",
+      "type": "object"
+    },
+    "BudgetCategoryBreakdown": {
+      "description": "Breakdown of expenses for a specific category.",
+      "properties": {
+        "category": {
+          "description": "Category: transport, accommodation, activities, meals, miscellaneous",
+          "title": "Category",
+          "type": "string"
+        },
+        "amount": {
+          "description": "Estimated cost amount",
+          "title": "Amount",
+          "type": "number"
+        },
+        "currency": {
+          "default": "EUR",
+          "description": "Currency code",
+          "title": "Currency",
+          "type": "string"
+        },
+        "verification_level": {
+          "$ref": "#/$defs/VerificationLevel",
+          "default": "unverified",
+          "description": "Overall verification status of prices in this category"
+        },
+        "notes": {
+          "description": "Explanatory notes or cost ranges",
+          "items": {
+            "type": "string"
+          },
+          "title": "Notes",
+          "type": "array"
+        }
+      },
+      "required": [
+        "category",
+        "amount"
+      ],
+      "title": "BudgetCategoryBreakdown",
+      "type": "object"
+    },
+    "ChecklistCategory": {
+      "description": "Categories for pre-travel and preparation tasks.",
+      "enum": [
+        "documents_visa",
+        "health_vaccines",
+        "finance_currency",
+        "connectivity_sim",
+        "luggage_gear",
+        "safety_emergency"
+      ],
+      "title": "ChecklistCategory",
+      "type": "string"
+    },
+    "ChecklistItem": {
+      "description": "Preparation task or regulatory requirement.",
+      "properties": {
+        "id": {
+          "description": "Unique task identifier",
+          "title": "Id",
+          "type": "string"
+        },
+        "category": {
+          "$ref": "#/$defs/ChecklistCategory",
+          "default": "documents_visa",
+          "description": "Category of preparation task"
+        },
+        "title": {
+          "description": "Title of the task",
+          "title": "Title",
+          "type": "string"
+        },
+        "description": {
+          "description": "Details and actionable instructions",
+          "title": "Description",
+          "type": "string"
+        },
+        "is_mandatory": {
+          "default": true,
+          "description": "Whether completion is legally or logistically mandatory",
+          "title": "Is Mandatory",
+          "type": "boolean"
+        },
+        "due_before_departure_days": {
+          "default": 7,
+          "description": "Recommended deadline in days prior to departure date",
+          "title": "Due Before Departure Days",
+          "type": "integer"
+        },
+        "verification_level": {
+          "$ref": "#/$defs/VerificationLevel",
+          "default": "official_verified",
+          "description": "Confidence level of the requirement"
+        },
+        "official_reference_url": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Official embassy, consulate, or government advisory URL",
+          "title": "Official Reference Url"
+        },
+        "completed": {
+          "default": false,
+          "description": "User completion checkmark",
+          "title": "Completed",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "id",
+        "title",
+        "description"
+      ],
+      "title": "ChecklistItem",
+      "type": "object"
+    },
+    "CrowdSensitivity": {
+      "description": "Sensitivity to crowds and overtourism.",
+      "enum": [
+        "standard",
+        "avoid_crowds",
+        "extreme_quiet"
+      ],
+      "title": "CrowdSensitivity",
+      "type": "string"
+    },
+    "DaySchedule": {
+      "description": "Chronological plan for a single day of travel.",
+      "properties": {
+        "day_number": {
+          "description": "1-indexed day sequence number",
+          "title": "Day Number",
+          "type": "integer"
+        },
+        "date": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "ISO date YYYY-MM-DD",
+          "title": "Date"
+        },
+        "destination_id": {
+          "description": "Active destination identifier",
+          "title": "Destination Id",
+          "type": "string"
+        },
+        "theme": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Day theme (e.g. 'Gaudí Architecture & Gothic Quarter')",
+          "title": "Theme"
+        },
+        "items": {
+          "description": "Ordered schedule events",
+          "items": {
+            "$ref": "#/$defs/ItineraryItem"
+          },
+          "title": "Items",
+          "type": "array"
+        },
+        "daily_cost_estimate": {
+          "default": 0.0,
+          "description": "Estimated total cost for the day",
+          "title": "Daily Cost Estimate",
+          "type": "number"
+        },
+        "currency": {
+          "default": "EUR",
+          "description": "Currency code",
+          "title": "Currency",
+          "type": "string"
+        },
+        "weather_contingency_notes": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Contingency advice in case of rain or storms",
+          "title": "Weather Contingency Notes"
+        }
+      },
+      "required": [
+        "day_number",
+        "destination_id"
+      ],
+      "title": "DaySchedule",
+      "type": "object"
+    },
+    "Destination": {
+      "description": "Geographic destination for a trip or trip leg.",
+      "properties": {
+        "id": {
+          "description": "Unique destination identifier (e.g. bcn, tyo)",
+          "title": "Id",
+          "type": "string"
+        },
+        "name": {
+          "description": "City or area name (e.g. Barcelona)",
+          "title": "Name",
+          "type": "string"
+        },
+        "country": {
+          "description": "Country name (e.g. Spain)",
+          "title": "Country",
+          "type": "string"
+        },
+        "region": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Region or province (e.g. Catalonia)",
+          "title": "Region"
+        },
+        "currency": {
+          "default": "EUR",
+          "description": "Local currency ISO code (e.g. EUR, JPY)",
+          "title": "Currency",
+          "type": "string"
+        },
+        "timezone": {
+          "default": "UTC",
+          "description": "Timezone name (e.g. Europe/Madrid)",
+          "title": "Timezone",
+          "type": "string"
+        },
+        "ideal_seasons": {
+          "description": "Best months or seasons to visit (e.g. ['April-May', 'September-October'])",
+          "items": {
+            "type": "string"
+          },
+          "title": "Ideal Seasons",
+          "type": "array"
+        },
+        "quiet_periods": {
+          "description": "Low season / quiet periods to avoid peak crowds",
+          "items": {
+            "type": "string"
+          },
+          "title": "Quiet Periods",
+          "type": "array"
+        },
+        "description": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Overview of the destination",
+          "title": "Description"
+        },
+        "anecdote": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Interesting local fact or historical anecdote",
+          "title": "Anecdote"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "country"
+      ],
+      "title": "Destination",
+      "type": "object"
+    },
+    "ItineraryItem": {
+      "description": "Specific event or visit inside a daily itinerary.",
+      "properties": {
+        "time": {
+          "description": "Time of day or slot (e.g. '09:00', 'morning', '14:30')",
+          "title": "Time",
+          "type": "string"
+        },
+        "item_type": {
+          "description": "Type: activity, transport, meal, rest, checkin, checkout",
+          "title": "Item Type",
+          "type": "string"
+        },
+        "title": {
+          "description": "Short title of the step",
+          "title": "Title",
+          "type": "string"
+        },
+        "reference_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Linked Activity ID or Transport ID",
+          "title": "Reference Id"
+        },
+        "duration_minutes": {
+          "default": 60,
+          "description": "Duration in minutes",
+          "title": "Duration Minutes",
+          "type": "integer"
+        },
+        "notes": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Actionable tips, tickets, or transport notes",
+          "title": "Notes"
+        },
+        "indoor_backup": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Backup plan if weather turns bad",
+          "title": "Indoor Backup"
+        }
+      },
+      "required": [
+        "time",
+        "item_type",
+        "title"
+      ],
+      "title": "ItineraryItem",
+      "type": "object"
+    },
+    "PacingPreference": {
+      "description": "Pacing of the travel schedule.",
+      "enum": [
+        "packed",
+        "balanced",
+        "relaxed"
+      ],
+      "title": "PacingPreference",
+      "type": "string"
+    },
+    "SourceReference": {
+      "description": "Reference to an authoritative, guidebook, or community source.",
+      "properties": {
+        "title": {
+          "description": "Title or name of the source",
+          "title": "Title",
+          "type": "string"
+        },
+        "url": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Direct URL to the source",
+          "title": "Url"
+        },
+        "source_type": {
+          "default": "official",
+          "description": "Type of source: official, guidebook, community, social_media, local_knowledge",
+          "title": "Source Type",
+          "type": "string"
+        },
+        "verification_level": {
+          "$ref": "#/$defs/VerificationLevel",
+          "default": "unverified",
+          "description": "Verification level of this source"
+        },
+        "notes": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Contextual notes on reliability",
+          "title": "Notes"
+        },
+        "retrieved_at": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "ISO date when information was verified",
+          "title": "Retrieved At"
+        }
+      },
+      "required": [
+        "title"
+      ],
+      "title": "SourceReference",
+      "type": "object"
+    },
+    "TransportMode": {
+      "description": "Modes of transport for macro and micro transit.",
+      "enum": [
+        "flight",
+        "train",
+        "bus",
+        "car_rental",
+        "ferry",
+        "metro",
+        "walk",
+        "bicycle",
+        "taxi"
+      ],
+      "title": "TransportMode",
+      "type": "string"
+    },
+    "TransportSegment": {
+      "description": "Macro or micro travel transit segment.",
+      "properties": {
+        "id": {
+          "description": "Unique segment identifier",
+          "title": "Id",
+          "type": "string"
+        },
+        "origin": {
+          "description": "Origin location, station, or airport",
+          "title": "Origin",
+          "type": "string"
+        },
+        "destination": {
+          "description": "Destination location, station, or airport",
+          "title": "Destination",
+          "type": "string"
+        },
+        "mode": {
+          "$ref": "#/$defs/TransportMode",
+          "description": "Mode of transport"
+        },
+        "carrier": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Carrier, airline, or transit agency name",
+          "title": "Carrier"
+        },
+        "departure_time": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Estimated or scheduled departure time (HH:MM or ISO)",
+          "title": "Departure Time"
+        },
+        "arrival_time": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Estimated or scheduled arrival time (HH:MM or ISO)",
+          "title": "Arrival Time"
+        },
+        "duration_minutes": {
+          "description": "Duration in minutes including connection buffers",
+          "title": "Duration Minutes",
+          "type": "integer"
+        },
+        "estimated_cost": {
+          "default": 0.0,
+          "description": "Estimated ticket or fare cost",
+          "title": "Estimated Cost",
+          "type": "number"
+        },
+        "is_per_person": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Whether cost is per passenger (True) or for the vehicle/group (False). Defaults to False for car_rental/taxi, True otherwise.",
+          "title": "Is Per Person"
+        },
+        "currency": {
+          "default": "EUR",
+          "description": "Currency code for cost",
+          "title": "Currency",
+          "type": "string"
+        },
+        "official_booking_url": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Direct URL to official ticketing operator",
+          "title": "Official Booking Url"
+        },
+        "door_to_door_notes": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Door-to-door transit instructions, transfer stations, and baggage advice",
+          "title": "Door To Door Notes"
+        },
+        "verification_level": {
+          "$ref": "#/$defs/VerificationLevel",
+          "default": "unverified",
+          "description": "Verification level of price and schedule"
+        },
+        "sources": {
+          "description": "Sources used for route and price estimation",
+          "items": {
+            "$ref": "#/$defs/SourceReference"
+          },
+          "title": "Sources",
+          "type": "array"
+        }
+      },
+      "required": [
+        "id",
+        "origin",
+        "destination",
+        "mode",
+        "duration_minutes"
+      ],
+      "title": "TransportSegment",
+      "type": "object"
+    },
+    "Traveler": {
+      "description": "Profile of a traveler participating in the trip.",
+      "properties": {
+        "id": {
+          "description": "Unique traveler ID (e.g. traveler-1)",
+          "title": "Id",
+          "type": "string"
+        },
+        "name": {
+          "description": "Name or nickname of the traveler",
+          "title": "Name",
+          "type": "string"
+        },
+        "profile": {
+          "$ref": "#/$defs/TravelerProfile",
+          "default": "solo",
+          "description": "Traveler archetype"
+        },
+        "pacing_preference": {
+          "$ref": "#/$defs/PacingPreference",
+          "default": "balanced",
+          "description": "Preferred daily tempo"
+        },
+        "crowd_sensitivity": {
+          "$ref": "#/$defs/CrowdSensitivity",
+          "default": "standard",
+          "description": "Sensitivity to crowds and overtourism"
+        },
+        "dietary_restrictions": {
+          "description": "Allergies and dietary restrictions (e.g. vegetarian, gluten-free, halal)",
+          "items": {
+            "type": "string"
+          },
+          "title": "Dietary Restrictions",
+          "type": "array"
+        },
+        "mobility_needs": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Special mobility requirements (e.g. step-free, wheelchair, stroller)",
+          "title": "Mobility Needs"
+        },
+        "budget_preference": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": "mid-range",
+          "description": "Budget tier: budget, mid-range, premium, luxury",
+          "title": "Budget Preference"
+        }
+      },
+      "required": [
+        "id",
+        "name"
+      ],
+      "title": "Traveler",
+      "type": "object"
+    },
+    "TravelerProfile": {
+      "description": "Traveler personas and party types.",
+      "enum": [
+        "solo",
+        "couple",
+        "family_with_children",
+        "group_friends",
+        "seniors",
+        "digital_nomad",
+        "quiet_seeker"
+      ],
+      "title": "TravelerProfile",
+      "type": "string"
+    },
+    "TripStage": {
+      "description": "Stage, leg, or stopover of a journey (étape).",
+      "properties": {
+        "id": {
+          "description": "Unique stage identifier (e.g. stage-1-paris)",
+          "title": "Id",
+          "type": "string"
+        },
+        "destination_id": {
+          "description": "Referenced destination identifier",
+          "title": "Destination Id",
+          "type": "string"
+        },
+        "order": {
+          "default": 1,
+          "description": "1-indexed sequence order of this stage",
+          "title": "Order",
+          "type": "integer"
+        },
+        "title": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Descriptive stage title (e.g. 'Stopover in Lyon')",
+          "title": "Title"
+        },
+        "arrival_date": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "ISO arrival date YYYY-MM-DD",
+          "title": "Arrival Date"
+        },
+        "departure_date": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "ISO departure date YYYY-MM-DD",
+          "title": "Departure Date"
+        },
+        "nights": {
+          "default": 0,
+          "description": "Number of nights spent in this stage",
+          "title": "Nights",
+          "type": "integer"
+        },
+        "notes": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Logistical notes, scenic route tips, or warnings",
+          "title": "Notes"
+        },
+        "verification_level": {
+          "$ref": "#/$defs/VerificationLevel",
+          "default": "cross_checked",
+          "description": "Confidence level of stage information"
+        },
+        "sources": {
+          "description": "Sources used to verify stage feasibility and stops",
+          "items": {
+            "$ref": "#/$defs/SourceReference"
+          },
+          "title": "Sources",
+          "type": "array"
+        }
+      },
+      "required": [
+        "id",
+        "destination_id"
+      ],
+      "title": "TripStage",
+      "type": "object"
+    },
+    "TripType": {
+      "description": "Styles and types of trips.",
+      "enum": [
+        "city_trip",
+        "road_trip",
+        "multi_city",
+        "nature_landscape",
+        "slow_travel"
+      ],
+      "title": "TripType",
+      "type": "string"
+    },
+    "VerificationLevel": {
+      "description": "Trust and verification levels for travel data.",
+      "enum": [
+        "official_verified",
+        "cross_checked",
+        "community_recommended",
+        "social_discovery_only",
+        "unverified",
+        "outdated"
+      ],
+      "title": "VerificationLevel",
+      "type": "string"
+    }
+  },
+  "description": "Full travel dossier combining all aspects of a journey.",
+  "properties": {
+    "id": {
+      "description": "Unique trip identifier",
+      "title": "Id",
+      "type": "string"
+    },
+    "title": {
+      "description": "Trip title",
+      "title": "Title",
+      "type": "string"
+    },
+    "trip_type": {
+      "$ref": "#/$defs/TripType",
+      "default": "city_trip",
+      "description": "Trip archetype"
+    },
+    "start_date": {
+      "description": "ISO start date YYYY-MM-DD",
+      "title": "Start Date",
+      "type": "string"
+    },
+    "end_date": {
+      "description": "ISO end date YYYY-MM-DD",
+      "title": "End Date",
+      "type": "string"
+    },
+    "currency": {
+      "default": "EUR",
+      "description": "Primary currency ISO code",
+      "title": "Currency",
+      "type": "string"
+    },
+    "budget_cap": {
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Optional target budget limit",
+      "title": "Budget Cap"
+    },
+    "travelers": {
+      "description": "Travelers in this party",
+      "items": {
+        "$ref": "#/$defs/Traveler"
+      },
+      "title": "Travelers",
+      "type": "array"
+    },
+    "destinations": {
+      "description": "Target destinations",
+      "items": {
+        "$ref": "#/$defs/Destination"
+      },
+      "title": "Destinations",
+      "type": "array"
+    },
+    "stages": {
+      "description": "Stages or stops of the journey (étapes)",
+      "items": {
+        "$ref": "#/$defs/TripStage"
+      },
+      "title": "Stages",
+      "type": "array"
+    },
+    "transports": {
+      "description": "Transit connections",
+      "items": {
+        "$ref": "#/$defs/TransportSegment"
+      },
+      "title": "Transports",
+      "type": "array"
+    },
+    "accommodations": {
+      "description": "Lodging arrangements",
+      "items": {
+        "$ref": "#/$defs/Accommodation"
+      },
+      "title": "Accommodations",
+      "type": "array"
+    },
+    "activities": {
+      "description": "Curated activities and POIs",
+      "items": {
+        "$ref": "#/$defs/Activity"
+      },
+      "title": "Activities",
+      "type": "array"
+    },
+    "itinerary": {
+      "description": "Chronological day schedules",
+      "items": {
+        "$ref": "#/$defs/DaySchedule"
+      },
+      "title": "Itinerary",
+      "type": "array"
+    },
+    "checklists": {
+      "description": "Preparation checklist items",
+      "items": {
+        "$ref": "#/$defs/ChecklistItem"
+      },
+      "title": "Checklists",
+      "type": "array"
+    },
+    "reservations": {
+      "description": "Booking requirements and reservations (réservations)",
+      "items": {
+        "$ref": "#/$defs/BookingRequirement"
+      },
+      "title": "Reservations",
+      "type": "array"
+    },
+    "budget": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/Budget"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Detailed itemized budget breakdown"
+    }
+  },
+  "required": [
+    "id",
+    "title",
+    "start_date",
+    "end_date"
+  ],
+  "title": "Trip",
+  "type": "object"
+}

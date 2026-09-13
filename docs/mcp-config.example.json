@@ -1,0 +1,15 @@
+{
+  "mcpServers": {
+    "ultimate-travel-agent": {
+      "command": "python",
+      "args": [
+        "-m",
+        "ultimate_travel_agent.mcp.server"
+      ],
+      "env": {
+        "TRAVEL_AGENT_MODE": "offline",
+        "PYTHONUTF8": "1"
+      }
+    }
+  }
+}

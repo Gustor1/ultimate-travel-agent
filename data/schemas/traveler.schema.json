@@ -1,0 +1,106 @@
+{
+  "$defs": {
+    "CrowdSensitivity": {
+      "description": "Sensitivity to crowds and overtourism.",
+      "enum": [
+        "standard",
+        "avoid_crowds",
+        "extreme_quiet"
+      ],
+      "title": "CrowdSensitivity",
+      "type": "string"
+    },
+    "PacingPreference": {
+      "description": "Pacing of the travel schedule.",
+      "enum": [
+        "packed",
+        "balanced",
+        "relaxed"
+      ],
+      "title": "PacingPreference",
+      "type": "string"
+    },
+    "TravelerProfile": {
+      "description": "Traveler personas and party types.",
+      "enum": [
+        "solo",
+        "couple",
+        "family_with_children",
+        "group_friends",
+        "seniors",
+        "digital_nomad",
+        "quiet_seeker"
+      ],
+      "title": "TravelerProfile",
+      "type": "string"
+    }
+  },
+  "description": "Profile of a traveler participating in the trip.",
+  "properties": {
+    "id": {
+      "description": "Unique traveler ID (e.g. traveler-1)",
+      "title": "Id",
+      "type": "string"
+    },
+    "name": {
+      "description": "Name or nickname of the traveler",
+      "title": "Name",
+      "type": "string"
+    },
+    "profile": {
+      "$ref": "#/$defs/TravelerProfile",
+      "default": "solo",
+      "description": "Traveler archetype"
+    },
+    "pacing_preference": {
+      "$ref": "#/$defs/PacingPreference",
+      "default": "balanced",
+      "description": "Preferred daily tempo"
+    },
+    "crowd_sensitivity": {
+      "$ref": "#/$defs/CrowdSensitivity",
+      "default": "standard",
+      "description": "Sensitivity to crowds and overtourism"
+    },
+    "dietary_restrictions": {
+      "description": "Allergies and dietary restrictions (e.g. vegetarian, gluten-free, halal)",
+      "items": {
+        "type": "string"
+      },
+      "title": "Dietary Restrictions",
+      "type": "array"
+    },
+    "mobility_needs": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Special mobility requirements (e.g. step-free, wheelchair, stroller)",
+      "title": "Mobility Needs"
+    },
+    "budget_preference": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": "mid-range",
+      "description": "Budget tier: budget, mid-range, premium, luxury",
+      "title": "Budget Preference"
+    }
+  },
+  "required": [
+    "id",
+    "name"
+  ],
+  "title": "Traveler",
+  "type": "object"
+}

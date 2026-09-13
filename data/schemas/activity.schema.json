@@ -1,0 +1,218 @@
+{
+  "$defs": {
+    "ActivityCategory": {
+      "description": "Categories of activities and attractions.",
+      "enum": [
+        "nature",
+        "landscape",
+        "culture",
+        "gastronomy",
+        "adventure",
+        "relaxation",
+        "city_sightseeing",
+        "family",
+        "photography",
+        "shopping",
+        "nightlife"
+      ],
+      "title": "ActivityCategory",
+      "type": "string"
+    },
+    "SourceReference": {
+      "description": "Reference to an authoritative, guidebook, or community source.",
+      "properties": {
+        "title": {
+          "description": "Title or name of the source",
+          "title": "Title",
+          "type": "string"
+        },
+        "url": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Direct URL to the source",
+          "title": "Url"
+        },
+        "source_type": {
+          "default": "official",
+          "description": "Type of source: official, guidebook, community, social_media, local_knowledge",
+          "title": "Source Type",
+          "type": "string"
+        },
+        "verification_level": {
+          "$ref": "#/$defs/VerificationLevel",
+          "default": "unverified",
+          "description": "Verification level of this source"
+        },
+        "notes": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Contextual notes on reliability",
+          "title": "Notes"
+        },
+        "retrieved_at": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "ISO date when information was verified",
+          "title": "Retrieved At"
+        }
+      },
+      "required": [
+        "title"
+      ],
+      "title": "SourceReference",
+      "type": "object"
+    },
+    "VerificationLevel": {
+      "description": "Trust and verification levels for travel data.",
+      "enum": [
+        "official_verified",
+        "cross_checked",
+        "community_recommended",
+        "social_discovery_only",
+        "unverified",
+        "outdated"
+      ],
+      "title": "VerificationLevel",
+      "type": "string"
+    }
+  },
+  "description": "Activity, museum, landmark, or dining experience.",
+  "properties": {
+    "id": {
+      "description": "Unique activity identifier",
+      "title": "Id",
+      "type": "string"
+    },
+    "title": {
+      "description": "Name of the activity or venue",
+      "title": "Title",
+      "type": "string"
+    },
+    "destination_id": {
+      "description": "Destination identifier where activity is located",
+      "title": "Destination Id",
+      "type": "string"
+    },
+    "category": {
+      "$ref": "#/$defs/ActivityCategory",
+      "default": "culture",
+      "description": "Category of activity"
+    },
+    "description": {
+      "description": "Description of the visit or experience",
+      "title": "Description",
+      "type": "string"
+    },
+    "duration_minutes": {
+      "default": 90,
+      "description": "Recommended visit duration in minutes",
+      "title": "Duration Minutes",
+      "type": "integer"
+    },
+    "estimated_cost": {
+      "default": 0.0,
+      "description": "Cost per person in currency",
+      "title": "Estimated Cost",
+      "type": "number"
+    },
+    "currency": {
+      "default": "EUR",
+      "description": "Currency ISO code",
+      "title": "Currency",
+      "type": "string"
+    },
+    "crowd_level": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": "medium",
+      "description": "Observed crowd density: low, medium, high, extreme",
+      "title": "Crowd Level"
+    },
+    "quiet_slot_advice": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Advice on optimal slot to avoid peak crowds (e.g. 'Enter at 08:30 or after 17:00')",
+      "title": "Quiet Slot Advice"
+    },
+    "advance_booking_required": {
+      "default": false,
+      "description": "Whether advance timed tickets are strictly mandatory",
+      "title": "Advance Booking Required",
+      "type": "boolean"
+    },
+    "official_booking_url": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Direct link to official ticketing box office",
+      "title": "Official Booking Url"
+    },
+    "indoor_contingency": {
+      "default": false,
+      "description": "Whether this activity is suitable as a rainy-day backup",
+      "title": "Indoor Contingency",
+      "type": "boolean"
+    },
+    "verification_level": {
+      "$ref": "#/$defs/VerificationLevel",
+      "default": "unverified",
+      "description": "Verification level of activity information"
+    },
+    "sources": {
+      "description": "Sources used to verify hours, ticketing, and crowding",
+      "items": {
+        "$ref": "#/$defs/SourceReference"
+      },
+      "title": "Sources",
+      "type": "array"
+    }
+  },
+  "required": [
+    "id",
+    "title",
+    "destination_id",
+    "description"
+  ],
+  "title": "Activity",
+  "type": "object"
+}

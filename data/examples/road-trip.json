@@ -1,0 +1,626 @@
+{
+  "id": "trip-roadtrip-iceland-002",
+  "title": "Road-Trip Grands Espaces & Cascades — Côte Sud de l'Islande (5 Jours)",
+  "trip_type": "road_trip",
+  "start_date": "2026-09-20",
+  "end_date": "2026-09-24",
+  "currency": "EUR",
+  "budget_cap": 2800.0,
+  "travelers": [
+    {
+      "id": "traveler-1",
+      "name": "Clara",
+      "profile": "couple",
+      "pacing_preference": "balanced",
+      "crowd_sensitivity": "extreme_quiet",
+      "dietary_restrictions": [],
+      "mobility_needs": null,
+      "budget_preference": "mid-range"
+    },
+    {
+      "id": "traveler-2",
+      "name": "Julien",
+      "profile": "couple",
+      "pacing_preference": "balanced",
+      "crowd_sensitivity": "extreme_quiet",
+      "dietary_restrictions": [],
+      "mobility_needs": null,
+      "budget_preference": "mid-range"
+    }
+  ],
+  "destinations": [
+    {
+      "id": "dest-reykjavik",
+      "name": "Reykjavík",
+      "country": "Islande",
+      "region": "Höfuðborgarsvæðið",
+      "currency": "ISK",
+      "timezone": "Atlantic/Reykjavik",
+      "ideal_seasons": ["Juin-Août", "Septembre"],
+      "quiet_periods": ["Septembre", "Mai"],
+      "description": "Capitale côtière et point de départ des explorations du Cercle d'Or et de la Route 1.",
+      "anecdote": "La quasi-totalité du chauffage urbain de Reykjavík provient de l'énergie géothermique naturelle."
+    },
+    {
+      "id": "dest-vik",
+      "name": "Vík í Mýrdal",
+      "country": "Islande",
+      "region": "Suðurland",
+      "currency": "ISK",
+      "timezone": "Atlantic/Reykjavik",
+      "ideal_seasons": ["Mai à Septembre"],
+      "quiet_periods": ["Septembre", "Octobre"],
+      "description": "Village côtier emblématique encadré de falaises basaltiques, de plages de sable noir et de glaciers.",
+      "anecdote": "L'église blanche et rouge de Vík sert de point de rassemblement d'urgence en cas d'éruption du volcan sous-glaciaire Katla."
+    }
+  ],
+  "stages": [
+    {
+      "id": "stage-ice-reykjavik",
+      "destination_id": "dest-reykjavik",
+      "order": 1,
+      "title": "Arrivée et Cercle d'Or",
+      "arrival_date": "2026-09-20",
+      "departure_date": "2026-09-22",
+      "nights": 1,
+      "notes": "Prise en main du véhicule 4x4 et exploration des failles et geysers.",
+      "verification_level": "official_verified",
+      "sources": []
+    },
+    {
+      "id": "stage-ice-vik",
+      "destination_id": "dest-vik",
+      "order": 2,
+      "title": "Côte Sud, Cascades et Plage Noire",
+      "arrival_date": "2026-09-22",
+      "departure_date": "2026-09-24",
+      "nights": 2,
+      "notes": "Base isolée dans la nature à Vík, plages volcaniques et fronts glaciaires.",
+      "verification_level": "official_verified",
+      "sources": []
+    }
+  ],
+  "transports": [
+    {
+      "id": "trans-flight-in",
+      "origin": "Paris Charles de Gaulle (CDG)",
+      "destination": "Keflavík International (KEF)",
+      "mode": "flight",
+      "carrier": "Icelandair",
+      "departure_time": "13:10",
+      "arrival_time": "14:45",
+      "duration_minutes": 215,
+      "estimated_cost": 220.0,
+      "currency": "EUR",
+      "official_booking_url": "https://www.icelandair.com",
+      "door_to_door_notes": "Vol direct. Récupération des bagages et navette loueur de voitures à l'aéroport KEF.",
+      "verification_level": "official_verified",
+      "sources": [
+        {
+          "title": "Icelandair Réservations",
+          "url": "https://www.icelandair.com",
+          "source_type": "official",
+          "verification_level": "official_verified"
+        }
+      ]
+    },
+    {
+      "id": "trans-car-rental",
+      "origin": "Keflavík Airport",
+      "destination": "Keflavík Airport (Boucle Route 1)",
+      "mode": "car_rental",
+      "carrier": "Blue Car Rental Iceland",
+      "departure_time": null,
+      "arrival_time": null,
+      "duration_minutes": 1440,
+      "estimated_cost": 380.0,
+      "currency": "EUR",
+      "official_booking_url": "https://www.bluecarrental.is",
+      "door_to_door_notes": "Location SUV 4x4 (Dacia Duster ou équivalent) avec assurance complète gravillons (Gravel Protection) et vent.",
+      "verification_level": "cross_checked",
+      "sources": [
+        {
+          "title": "Conditions de location Blue Car Rental",
+          "url": "https://www.bluecarrental.is",
+          "source_type": "official",
+          "verification_level": "cross_checked"
+        }
+      ]
+    },
+    {
+      "id": "trans-flight-out",
+      "origin": "Keflavík International (KEF)",
+      "destination": "Paris Charles de Gaulle (CDG)",
+      "mode": "flight",
+      "carrier": "Icelandair",
+      "departure_time": "07:40",
+      "arrival_time": "13:00",
+      "duration_minutes": 200,
+      "estimated_cost": 210.0,
+      "currency": "EUR",
+      "official_booking_url": "https://www.icelandair.com",
+      "door_to_door_notes": "Restitution du véhicule 2h30 avant le décollage à la station KEF.",
+      "verification_level": "official_verified",
+      "sources": [
+        {
+          "title": "Icelandair Programme Vols",
+          "url": "https://www.icelandair.com",
+          "source_type": "official",
+          "verification_level": "official_verified"
+        }
+      ]
+    }
+  ],
+  "accommodations": [
+    {
+      "id": "acc-reyk-guesthouse",
+      "name": "Reykjavík Downtown Guesthouse",
+      "destination_id": "dest-reykjavik",
+      "neighborhood": "Miðborg / Vesturbær",
+      "accommodation_type": "guesthouse",
+      "cost_per_night": 140.0,
+      "total_nights": 1,
+      "currency": "EUR",
+      "quietness_rating": "high",
+      "criteria_matched": ["Parking accessible", "Chambre calme côté cour", "Proximité du centre"],
+      "official_booking_url": "https://reykjavikguesthouse.is",
+      "verification_level": "cross_checked",
+      "sources": [
+        {
+          "title": "Site Hébergement",
+          "url": "https://reykjavikguesthouse.is",
+          "source_type": "official",
+          "verification_level": "cross_checked"
+        }
+      ]
+    },
+    {
+      "id": "acc-vik-country-hotel",
+      "name": "Vík Country Lodge & Cabins",
+      "destination_id": "dest-vik",
+      "neighborhood": "Environs de Vík",
+      "accommodation_type": "hotel",
+      "cost_per_night": 165.0,
+      "total_nights": 2,
+      "currency": "EUR",
+      "quietness_rating": "high",
+      "criteria_matched": ["Isolement en pleine nature", "Vue sur les monts sous-glaciaires", "Excellent spot aurores boréales"],
+      "official_booking_url": "https://viklodge.is",
+      "verification_level": "cross_checked",
+      "sources": [
+        {
+          "title": "Vík Lodge Booking",
+          "url": "https://viklodge.is",
+          "source_type": "official",
+          "verification_level": "cross_checked"
+        }
+      ]
+    },
+    {
+      "id": "acc-kef-airport-inn",
+      "name": "Keflavík Airport Hotel Aurora",
+      "destination_id": "dest-reykjavik",
+      "neighborhood": "Keflavík Airport Zone",
+      "accommodation_type": "hotel",
+      "cost_per_night": 130.0,
+      "total_nights": 1,
+      "currency": "EUR",
+      "quietness_rating": "medium",
+      "criteria_matched": ["À 100 mètres du terminal", "Check-out express pour vol matinal de 07h40"],
+      "official_booking_url": "https://hotelaurora.is",
+      "verification_level": "cross_checked",
+      "sources": [
+        {
+          "title": "Airport Hotel Aurora",
+          "url": "https://hotelaurora.is",
+          "source_type": "official",
+          "verification_level": "cross_checked"
+        }
+      ]
+    }
+  ],
+  "activities": [
+    {
+      "id": "act-thingvellir",
+      "title": "Parc National de Þingvellir (Faille d'Almannagjá)",
+      "destination_id": "dest-reykjavik",
+      "category": "nature",
+      "description": "Site géologique exceptionnel où se séparent les plaques tectoniques nord-américaine et eurasienne.",
+      "duration_minutes": 120,
+      "estimated_cost": 5.0,
+      "currency": "EUR",
+      "crowd_level": "medium",
+      "quiet_slot_advice": "Arriver avant 09h30 avant les bus d'excursion de la mi-journée.",
+      "advance_booking_required": false,
+      "official_booking_url": "https://www.thingvellir.is/en/plan-your-visit/parking-fees/",
+      "indoor_contingency": false,
+      "verification_level": "official_verified",
+      "sources": [
+        {
+          "title": "Parcs Nationaux d'Islande",
+          "url": "https://www.thingvellir.is",
+          "source_type": "official",
+          "verification_level": "official_verified"
+        }
+      ]
+    },
+    {
+      "id": "act-gullfoss",
+      "title": "Chute de Gullfoss et Geysir",
+      "destination_id": "dest-reykjavik",
+      "category": "landscape",
+      "description": "Double cascade spectaculaire de la rivière Hvítá et geyser Strokkur en éruption toutes les 6 à 10 minutes.",
+      "duration_minutes": 90,
+      "estimated_cost": 0.0,
+      "currency": "EUR",
+      "crowd_level": "high",
+      "quiet_slot_advice": "Visiter en fin d'après-midi vers 16h30 quand les cars de touristes repartent vers la capitale.",
+      "advance_booking_required": false,
+      "official_booking_url": null,
+      "indoor_contingency": false,
+      "verification_level": "official_verified",
+      "sources": [
+        {
+          "title": "Visit South Iceland",
+          "url": "https://www.south.is",
+          "source_type": "official",
+          "verification_level": "official_verified"
+        }
+      ]
+    },
+    {
+      "id": "act-seljalandsfoss",
+      "title": "Chute de Seljalandsfoss et Gljúfrabúi",
+      "destination_id": "dest-vik",
+      "category": "landscape",
+      "description": "Cascade haute de 60 mètres avec sentier passant derrière le rideau d'eau, et cascade secrète dans le canyon voisin.",
+      "duration_minutes": 75,
+      "estimated_cost": 5.0,
+      "currency": "EUR",
+      "crowd_level": "medium",
+      "quiet_slot_advice": "Créneau matinal 08h30. Imperméable intégral obligatoire contre les embruns intenses.",
+      "advance_booking_required": false,
+      "official_booking_url": null,
+      "indoor_contingency": false,
+      "verification_level": "official_verified",
+      "sources": [
+        {
+          "title": "SafeTravel Iceland",
+          "url": "https://safetravel.is",
+          "source_type": "official",
+          "verification_level": "official_verified"
+        }
+      ]
+    },
+    {
+      "id": "act-reynisfjara",
+      "title": "Plage Noire de Reynisfjara et Colonnes Basaltiques",
+      "destination_id": "dest-vik",
+      "category": "nature",
+      "description": "Plage volcanique noire surplombée d'orgues basaltiques et de stacks rocheux légendaires de Reynisdrangar.",
+      "duration_minutes": 60,
+      "estimated_cost": 6.0,
+      "currency": "EUR",
+      "crowd_level": "high",
+      "quiet_slot_advice": "ATTENTION SÉCURITÉ : respecter scrupuleusement les feux d'alerte et rester à plus de 30 mètres de l'eau (vagues scélérates mortelles).",
+      "advance_booking_required": false,
+      "official_booking_url": "https://safetravel.is/reynisfjara",
+      "indoor_contingency": false,
+      "verification_level": "official_verified",
+      "sources": [
+        {
+          "title": "Dispositif d'Alerte Reynisfjara SafeTravel",
+          "url": "https://safetravel.is",
+          "source_type": "official",
+          "verification_level": "official_verified"
+        }
+      ]
+    }
+  ],
+  "itinerary": [
+    {
+      "day_number": 1,
+      "date": "2026-09-20",
+      "destination_id": "dest-reykjavik",
+      "theme": "Atterrissage, prise en main du 4x4 et soirée à Reykjavík",
+      "items": [
+        {
+          "time": "14:45",
+          "item_type": "transport",
+          "title": "Arrivée KEF et prise en main véhicule 4x4",
+          "reference_id": "trans-car-rental",
+          "duration_minutes": 60,
+          "notes": "Vérifier l'état de la carrosserie et les pneus chez Blue Car Rental.",
+          "indoor_backup": null
+        },
+        {
+          "time": "16:00",
+          "item_type": "transport",
+          "title": "Route côtière vers Reykjavík (45 km)",
+          "reference_id": null,
+          "duration_minutes": 45,
+          "notes": "Consulter l'état de la route sur road.is.",
+          "indoor_backup": null
+        },
+        {
+          "time": "17:30",
+          "item_type": "checkin",
+          "title": "Installation Guesthouse Reykjavík",
+          "reference_id": "acc-reyk-guesthouse",
+          "duration_minutes": 30,
+          "notes": "Check-in autonome par code.",
+          "indoor_backup": null
+        },
+        {
+          "time": "19:00",
+          "item_type": "meal",
+          "title": "Dîner au vieux port de Reykjavík (Soupe de homard traditionnelle)",
+          "reference_id": null,
+          "duration_minutes": 75,
+          "notes": "Sægreifinn (Le Baron de la Mer) au bord des quais.",
+          "indoor_backup": null
+        }
+      ],
+      "daily_cost_estimate": 60.0,
+      "currency": "EUR",
+      "weather_contingency_notes": "En cas de vent violent, rouler prudemment sur la route 41."
+    },
+    {
+      "day_number": 2,
+      "date": "2026-09-21",
+      "destination_id": "dest-reykjavik",
+      "theme": "Le Cercle d'Or hors affluence : Failles et Geysers",
+      "items": [
+        {
+          "time": "08:30",
+          "item_type": "transport",
+          "title": "Trajet vers le Parc National de Þingvellir",
+          "reference_id": null,
+          "duration_minutes": 45,
+          "notes": "Départ matinal pour devancer les cars.",
+          "indoor_backup": null
+        },
+        {
+          "time": "09:30",
+          "item_type": "activity",
+          "title": "Randonnée dans la faille tectonique de Þingvellir",
+          "reference_id": "act-thingvellir",
+          "duration_minutes": 120,
+          "notes": "Payer le stationnement via l'application Parka.",
+          "indoor_backup": null
+        },
+        {
+          "time": "12:30",
+          "item_type": "meal",
+          "title": "Déjeuner fermier à Friðheimar (Serres de tomates géothermiques)",
+          "reference_id": null,
+          "duration_minutes": 75,
+          "notes": "Réservation indispensable pour la soupe de tomate à volonté.",
+          "indoor_backup": null
+        },
+        {
+          "time": "14:30",
+          "item_type": "activity",
+          "title": "Observation du geyser Strokkur et cascade dorée de Gullfoss",
+          "reference_id": "act-gullfoss",
+          "duration_minutes": 90,
+          "notes": "Manteau imperméable et chaussures crantées recommandés.",
+          "indoor_backup": null
+        }
+      ],
+      "daily_cost_estimate": 70.0,
+      "currency": "EUR",
+      "weather_contingency_notes": "Si tempête, reporter Gullfoss et se réfugier dans les thermes de Fontana."
+    },
+    {
+      "day_number": 3,
+      "date": "2026-09-22",
+      "destination_id": "dest-vik",
+      "theme": "Cascades majestueuses et Route du Sud vers Vík",
+      "items": [
+        {
+          "time": "08:30",
+          "item_type": "activity",
+          "title": "Passage derrière la cascade de Seljalandsfoss",
+          "reference_id": "act-seljalandsfoss",
+          "duration_minutes": 75,
+          "notes": "Sol glissant près des embruns, attention à l'appareil photo.",
+          "indoor_backup": null
+        },
+        {
+          "time": "10:30",
+          "item_type": "activity",
+          "title": "Arrêt à la cascade puissante de Skógafoss",
+          "reference_id": null,
+          "duration_minutes": 60,
+          "notes": "Montée des 527 marches vers la plateforme supérieure si pas de vertige.",
+          "indoor_backup": "Musée folklorique de Skógar juste à côté"
+        },
+        {
+          "time": "14:00",
+          "item_type": "checkin",
+          "title": "Arrivée et installation à Vík Country Lodge",
+          "reference_id": "acc-vik-country-hotel",
+          "duration_minutes": 30,
+          "notes": "Vue panoramique sur les falaises.",
+          "indoor_backup": null
+        },
+        {
+          "time": "16:00",
+          "item_type": "activity",
+          "title": "Sécurité et contemplation à la plage noire de Reynisfjara",
+          "reference_id": "act-reynisfjara",
+          "duration_minutes": 60,
+          "notes": "Interdiction absolue de tourner le dos aux vagues !",
+          "indoor_backup": null
+        }
+      ],
+      "daily_cost_estimate": 55.0,
+      "currency": "EUR",
+      "weather_contingency_notes": "Si alerte vent > 20 m/s sur Safetravel, annuler les abords des falaises."
+    },
+    {
+      "day_number": 4,
+      "date": "2026-09-23",
+      "destination_id": "dest-vik",
+      "theme": "Glaciers du Sud et retour progressif vers la péninsule de Reykjanes",
+      "items": [
+        {
+          "time": "09:00",
+          "item_type": "activity",
+          "title": "Observation de la langue glaciaire Sólheimajökull",
+          "reference_id": null,
+          "duration_minutes": 90,
+          "notes": "Accès balisé jusqu'au lagon glaciaire sans marcher sur la glace sans guide.",
+          "indoor_backup": null
+        },
+        {
+          "time": "13:00",
+          "item_type": "meal",
+          "title": "Pause déjeuner à Hvolsvöllur",
+          "reference_id": null,
+          "duration_minutes": 60,
+          "notes": "Boulangerie locale et réapprovisionnement carburant.",
+          "indoor_backup": null
+        },
+        {
+          "time": "15:00",
+          "item_type": "transport",
+          "title": "Route vers la région de Keflavík",
+          "reference_id": null,
+          "duration_minutes": 150,
+          "notes": "200 km sur la Route 1 avec plein d'essence avant restitution.",
+          "indoor_backup": null
+        },
+        {
+          "time": "18:00",
+          "item_type": "checkin",
+          "title": "Installation à l'hôtel d'aéroport Aurora KEF",
+          "reference_id": "acc-kef-airport-inn",
+          "duration_minutes": 30,
+          "notes": "Préparation des bagages pour l'enregistrement matinal.",
+          "indoor_backup": null
+        }
+      ],
+      "daily_cost_estimate": 65.0,
+      "currency": "EUR",
+      "weather_contingency_notes": "Route 1 généralement dégagée en septembre, surveiller vegagerdin.is."
+    },
+    {
+      "day_number": 5,
+      "date": "2026-09-24",
+      "destination_id": "dest-reykjavik",
+      "theme": "Restitution du véhicule et décollage matinal",
+      "items": [
+        {
+          "time": "05:15",
+          "item_type": "transport",
+          "title": "Restitution du véhicule 4x4",
+          "reference_id": "trans-car-rental",
+          "duration_minutes": 30,
+          "notes": "Dépôt des clés et vérification rapide.",
+          "indoor_backup": null
+        },
+        {
+          "time": "05:45",
+          "item_type": "transport",
+          "title": "Enregistrement et contrôle de sécurité aéroport KEF",
+          "reference_id": "trans-flight-out",
+          "duration_minutes": 90,
+          "notes": "Accès direct à pied depuis l'hôtel.",
+          "indoor_backup": null
+        },
+        {
+          "time": "07:40",
+          "item_type": "transport",
+          "title": "Décollage vol retour KEF -> CDG",
+          "reference_id": "trans-flight-out",
+          "duration_minutes": 200,
+          "notes": "Arrivée prévue à Paris CDG à 13h00 locale.",
+          "indoor_backup": null
+        }
+      ],
+      "daily_cost_estimate": 20.0,
+      "currency": "EUR",
+      "weather_contingency_notes": "Vols rarement annulés à KEF sauf tempête extrême."
+    }
+  ],
+  "checklists": [
+    {
+      "id": "chk-ice-safetravel",
+      "category": "safety_emergency",
+      "title": "Inscription de l'itinéraire sur SafeTravel.is",
+      "description": "Enregistrer son plan de route sur l'application officielle islandaise 112 SafeTravel pour l'assistance secours.",
+      "is_mandatory": true,
+      "due_before_departure_days": 1,
+      "verification_level": "official_verified",
+      "official_reference_url": "https://safetravel.is",
+      "completed": false
+    },
+    {
+      "id": "chk-ice-clothing",
+      "category": "luggage_gear",
+      "title": "Équipement 3 couches imperméable coupe-vent",
+      "description": "Veste imperméable Gore-Tex (ou équivalent), pantalon de pluie, chaussures de randonnée montantes étanches et crampons légers si gel.",
+      "is_mandatory": true,
+      "due_before_departure_days": 5,
+      "verification_level": "cross_checked",
+      "official_reference_url": "https://safetravel.is/conditions",
+      "completed": true
+    },
+    {
+      "id": "chk-ice-driving-license",
+      "category": "documents_visa",
+      "title": "Permis de conduire valide & carte de crédit pour caution loueur",
+      "description": "Permis national européen accepté. Carte de crédit au nom du conducteur principal obligatoire pour l'empreinte de caution.",
+      "is_mandatory": true,
+      "due_before_departure_days": 10,
+      "verification_level": "official_verified",
+      "official_reference_url": "https://island.is/en/driving-licence",
+      "completed": true
+    },
+    {
+      "id": "chk-ice-emergency",
+      "category": "safety_emergency",
+      "title": "Numéros d'urgence islandais",
+      "description": "Urgences nationales : 112. Météo : Vedur.is. État des routes : Road.is (+354 1777).",
+      "is_mandatory": true,
+      "due_before_departure_days": 2,
+      "verification_level": "official_verified",
+      "official_reference_url": "https://safetravel.is",
+      "completed": true
+    }
+  ],
+  "reservations": [
+    {
+      "id": "res-ice-flights",
+      "category": "transport",
+      "title": "Billets d'avion aller-retour Paris-Keflavík (Icelandair)",
+      "status": "needed",
+      "mandatory": true,
+      "reference_id": "trans-flight-in",
+      "deadline_days_before": 30,
+      "estimated_cost": 860.0,
+      "currency": "EUR",
+      "official_booking_url": "https://www.icelandair.com",
+      "action_required": "Acheter 2 billets A/R sur la compagnie régulière officielle",
+      "verification_level": "official_verified",
+      "sources": []
+    },
+    {
+      "id": "res-ice-car",
+      "category": "transport",
+      "title": "Location SUV 4x4 Blue Car Rental KEF",
+      "status": "needed",
+      "mandatory": true,
+      "reference_id": "trans-car-rental",
+      "deadline_days_before": 21,
+      "estimated_cost": 380.0,
+      "currency": "EUR",
+      "official_booking_url": "https://www.bluecarrental.is",
+      "action_required": "Réserver véhicule 4x4 avec assurance gravillons",
+      "verification_level": "cross_checked",
+      "sources": []
+    }
+  ]
+}

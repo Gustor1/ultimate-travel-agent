@@ -1,0 +1,178 @@
+{
+  "$defs": {
+    "SourceReference": {
+      "description": "Reference to an authoritative, guidebook, or community source.",
+      "properties": {
+        "title": {
+          "description": "Title or name of the source",
+          "title": "Title",
+          "type": "string"
+        },
+        "url": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Direct URL to the source",
+          "title": "Url"
+        },
+        "source_type": {
+          "default": "official",
+          "description": "Type of source: official, guidebook, community, social_media, local_knowledge",
+          "title": "Source Type",
+          "type": "string"
+        },
+        "verification_level": {
+          "$ref": "#/$defs/VerificationLevel",
+          "default": "unverified",
+          "description": "Verification level of this source"
+        },
+        "notes": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Contextual notes on reliability",
+          "title": "Notes"
+        },
+        "retrieved_at": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "ISO date when information was verified",
+          "title": "Retrieved At"
+        }
+      },
+      "required": [
+        "title"
+      ],
+      "title": "SourceReference",
+      "type": "object"
+    },
+    "VerificationLevel": {
+      "description": "Trust and verification levels for travel data.",
+      "enum": [
+        "official_verified",
+        "cross_checked",
+        "community_recommended",
+        "social_discovery_only",
+        "unverified",
+        "outdated"
+      ],
+      "title": "VerificationLevel",
+      "type": "string"
+    }
+  },
+  "description": "Stage, leg, or stopover of a journey (étape).",
+  "properties": {
+    "id": {
+      "description": "Unique stage identifier (e.g. stage-1-paris)",
+      "title": "Id",
+      "type": "string"
+    },
+    "destination_id": {
+      "description": "Referenced destination identifier",
+      "title": "Destination Id",
+      "type": "string"
+    },
+    "order": {
+      "default": 1,
+      "description": "1-indexed sequence order of this stage",
+      "title": "Order",
+      "type": "integer"
+    },
+    "title": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Descriptive stage title (e.g. 'Stopover in Lyon')",
+      "title": "Title"
+    },
+    "arrival_date": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "ISO arrival date YYYY-MM-DD",
+      "title": "Arrival Date"
+    },
+    "departure_date": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "ISO departure date YYYY-MM-DD",
+      "title": "Departure Date"
+    },
+    "nights": {
+      "default": 0,
+      "description": "Number of nights spent in this stage",
+      "title": "Nights",
+      "type": "integer"
+    },
+    "notes": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Logistical notes, scenic route tips, or warnings",
+      "title": "Notes"
+    },
+    "verification_level": {
+      "$ref": "#/$defs/VerificationLevel",
+      "default": "cross_checked",
+      "description": "Confidence level of stage information"
+    },
+    "sources": {
+      "description": "Sources used to verify stage feasibility and stops",
+      "items": {
+        "$ref": "#/$defs/SourceReference"
+      },
+      "title": "Sources",
+      "type": "array"
+    }
+  },
+  "required": [
+    "id",
+    "destination_id"
+  ],
+  "title": "TripStage",
+  "type": "object"
+}
