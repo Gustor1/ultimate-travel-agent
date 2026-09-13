@@ -31,6 +31,7 @@ from ultimate_travel_agent.integrations.guides import (
     WikivoyageProvider,
 )
 from ultimate_travel_agent.integrations.health import create_health_report
+from ultimate_travel_agent.integrations.http_client import KeylessHttpClient
 from ultimate_travel_agent.integrations.maps import (
     GoogleMapsRoutesProvider,
     MockMapsProvider,
@@ -41,6 +42,7 @@ from ultimate_travel_agent.integrations.maps import (
 )
 from ultimate_travel_agent.integrations.models import (
     AvailabilityStatus,
+    CacheStatus,
     HealthCheckResult,
     HealthStatus,
     PriceStatus,
@@ -49,8 +51,10 @@ from ultimate_travel_agent.integrations.models import (
     ProviderError,
     ProviderMode,
     ProviderNetworkError,
+    ProviderRateLimitError,
     ProviderResultItem,
     ProviderSearchResult,
+    ResultStatus,
 )
 from ultimate_travel_agent.integrations.registry import (
     ProviderRegistry,
@@ -97,9 +101,13 @@ __all__ = [
     "HealthCheckResult",
     "ProviderResultItem",
     "ProviderSearchResult",
+    "CacheStatus",
+    "ResultStatus",
+    "KeylessHttpClient",
     "ProviderError",
     "ProviderConfigurationError",
     "ProviderNetworkError",
+    "ProviderRateLimitError",
     # Legacy adapters (v1.0 backward compatibility)
     "ActivityAdapter",
     "CurrencyAdapter",

@@ -50,6 +50,20 @@ class HealthStatus(str, Enum):
     UNAVAILABLE = "unavailable"
 
 
+class CacheStatus(str, Enum):
+    """Cache lookup status."""
+    HIT = "hit"
+    MISS = "miss"
+    STALE = "stale"
+
+
+class ResultStatus(str, Enum):
+    """Execution freshness status."""
+    LIVE = "live"
+    UNAVAILABLE = "unavailable"
+    NEEDS_VERIFICATION = "needs_verification"
+
+
 class HealthCheckResult(BaseModel):
     """Standardized health check result."""
     provider: str
@@ -79,6 +93,9 @@ class ProviderResultItem(BaseModel):
     price: Optional[float] = None
     rating: Optional[float] = None
     details: Dict[str, Any] = Field(default_factory=dict)
+    attribution: Optional[str] = None
+    cache_status: Optional[str] = None
+    result_status: Optional[str] = None
 
 
 class ProviderSearchResult(BaseModel):
@@ -93,6 +110,10 @@ class ProviderSearchResult(BaseModel):
     source_metadata: Dict[str, Any] = Field(default_factory=dict)
     warnings: List[str] = Field(default_factory=list)
     requires_booking_verification: bool = True
+    attribution: Optional[str] = None
+    cache_status: Optional[str] = None
+    result_status: Optional[str] = None
+    source_url: Optional[str] = None
 
 
 class ProviderError(Exception):
@@ -108,3 +129,9 @@ class ProviderConfigurationError(ProviderError):
 class ProviderNetworkError(ProviderError):
     """Raised on external communication failure."""
     pass
+
+
+class ProviderRateLimitError(ProviderError):
+    """Raised when an external API rate limit (e.g. 429) is encountered."""
+    pass
+
