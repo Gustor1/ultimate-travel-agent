@@ -30,6 +30,9 @@ env/
 
 # Environment Variables & Secrets
 .env
+.env.*
+*.env
+*.env.*
 .env.local
 .env.*.local
 *.pem
