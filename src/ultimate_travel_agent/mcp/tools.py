@@ -279,3 +279,31 @@ def export_trip_summary(trip_path: str, format: str = "markdown") -> str:
         }, indent=2, ensure_ascii=False)
 
     return generate_markdown_report(trip, results)
+
+
+def get_inter_city_routes(trip_path: str) -> List[Dict[str, Any]]:
+    """Retrieve inter-city transit options and evaluations for a trip.
+
+    Args:
+        trip_path: Path to the trip JSON file.
+
+    Returns:
+        List of inter-city routes with multi-option details.
+    """
+    trip = _resolve_trip(trip_path)
+    return [r.model_dump() for r in trip.inter_city_routes]
+
+
+def get_contingency_dossier(trip_path: str) -> Dict[str, Any]:
+    """Generate comprehensive contingency pack (Plan B, checklists, emergency summary).
+
+    Args:
+        trip_path: Path to the trip JSON file.
+
+    Returns:
+        Contingency dossier dictionary.
+    """
+    from ultimate_travel_agent.engine.contingency import generate_contingency_dossier
+    trip = _resolve_trip(trip_path)
+    dossier = generate_contingency_dossier(trip)
+    return dossier.model_dump()

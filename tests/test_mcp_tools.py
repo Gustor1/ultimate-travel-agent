@@ -114,7 +114,7 @@ def test_mcp_server_protocol_interface() -> None:
     }
     assert expected_tools.issubset(tool_names)
 
-    # Call all 8 MCP tools through MCPServer interface to ensure protocol compliance
+    # Call all 10 MCP tools through MCPServer interface to ensure protocol compliance
     trip = "examples/city-trip/trip.json"
     assert not asyncio.run(server.call_tool("list_trips", {})).is_error
     assert not asyncio.run(server.call_tool("get_trip", {"trip_path": trip})).is_error
@@ -128,3 +128,18 @@ def test_mcp_server_protocol_interface() -> None:
     assert not asyncio.run(server.call_tool("calculate_budget", {"trip_path": trip, "safety_buffer_pct": 12.0})).is_error
     assert not asyncio.run(server.call_tool("list_booking_requirements", {"trip_path": trip})).is_error
     assert not asyncio.run(server.call_tool("export_trip_summary", {"trip_path": trip, "format": "markdown"})).is_error
+    assert not asyncio.run(server.call_tool("get_inter_city_routes", {"trip_path": trip})).is_error
+    assert not asyncio.run(server.call_tool("get_contingency_dossier", {"trip_path": trip})).is_error
+
+
+def test_mcp_v11_tools() -> None:
+    """Test get_inter_city_routes and get_contingency_dossier tool functions directly."""
+    trip = "examples/city-trip/trip.json"
+    routes = tools.get_inter_city_routes(trip)
+    assert len(routes) >= 1
+    assert routes[0]["id"] == "route-paris-barcelona"
+
+    contingency = tools.get_contingency_dossier(trip)
+    assert "pre_departure_checklist" in contingency
+    assert len(contingency["pre_departure_checklist"]) >= 6
+    assert "generic_emergency_summary" in contingency

@@ -12,7 +12,7 @@ from ultimate_travel_agent.mcp import tools
 # Initialize MCP Server
 server = MCPServer(
     name="ultimate-travel-agent",
-    version="1.0.0",
+    version="1.1.0",
     description="Offline-first, privacy-respecting travel planning tools."
 )
 
@@ -63,6 +63,18 @@ def list_booking_requirements(trip_path: str) -> List[Dict[str, Any]]:
 def export_trip_summary(trip_path: str, format: str = "markdown") -> str:
     """Generate the finalized trip report."""
     return tools.export_trip_summary(trip_path=trip_path, format=format)
+
+
+@server.tool(name="get_inter_city_routes", description="Retrieve multi-option inter-city transit routes and recommendations.")
+def get_inter_city_routes(trip_path: str) -> List[Dict[str, Any]]:
+    """Get competing inter-city transit options."""
+    return tools.get_inter_city_routes(trip_path=trip_path)
+
+
+@server.tool(name="get_contingency_dossier", description="Generate pre-departure checklists, weather/closure Plan B, and generic emergency summary.")
+def get_contingency_dossier(trip_path: str) -> Dict[str, Any]:
+    """Get contingency and preparation pack."""
+    return tools.get_contingency_dossier(trip_path=trip_path)
 
 
 def main() -> None:
