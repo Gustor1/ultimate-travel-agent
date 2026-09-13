@@ -1,7 +1,7 @@
 """Activity and point-of-interest models for ultimate-travel-agent."""
 
-from typing import List, Optional
-from pydantic import BaseModel, Field
+from typing import Any, List, Optional
+from pydantic import BaseModel, Field, field_validator
 from ultimate_travel_agent.models.enums import (
     ActivityCategory,
     DifficultyLevel,
@@ -22,6 +22,80 @@ class Activity(BaseModel):
         description="Category of activity"
     )
     description: str = Field(..., description="Description of the visit or experience")
+
+    @field_validator("category", mode="before")
+    @classmethod
+    def _normalize_category(cls, v: Any) -> Any:
+        if isinstance(v, str):
+            clean = v.strip().lower().replace("-", "_").replace(" ", "_")
+            mapping = {
+                "histoire": ActivityCategory.HISTORY,
+                "history": ActivityCategory.HISTORY,
+                "culture": ActivityCategory.CULTURE,
+                "culturel": ActivityCategory.CULTURE,
+                "gastronomie": ActivityCategory.GASTRONOMY,
+                "gastronomy": ActivityCategory.GASTRONOMY,
+                "nature": ActivityCategory.NATURE,
+                "paysage": ActivityCategory.LANDSCAPE,
+                "landscape": ActivityCategory.LANDSCAPE,
+                "aventure": ActivityCategory.ADVENTURE,
+                "adventure": ActivityCategory.ADVENTURE,
+                "detente": ActivityCategory.RELAXATION,
+                "détente": ActivityCategory.RELAXATION,
+                "relaxation": ActivityCategory.RELAXATION,
+                "nightlife": ActivityCategory.NIGHTLIFE,
+                "vie_nocturne": ActivityCategory.NIGHTLIFE,
+                "famille": ActivityCategory.FAMILY,
+                "family": ActivityCategory.FAMILY,
+                "photographie": ActivityCategory.PHOTOGRAPHY,
+                "photography": ActivityCategory.PHOTOGRAPHY,
+                "shopping": ActivityCategory.SHOPPING,
+                "city_sightseeing": ActivityCategory.CITY_SIGHTSEEING,
+                "visite": ActivityCategory.CITY_SIGHTSEEING,
+                "sightseeing": ActivityCategory.CITY_SIGHTSEEING,
+            }
+            if clean in mapping:
+                return mapping[clean]
+        return v
+
+    @field_validator("environment", mode="before")
+    @classmethod
+    def _normalize_environment(cls, v: Any) -> Any:
+        if isinstance(v, str):
+            clean = v.strip().lower()
+            mapping = {
+                "interieur": EnvironmentType.INDOOR,
+                "intérieur": EnvironmentType.INDOOR,
+                "indoor": EnvironmentType.INDOOR,
+                "exterieur": EnvironmentType.OUTDOOR,
+                "extérieur": EnvironmentType.OUTDOOR,
+                "outdoor": EnvironmentType.OUTDOOR,
+                "hybride": EnvironmentType.HYBRID,
+                "hybrid": EnvironmentType.HYBRID,
+            }
+            if clean in mapping:
+                return mapping[clean]
+        return v
+
+    @field_validator("difficulty_level", mode="before")
+    @classmethod
+    def _normalize_difficulty(cls, v: Any) -> Any:
+        if isinstance(v, str):
+            clean = v.strip().lower()
+            mapping = {
+                "facile": DifficultyLevel.EASY,
+                "easy": DifficultyLevel.EASY,
+                "moyen": DifficultyLevel.MODERATE,
+                "modere": DifficultyLevel.MODERATE,
+                "modéré": DifficultyLevel.MODERATE,
+                "moderate": DifficultyLevel.MODERATE,
+                "exigeant": DifficultyLevel.DEMANDING,
+                "difficile": DifficultyLevel.DEMANDING,
+                "demanding": DifficultyLevel.DEMANDING,
+            }
+            if clean in mapping:
+                return mapping[clean]
+        return v
 
     # Geographic granularity
     country: Optional[str] = Field(None, description="Country where the activity is located")

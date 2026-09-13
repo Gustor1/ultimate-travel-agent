@@ -112,3 +112,32 @@ def test_activity_effective_crowd_strategy_fallback() -> None:
         crowd_avoidance_strategy=None,
     )
     assert act.effective_crowd_strategy == "Matin avant 10h"
+
+
+def test_activity_french_aliases_normalization() -> None:
+    """Test that French category, environment, and difficulty names normalize smoothly."""
+    act1 = Activity(
+        id="act-fr-1",
+        title="Château Médiéval",
+        destination_id="dest-01",
+        description="Visite historique.",
+        category="histoire",
+        environment="extérieur",
+        difficulty_level="facile",
+    )
+    assert act1.category == ActivityCategory.HISTORY
+    assert act1.environment == EnvironmentType.OUTDOOR
+    assert act1.difficulty_level == DifficultyLevel.EASY
+
+    act2 = Activity(
+        id="act-fr-2",
+        title="Spa & Thalasso",
+        destination_id="dest-01",
+        description="Bains chauds relaxants.",
+        category="détente",
+        environment="intérieur",
+        difficulty_level="moyen",
+    )
+    assert act2.category == ActivityCategory.RELAXATION
+    assert act2.environment == EnvironmentType.INDOOR
+    assert act2.difficulty_level == DifficultyLevel.MODERATE
