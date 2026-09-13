@@ -91,7 +91,7 @@ class Provider(ABC):
 
     def execute_query(self, mode: Optional[str] = None, **kwargs: Any) -> ProviderSearchResult:
         """Execute search with explicit mode override and credential validation."""
-        selected_mode = ProviderMode(mode) if mode else self.mode
+        selected_mode = ProviderMode(str(mode).lower()) if mode else self.mode
 
         if selected_mode == ProviderMode.LIVE:
             if getattr(self, "is_mock", False) or "mock" in self.name.lower():

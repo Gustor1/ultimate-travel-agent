@@ -13,6 +13,27 @@ import sys
 from pathlib import Path
 from typing import List, Optional, Tuple
 
+# Ensure robust console output across all platforms and encodings
+if hasattr(sys.stdout, "reconfigure"):
+    try:
+        sys.stdout.reconfigure(errors="replace")
+    except Exception:
+        pass
+if hasattr(sys.stderr, "reconfigure"):
+    try:
+        sys.stderr.reconfigure(errors="replace")
+    except Exception:
+        pass
+
+
+def _can_encode(text: str) -> bool:
+    """Check if stdout can encode the given string without error."""
+    try:
+        text.encode(sys.stdout.encoding or "ascii")
+        return True
+    except (UnicodeEncodeError, LookupError, AttributeError):
+        return False
+
 
 def get_pack_root() -> Path:
     """Return the root path of travel-skills package."""
@@ -64,11 +85,13 @@ def install_skills(
             if not force:
                 skipped.append(skill_name)
                 continue
-            else:
-                if not dry_run:
+            if not dry_run:
+                if dest_skill_dir.is_dir():
                     shutil.rmtree(dest_skill_dir)
-                    shutil.copytree(src_skill_dir, dest_skill_dir)
-                overwritten.append(skill_name)
+                else:
+                    dest_skill_dir.unlink()
+                shutil.copytree(src_skill_dir, dest_skill_dir)
+            overwritten.append(skill_name)
         else:
             if not dry_run:
                 shutil.copytree(src_skill_dir, dest_skill_dir)
@@ -103,8 +126,18 @@ def main() -> int:
     args = parser.parse_args()
 
     target_path = args.target.resolve()
-    print(f"📦 Travel Skills Pack Installer")
-    print(f"🎯 Target project: {target_path}")
+    can_emoji = _can_encode("📦")
+    ico_pack = "📦 " if can_emoji else ""
+    ico_target = "🎯 " if can_emoji else ""
+    ico_ok = "✅ " if can_emoji else "[OK] "
+    ico_overwrite = "🔄 " if can_emoji else "[OVERWRITTEN] "
+    ico_warn = "⚠️  " if can_emoji else "[WARN] "
+    ico_info = "ℹ️  " if can_emoji else "[INFO] "
+    ico_success = "✨ " if can_emoji else "[SUCCESS] "
+    ico_err = "❌ " if can_emoji else "[ERROR] "
+
+    print(f"{ico_pack}Travel Skills Pack Installer")
+    print(f"{ico_target}Target project: {target_path}")
 
     try:
         installed, skipped, overwritten = install_skills(
@@ -113,30 +146,30 @@ def main() -> int:
             dry_run=args.dry_run,
         )
     except Exception as exc:
-        print(f"❌ Error during installation: {exc}", file=sys.stderr)
+        print(f"{ico_err}Error during installation: {exc}", file=sys.stderr)
         return 1
 
     prefix = "[DRY-RUN] " if args.dry_run else ""
     if installed:
-        print(f"\n{prefix}✅ Installed skills:")
+        print(f"\n{prefix}{ico_ok}Installed skills:")
         for s in installed:
             print(f"   + {s}")
     if overwritten:
-        print(f"\n{prefix}🔄 Overwritten skills (--force):")
+        print(f"\n{prefix}{ico_overwrite}Overwritten skills (--force):")
         for s in overwritten:
             print(f"   ~ {s}")
     if skipped:
-        print(f"\n{prefix}⚠️  Skipped existing skills (use --force to overwrite):")
+        print(f"\n{prefix}{ico_warn}Skipped existing skills (use --force to overwrite):")
         for s in skipped:
             print(f"   - {s}")
 
     if not installed and not overwritten:
         if skipped:
-            print("\nℹ️  All skills were already present. Nothing changed.")
+            print(f"\n{ico_info}All skills were already present. Nothing changed.")
         else:
-            print("\n⚠️  No skills found in package to install.")
+            print(f"\n{ico_warn}No skills found in package to install.")
     else:
-        print(f"\n✨ Successfully finished. Target skills directory: {target_path / '.agents' / 'skills'}")
+        print(f"\n{ico_success}Successfully finished. Target skills directory: {target_path / '.agents' / 'skills'}")
 
     return 0
 

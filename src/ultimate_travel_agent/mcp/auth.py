@@ -50,18 +50,24 @@ class OAuthTokenValidator(TokenValidator):
 
 
 def extract_token_from_headers(headers: Mapping[str, str]) -> Optional[str]:
-    """Extract authentication token from Authorization or X-API-Key header."""
-    auth_header = headers.get("authorization") or headers.get("Authorization")
+    """Extract authentication token from Authorization or X-API-Key header (case-insensitive)."""
+    # Normalize header keys to lowercase for robust case-insensitivity
+    lower_headers = {k.lower(): v for k, v in headers.items()}
+
+    auth_header = lower_headers.get("authorization")
     if auth_header:
         parts = auth_header.strip().split(" ", 1)
         if len(parts) == 2 and parts[0].lower() == "bearer":
-            return parts[1].strip()
+            token = parts[1].strip()
+            return token if token else None
         elif len(parts) == 1:
-            return parts[0].strip()
+            token = parts[0].strip()
+            return token if token else None
 
-    api_key_header = headers.get("x-api-key") or headers.get("X-API-Key")
+    api_key_header = lower_headers.get("x-api-key")
     if api_key_header:
-        return api_key_header.strip()
+        token = api_key_header.strip()
+        return token if token else None
 
     return None
 

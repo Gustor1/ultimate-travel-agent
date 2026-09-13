@@ -131,3 +131,92 @@ def test_install_dry_run(tmp_path: Path) -> None:
     assert len(installed) == 6
     dest_skills_dir = tmp_path / ".agents" / "skills"
     assert not dest_skills_dir.exists()
+
+
+def test_install_and_uninstall_scripts_subprocess(tmp_path: Path) -> None:
+    """Test running install.py and uninstall.py as standalone scripts via subprocess."""
+    import subprocess
+    import sys
+
+    pack_root = find_pack_root()
+    install_script = pack_root / "install.py"
+    uninstall_script = pack_root / "uninstall.py"
+
+    # 1. Test install script dry-run
+    proc_dry = subprocess.run(
+        [sys.executable, str(install_script), "--target", str(tmp_path), "--dry-run"],
+        capture_output=True,
+        text=True,
+    )
+    assert proc_dry.returncode == 0
+    assert "Installed skills" in proc_dry.stdout
+    assert not (tmp_path / ".agents" / "skills").exists()
+
+    # 2. Test actual installation
+    proc_inst = subprocess.run(
+        [sys.executable, str(install_script), "--target", str(tmp_path)],
+        capture_output=True,
+        text=True,
+    )
+    assert proc_inst.returncode == 0
+    assert (tmp_path / ".agents" / "skills" / "travel-planning" / "SKILL.md").exists()
+
+    # 2b. Re-running install without force should report skipped
+    proc_skip = subprocess.run(
+        [sys.executable, str(install_script), "--target", str(tmp_path)],
+        capture_output=True,
+        text=True,
+    )
+    assert proc_skip.returncode == 0
+    assert "Skipped existing skills" in proc_skip.stdout
+
+    # 2c. Re-running install with --force should report overwritten
+    proc_force = subprocess.run(
+        [sys.executable, str(install_script), "--target", str(tmp_path), "--force"],
+        capture_output=True,
+        text=True,
+    )
+    assert proc_force.returncode == 0
+    assert "Overwritten skills" in proc_force.stdout
+
+    # 3. Test uninstall script
+    proc_uninst = subprocess.run(
+        [sys.executable, str(uninstall_script), "--target", str(tmp_path)],
+        capture_output=True,
+        text=True,
+    )
+    assert proc_uninst.returncode == 0
+    assert "Removed skills" in proc_uninst.stdout
+    assert not (tmp_path / ".agents" / "skills" / "travel-planning").exists()
+
+
+def test_cli_skills_commands(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
+    """Test CLI commands list-skills, install-skills, and uninstall-skills."""
+    import sys
+    from ultimate_travel_agent.cli import main
+
+    # 1. list-skills
+    orig_argv = sys.argv
+    try:
+        sys.argv = ["ultimate-travel-agent", "list-skills"]
+        main()
+        captured = capsys.readouterr()
+        assert "travel-planning" in captured.out
+        assert "mcp-skill-auditing" in captured.out
+
+        # 2. install-skills
+        sys.argv = ["ultimate-travel-agent", "install-skills", "--target", str(tmp_path)]
+        main()
+        captured = capsys.readouterr()
+        assert "Installed 6 skills" in captured.out
+        assert (tmp_path / ".agents" / "skills" / "budget-validation" / "SKILL.md").exists()
+
+        # 3. uninstall-skills
+        sys.argv = ["ultimate-travel-agent", "uninstall-skills", "--target", str(tmp_path)]
+        main()
+        captured = capsys.readouterr()
+        assert "Removed 6 travel skills" in captured.out
+        assert not (tmp_path / ".agents" / "skills" / "budget-validation").exists()
+    finally:
+        sys.argv = orig_argv
+

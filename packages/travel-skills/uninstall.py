@@ -12,6 +12,27 @@ import sys
 from pathlib import Path
 from typing import List, Optional, Tuple
 
+# Ensure robust console output across all platforms and encodings
+if hasattr(sys.stdout, "reconfigure"):
+    try:
+        sys.stdout.reconfigure(errors="replace")
+    except Exception:
+        pass
+if hasattr(sys.stderr, "reconfigure"):
+    try:
+        sys.stderr.reconfigure(errors="replace")
+    except Exception:
+        pass
+
+
+def _can_encode(text: str) -> bool:
+    """Check if stdout can encode the given string without error."""
+    try:
+        text.encode(sys.stdout.encoding or "ascii")
+        return True
+    except (UnicodeEncodeError, LookupError, AttributeError):
+        return False
+
 
 def get_pack_root() -> Path:
     """Return the root path of travel-skills package."""
@@ -78,30 +99,38 @@ def main() -> int:
 
     args = parser.parse_args()
     target_path = args.target.resolve()
+    can_emoji = _can_encode("📦")
+    ico_pack = "📦 " if can_emoji else ""
+    ico_target = "🎯 " if can_emoji else ""
+    ico_remove = "🗑️  " if can_emoji else "[REMOVED] "
+    ico_info = "ℹ️  " if can_emoji else "[INFO] "
+    ico_success = "✨ " if can_emoji else "[SUCCESS] "
+    ico_err = "❌ " if can_emoji else "[ERROR] "
+    bullet = "· " if can_emoji else "* "
 
-    print("📦 Travel Skills Pack Uninstaller")
-    print(f"🎯 Target project: {target_path}")
+    print(f"{ico_pack}Travel Skills Pack Uninstaller")
+    print(f"{ico_target}Target project: {target_path}")
 
     try:
         removed, not_found = uninstall_skills(target_path, dry_run=args.dry_run)
     except Exception as exc:
-        print(f"❌ Error during uninstallation: {exc}", file=sys.stderr)
+        print(f"{ico_err}Error during uninstallation: {exc}", file=sys.stderr)
         return 1
 
     prefix = "[DRY-RUN] " if args.dry_run else ""
     if removed:
-        print(f"\n{prefix}🗑️  Removed skills:")
+        print(f"\n{prefix}{ico_remove}Removed skills:")
         for s in removed:
             print(f"   - {s}")
     if not_found:
-        print(f"\n{prefix}ℹ️  Skills not present in target project:")
+        print(f"\n{prefix}{ico_info}Skills not present in target project:")
         for s in not_found:
-            print(f"   · {s}")
+            print(f"   {bullet}{s}")
 
     if not removed:
-        print("\nℹ️  No matching travel pack skills were found in target project.")
+        print(f"\n{ico_info}No matching travel pack skills were found in target project.")
     else:
-        print("\n✨ Uninstallation completed successfully.")
+        print(f"\n{ico_success}Uninstallation completed successfully.")
 
     return 0
 

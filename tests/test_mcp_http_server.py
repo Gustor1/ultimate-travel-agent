@@ -219,3 +219,46 @@ def test_log_sanitization() -> None:
     assert "secret-super-token-1234" not in cleaned
     assert "mysecretkey" not in cleaned
     assert "[REDACTED]" in cleaned
+
+
+def test_auth_header_case_insensitivity() -> None:
+    """Test that authentication works with varying header capitalization (X-Api-Key, AUTHORIZATION)."""
+    cfg = MCPHttpConfig(auth_enabled=True, api_key="case-key-999")
+    app = create_http_app(cfg)
+    with TestClient(app) as client:
+        init_payload = {
+            "jsonrpc": "2.0",
+            "id": 1,
+            "method": "initialize",
+            "params": {
+                "protocolVersion": "2024-11-05",
+                "capabilities": {},
+                "clientInfo": {"name": "test-client", "version": "1.0"},
+            },
+        }
+        # Mixed-case X-Api-Key
+        r1 = client.post("/mcp", json=init_payload, headers={"X-Api-Key": "case-key-999"})
+        assert r1.status_code == 200
+
+        # Uppercase AUTHORIZATION
+        r2 = client.post("/mcp", json=init_payload, headers={"AUTHORIZATION": "Bearer case-key-999"})
+        assert r2.status_code == 200
+
+        # Empty token rejected with 401
+        r3 = client.post("/mcp", json=init_payload, headers={"Authorization": "Bearer   "})
+        assert r3.status_code == 401
+
+
+def test_config_from_env_robustness(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Test MCPHttpConfig parsing with edge cases (invalid port, disabled rate limiting, boolean strings)."""
+    monkeypatch.setenv("TRAVEL_MCP_PORT", "invalid-port-string")
+    monkeypatch.setenv("TRAVEL_MCP_RATE_LIMIT_ENABLED", "false")
+    monkeypatch.setenv("TRAVEL_MCP_AUTH_REQUIRED", "1")
+    monkeypatch.setenv("TRAVEL_MCP_API_KEY", "env-test-key")
+
+    cfg = MCPHttpConfig.from_env()
+    assert cfg.port == 8001  # Fallback to default
+    assert cfg.rate_limit_enabled is False
+    assert cfg.auth_enabled is True
+    assert cfg.api_key == "env-test-key"
+

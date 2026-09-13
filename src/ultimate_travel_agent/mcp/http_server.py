@@ -17,6 +17,18 @@ from starlette.applications import Starlette
 from starlette.middleware.cors import CORSMiddleware
 from mcp.server.transport_security import TransportSecuritySettings
 
+# Ensure UTF-8 output on Windows consoles
+if hasattr(sys.stdout, "reconfigure"):
+    try:
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    except Exception:
+        pass
+if hasattr(sys.stderr, "reconfigure"):
+    try:
+        sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+    except Exception:
+        pass
+
 from ultimate_travel_agent.mcp.config import MCPHttpConfig, load_mcp_config
 from ultimate_travel_agent.mcp.health import health_endpoint, ready_endpoint, version_endpoint
 from ultimate_travel_agent.mcp.security import RemoteMCPSecurityMiddleware
