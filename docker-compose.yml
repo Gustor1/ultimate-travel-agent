@@ -1,0 +1,26 @@
+services:
+  ultimate-travel-mcp:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: ultimate-travel-agent-mcp:latest
+    container_name: ultimate-travel-mcp
+    restart: unless-stopped
+    ports:
+      - "${PORT:-8001}:${PORT:-8001}"
+    environment:
+      - PORT=${PORT:-8001}
+      - HOST=0.0.0.0
+      - TRAVEL_MCP_PORT=${PORT:-8001}
+      - TRAVEL_MCP_HOST=0.0.0.0
+      - TRAVEL_MCP_API_KEY=${TRAVEL_MCP_API_KEY:-}
+      - TRAVEL_MCP_RATE_LIMIT_ENABLED=true
+      - TRAVEL_MCP_RATE_LIMIT_RPS=20.0
+      - TRAVEL_MCP_RATE_LIMIT_BURST=50
+      - TRAVEL_DEFAULT_MODE=offline
+    healthcheck:
+      test: ["CMD", "python", "-c", "import os, urllib.request; port = os.environ.get('PORT', '8001'); urllib.request.urlopen(f'http://localhost:{port}/health')"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 5s

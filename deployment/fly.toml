@@ -1,0 +1,26 @@
+app = "ultimate-travel-mcp"
+primary_region = "cdg"
+
+[build]
+  dockerfile = "Dockerfile"
+
+[env]
+  PORT = "8080"
+  HOST = "0.0.0.0"
+  TRAVEL_DEFAULT_MODE = "offline"
+  TRAVEL_MCP_AUTH_REQUIRED = "true"
+  TRAVEL_MCP_RATE_LIMIT_ENABLED = "true"
+
+[http_service]
+  internal_port = 8080
+  force_https = true
+  auto_stop_machines = true
+  auto_start_machines = true
+  min_machines_running = 0
+
+  [[http_service.checks]]
+    grace_period = "10s"
+    interval = "30s"
+    method = "GET"
+    timeout = "5s"
+    path = "/health"
