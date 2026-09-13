@@ -15,7 +15,7 @@ Toutes les étapes de la Phase 9 sont achevées et testées à 100% hors-ligne :
 - [x] **Registry de Providers Dynamique** : Sélection par variables d'environnement (`TRAVEL_PROVIDER_*`) et fichier YAML avec replis mock sécurisés.
 - [x] **Manifestes de Conteneurisation & Cloud** : `Dockerfile` (utilisateur non-root), `docker-compose.yml`, Railway, Render, Cloud Run, Fly.io.
 - [x] **Configurations Clients Réutilisables** : Antigravity, Claude Code et Cursor avec placeholders sûrs.
-- [x] **Suite de Tests Validée** : 124 tests unitaires passants à 100% hors-ligne.
+- [x] **Suite de Tests Validée** : 128 tests unitaires passants à 100% hors-ligne (incluant exécution subprocess installateur/désinstallateur multiplateforme).
 
 ---
 
