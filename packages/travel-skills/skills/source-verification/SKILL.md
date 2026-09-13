@@ -23,6 +23,8 @@ This skill establishes strict evaluation criteria for every piece of travel data
 
 3. **`community_recommended`**:
    - High-volume travel community consensus (TripAdvisor top-ranked with recent reviews, Reddit travel forums).
+   - Wikivoyage destination articles (`WikivoyageProvider`): rich editorial knowledge, but prices, operating hours, and visas remain community estimates.
+   - Quality controller rule: Never permit `price_status: confirmed` on `community_recommended` guide entries.
 
 4. **`social_discovery_only`**:
    - Content from viral social media platforms (TikTok, RedNote/Xiaohongshu, Instagram Reels).
@@ -35,18 +37,22 @@ This skill establishes strict evaluation criteria for every piece of travel data
 6. **`outdated`**:
    - Information known to precede recent policy, schedule, or price changes.
 
-## Provider Hub V1.2 Provenance Protocol
-Every item produced by a Provider Hub adapter must return standard provenance metadata:
+## Provider Hub V1.2 & Phase 10 Provenance Protocol
+Every item produced by a Provider Hub adapter or keyless integration must return standard provenance metadata:
 ```yaml
 provider: provider_name
-category: flight | train | hotel | activity | review | map | weather | currency
+category: flight | train | hotel | activity | review | map | weather | currency | guide | social
 mode: offline | mock | live
 retrieved_at: <ISO timestamp>
 source_url: <Official booking/reference URL>
+attribution: <Required open license / data attribution string>
 verification_level: official_verified | cross_checked | community_recommended | social_discovery_only | unverified
+cache_status: hit | miss | stale
+result_status: live | unavailable | needs_verification
 currency: <3-letter ISO code or null>
 price_status: confirmed | estimated | needs_verification
 availability_status: live | estimated | unavailable | unknown
-requires_booking_verification: true
+requires_booking_verification: true | false
 ```
 All recommendations remain subject to manual booking verification on official partner channels. Direct transactions or financial payments are strictly prohibited.
+

@@ -23,3 +23,9 @@ This skill mandates systematic verification of health, diplomatic, and physical 
 3. **Hazard & Extreme Weather Warnings**:
    - For road trips or nature trails: include direct references to official safety platforms (e.g. safetravel.is and road.is for Iceland, avalanche services for alpine regions).
    - Specifically identify natural hazards (sneaker waves, sudden blizzards, flash floods).
+   - Leverage Open-Meteo weather outlooks to detect heavy rain, storm wind gusts, or freezing temperatures; mandate indoor backups when adverse weather is indicated.
+
+4. **Community Guide vs. Official Diplomatic Directives**:
+   - Community guide sources (e.g. Wikivoyage `Stay safe` sections) offer valuable neighborhood awareness and practical scam avoidance advice.
+   - However, community guides must NEVER be used as the sole authority for mandatory visa regimes, passport validity rules, embassy contacts, or official diplomatic travel bans. Always link directly to official consular authorities.
+

@@ -548,12 +548,45 @@ def create_app() -> FastAPI:
         """Check status and readiness of a travel data provider."""
         from ultimate_travel_agent.integrations import default_registry
         try:
-            res = default_registry.get_provider_status(provider_name)
-            return res.model_dump()
+            res = default_registry.get_provider(provider_name)
+            if not res:
+                raise HTTPException(status_code=404, detail=f"Provider '{provider_name}' not found")
+            return res.health_check().model_dump()
         except KeyError:
             raise HTTPException(status_code=404, detail=f"Provider '{provider_name}' not found")
 
+    @app.get("/api/integrations/keyless/status")
+    async def api_keyless_status() -> Dict[str, Any]:
+        """Audit status of keyless public data providers (Open-Meteo, ECB, Wikivoyage, Nominatim, OSRM)."""
+        from ultimate_travel_agent.mcp.tools import get_keyless_provider_status
+        return get_keyless_provider_status()
+
+    @app.get("/api/integrations/weather")
+    async def api_weather_forecast(city: str = "Paris", days: int = 7) -> Dict[str, Any]:
+        """Fetch weather forecast and activity advice from Open-Meteo with fallback."""
+        import os
+        from ultimate_travel_agent.mcp.tools import get_weather_forecast
+        mode = "live" if os.getenv("TRAVEL_MCP_ENABLE_KEYLESS_LIVE_PROVIDERS", "").lower() in ("true", "1", "yes") else "offline"
+        return get_weather_forecast(city=city, days=days, mode=mode)
+
+    @app.get("/api/integrations/currency/convert")
+    async def api_currency_convert(amount: float = 100.0, from_curr: str = "EUR", to_curr: str = "USD") -> Dict[str, Any]:
+        """Convert currency using ECB reference rates with card markup disclaimer."""
+        import os
+        from ultimate_travel_agent.mcp.tools import convert_currency_live
+        mode = "live" if os.getenv("TRAVEL_MCP_ENABLE_KEYLESS_LIVE_PROVIDERS", "").lower() in ("true", "1", "yes") else "offline"
+        return convert_currency_live(amount=amount, from_currency=from_curr, to_currency=to_curr, mode=mode)
+
+    @app.get("/api/integrations/guides/destination")
+    async def api_guide_destination(destination: str = "Barcelona") -> Dict[str, Any]:
+        """Fetch destination guide extract and cultural context from Wikivoyage."""
+        import os
+        from ultimate_travel_agent.mcp.tools import get_wikivoyage_summary
+        mode = "live" if os.getenv("TRAVEL_MCP_ENABLE_KEYLESS_LIVE_PROVIDERS", "").lower() in ("true", "1", "yes") else "offline"
+        return get_wikivoyage_summary(destination=destination, mode=mode)
+
     @app.get("/api/trips")
+
     async def api_list_trips() -> List[Dict[str, Any]]:
         """List reference example trips available locally."""
         trips = []

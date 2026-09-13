@@ -80,3 +80,35 @@ providers:
     active_provider: "social_discovery"
     fallback_to_mock: true
     required_env_vars: []
+
+# Phase 10 — Keyless Public Data Providers Configuration
+keyless_providers:
+  enable_live_keyless: false
+  http_user_agent: "UltimateTravelAgent/1.0 (https://github.com/Gustor1/ultimate-travel-agent)"
+  timeout_seconds: 5.0
+  open_meteo:
+    enabled: true
+    rate_limit: "5 req/s"
+    cache_ttl_seconds: 1800
+    attribution: "Weather data by Open-Meteo.com under CC BY 4.0"
+  ecb:
+    enabled: true
+    rate_limit: "2 req/s"
+    cache_ttl_seconds: 43200
+    attribution: "Source: European Central Bank (ECB) euro reference exchange rates"
+  wikivoyage:
+    enabled: true
+    rate_limit: "3 req/s"
+    cache_ttl_seconds: 86400
+    attribution: "Text from Wikivoyage under CC BY-SA 4.0"
+  nominatim:
+    enabled: false # Limited provider, disabled by default (max 1 req/s OSM policy)
+    rate_limit: "1 req/s"
+    cache_ttl_seconds: 604800
+    attribution: "Geocoding data © OpenStreetMap contributors, ODbL 1.0"
+  osrm:
+    enabled: false # Experimental demo server, disabled by default
+    rate_limit: "1 req/s"
+    cache_ttl_seconds: 7200
+    attribution: "Routing data © Project OSRM / OpenStreetMap contributors"
+

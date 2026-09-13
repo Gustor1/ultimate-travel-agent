@@ -60,9 +60,9 @@ class TravelOrchestrationEngine:
             for d in trip.destinations:
                 dest_sources.append(
                     SourceReference(
-                        title=f"Editorial Destination Guide ({d.name})",
+                        title=f"Wikivoyage Community Destination Guide ({d.name})",
                         url=f"https://en.wikivoyage.org/wiki/{d.name.replace(' ', '_')}",
-                        verification_level=VerificationLevel.CROSS_CHECKED,
+                        verification_level=VerificationLevel.COMMUNITY_RECOMMENDED,
                     )
                 )
         r_dest = AgentResult(
@@ -71,13 +71,14 @@ class TravelOrchestrationEngine:
             summary=f"Researched {len(trip.destinations)} destination(s) with seasonal climate and crowd profiles via Provider Hub.",
             findings=dest_findings,
             assumptions=[
-                "Standard seasonal opening schedules and daylight hours assumed from weather and guide providers.",
+                "Standard seasonal opening schedules and daylight hours assumed from Open-Meteo and Wikivoyage providers.",
+                "Wikivoyage used as community context; critical visa, border entry, and official health rules must never rely on Wikivoyage alone.",
                 "No severe climate disruptions forecasted in target travel window.",
             ],
             missing_information=[] if trip.destinations else ["Destination not specified."],
             risks=dest_risks,
             sources=dest_sources,
-            verification_level=VerificationLevel.OFFICIAL_VERIFIED if trip.destinations else VerificationLevel.UNVERIFIED,
+            verification_level=VerificationLevel.COMMUNITY_RECOMMENDED if trip.destinations else VerificationLevel.UNVERIFIED,
         )
         results.append(r_dest)
         self.agent_results["destination-researcher"] = r_dest
@@ -101,6 +102,7 @@ class TravelOrchestrationEngine:
             assumptions=[
                 "Standard luggage allowance (1 cabin + 1 personal item) assumed.",
                 "Door-to-door transit buffers applied (30-45 min for rail, 120 min for air terminal check-in).",
+                "OSRM road durations and distances are indicative estimates; high-speed rail preferred for journeys > 4 hours.",
                 f"Provider Hub operating in '{self.mode}' mode with source provenance verification.",
             ],
             missing_information=["Live seat inventory and real-time transit delays unverified (requires official booking portal verification)."],
@@ -164,7 +166,8 @@ class TravelOrchestrationEngine:
             assumptions=[
                 "Standard adult admission fare assumed unless student/senior concessions noted.",
                 "Advance timed-entry reservation mandatory for primary cultural monuments.",
-                "Indoor rain alternatives and crowd avoidance windows evaluated for each major activity.",
+                "Indoor rain alternatives and crowd avoidance windows evaluated for each major activity via Open-Meteo weather outlook.",
+                "Activity operating schedules and admission fees must be sourced from official box offices, never fabricated.",
             ],
             missing_information=["Live queue times and same-day box office availability unverified."],
             risks=act_risks,
@@ -173,6 +176,7 @@ class TravelOrchestrationEngine:
         )
         results.append(r_act)
         self.agent_results["activity-curator"] = r_act
+
 
         # 5. local-discovery-agent
         dining_pois = [a.model_dump() for a in trip.activities if a.category == "gastronomy"]
@@ -278,7 +282,7 @@ class TravelOrchestrationEngine:
                 f"Daily baseline dining allowance: 40.00 {trip.currency}/day/traveler.",
                 f"Miscellaneous and city transit buffer: 15.00 {trip.currency}/day/traveler.",
                 f"Pricing mode '{self.mode}': Estimated baseline rates; zero live financial debit or booking executed.",
-                f"Currency reference rate as of {rate_date} via ECB/Currency provider.",
+                f"Currency reference rate as of {rate_date} via ECB reference provider (commercial credit card rates typically incur a 1.5%-3.5% foreign exchange spread).",
             ],
             missing_information=["Fluctuations in dynamic pricing, optional tips, and local city tourist taxes."],
             risks=risks,
@@ -347,14 +351,24 @@ class TravelOrchestrationEngine:
             qc_findings.append({"unverified_or_social_items": unverified_items})
             qc_risks.append(f"Verification notice: {len(unverified_items)} item(s) are unverified or discovery-only.")
 
-        # Check for invalid confirmed claims: block if recommendation claims to be confirmed while from mock or social
+        # Check for invalid confirmed claims: block if recommendation claims to be confirmed while from mock, social, or community
         invalid_confirmed_claims: List[str] = []
         for act in trip.activities:
             if act.verification_level == VerificationLevel.SOCIAL_DISCOVERY_ONLY and getattr(act, "price_status", None) == "confirmed":
                 invalid_confirmed_claims.append(f"Activity '{act.title}': social discovery cannot be presented as confirmed.")
+            elif act.verification_level == VerificationLevel.COMMUNITY_RECOMMENDED and getattr(act, "price_status", None) == "confirmed":
+                invalid_confirmed_claims.append(f"Activity '{act.title}': community guide data cannot be presented as confirmed.")
         if invalid_confirmed_claims:
             qc_findings.append({"invalid_confirmed_claims": invalid_confirmed_claims})
             qc_risks.extend(invalid_confirmed_claims)
+
+        # Limited providers audit (Nominatim, OSRM)
+        if self.mode == "live":
+            if os.getenv("TRAVEL_MCP_ENABLE_NOMINATIM", "false").lower() in ("true", "1", "yes"):
+                qc_risks.append("Limited provider notice: Nominatim is active; ensure 1 req/s maximum rate is respected.")
+            if os.getenv("TRAVEL_MCP_ENABLE_OSRM", "false").lower() in ("true", "1", "yes"):
+                qc_risks.append("Experimental provider notice: OSRM public demo server active; transit durations are estimates without SLA.")
+
 
         # Unconfigured provider audit (if live mode requested)
         if self.mode == "live":

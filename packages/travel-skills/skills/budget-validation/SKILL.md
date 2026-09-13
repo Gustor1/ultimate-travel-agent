@@ -26,3 +26,9 @@ This skill provides deterministic financial formulas and rules to ensure no hidd
 
 3. **Cap Enforcement**:
    - If `grand_total > budget_cap`, issue an explicit blocking or warning notification detailing the exact overage and candidate reductions.
+
+4. **Multi-Currency Conversions & ECB Reference Rates**:
+   - Conversions must cite the official European Central Bank (`ECBCurrencyProvider`) reference rate publication date.
+   - Bank / Credit Card Markup Advisory: Always notify the traveler that ECB rates represent institutional benchmark mid-market rates. Retail credit card purchases and foreign ATM withdrawals typically incur an additional **+1.5% to +3.5% markup** plus transaction fees.
+   - If a target currency is absent from the official ECB feed, use a static fallback rate and flag it as an estimated rate (`VerificationLevel.CROSS_CHECKED`).
+

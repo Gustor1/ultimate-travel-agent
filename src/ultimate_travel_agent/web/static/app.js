@@ -797,10 +797,191 @@ function initForm() {
   });
 }
 
+// ===========================================================================
+// Phase 10: Keyless Public Data Client Handlers
+// ===========================================================================
+
+async function loadKeylessStatus() {
+  const container = document.getElementById("keyless-providers-summary");
+  if (!container) return;
+
+  try {
+    const res = await fetch("/api/integrations/keyless/status");
+    if (!res.ok) throw new Error("Impossible de récupérer l'audit des providers ouverts");
+    const data = await res.json();
+
+    const cardsHtml = (data.providers || []).map((p) => {
+      let badge = "badge-unverified";
+      let statusText = p.status;
+      if (p.status === "live_ready") {
+        badge = "badge-official";
+        statusText = "🟢 Live Ready";
+      } else if (p.status === "offline_mock") {
+        badge = "badge-cross_checked";
+        statusText = "⚪ Offline / Mock";
+      } else if (p.status === "disabled_by_default") {
+        badge = "badge-warning";
+        statusText = "⚠️ Désactivé par défaut";
+      }
+
+      return `
+        <div class="card" style="background: var(--bg-card); padding: 1rem; border: 1px solid var(--border);">
+          <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.5rem;">
+            <div>
+              <strong style="color: #fff; font-size: 0.95rem;">${p.provider}</strong>
+              <div style="font-size: 0.75rem; color: var(--text-muted);">Catégorie : ${p.category}</div>
+            </div>
+            <span class="badge ${badge}" style="font-size: 0.75rem;">${statusText}</span>
+          </div>
+          <div style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.5rem;">
+            <div>⏱️ Débit : <strong>${p.rate_limit}</strong></div>
+            <div>📜 Licence : <strong>${p.license}</strong></div>
+            <div>🔑 Clé requise : <strong>${p.requires_key ? 'Oui' : 'Non (Keyless)'}</strong></div>
+          </div>
+          <div style="font-size: 0.75rem; color: #64748b; border-top: 1px solid var(--border-light); padding-top: 0.4rem;">
+            Attribution : <em>${p.attribution}</em>
+          </div>
+        </div>
+      `;
+    }).join("");
+
+    container.innerHTML = cardsHtml;
+  } catch (err) {
+    container.innerHTML = `<p style="color: var(--danger-text);">Erreur lors du chargement : ${err.message}</p>`;
+  }
+}
+
+async function queryLiveWeather() {
+  const cityInput = document.getElementById("weather-city-input");
+  const resultDiv = document.getElementById("weather-live-result");
+  const city = (cityInput && cityInput.value) || (currentTrip && currentTrip.destinations && currentTrip.destinations[0]?.name) || "Paris";
+
+  resultDiv.innerHTML = "<span style='color: var(--text-muted);'>Interrogation Open-Meteo...</span>";
+  try {
+    const res = await fetch(`/api/integrations/weather?city=${encodeURIComponent(city)}&days=7`);
+    const data = await res.json();
+
+    if (data.status === "error") {
+      resultDiv.innerHTML = `<span style="color: var(--warning-text);">${data.error} (Repli offline disponible)</span>`;
+      return;
+    }
+
+    const items = data.items || [];
+    const currentItem = items[0] || {};
+    const cDet = currentItem.details || {};
+    const rainItem = items.find(it => it.details && it.details.rain_risk) || items[1] || {};
+    const rDet = rainItem.details || {};
+
+    resultDiv.innerHTML = `
+      <div style="margin-top: 0.25rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.35rem;">
+          <strong style="color: #fff;">${city} (${data.mode || 'live'})</strong>
+          <span class="badge ${data.mode === 'live' ? 'badge-official' : 'badge-cross_checked'}">${data.mode || 'offline'}</span>
+        </div>
+        <div style="font-size: 0.85rem; margin-bottom: 0.35rem;">
+          🌡️ <strong>${cDet.temperature !== undefined ? cDet.temperature + '°C' : 'N/A'}</strong> — ${cDet.condition || 'Temps de saison'}
+        </div>
+        <div style="font-size: 0.8rem; color: ${rDet.rain_risk ? 'var(--warning-text)' : 'var(--success-text)'}; margin-bottom: 0.35rem;">
+          🌧️ Risque de pluie : ${rDet.rain_risk ? 'Plan B conseillé (' + rDet.precipitation_probability_pct + '%)' : 'Faible (' + (rDet.precipitation_probability_pct || 0) + '%)'}
+        </div>
+        <div style="font-size: 0.75rem; color: var(--text-muted); border-top: 1px solid var(--border-light); padding-top: 0.25rem;">
+          ${data.attribution || 'Open-Meteo CC BY 4.0'}
+        </div>
+      </div>
+    `;
+  } catch (err) {
+    resultDiv.innerHTML = `<span style="color: var(--danger-text);">Erreur : ${err.message}</span>`;
+  }
+}
+
+async function queryLiveCurrency() {
+  const amountInput = document.getElementById("curr-amount-input");
+  const toInput = document.getElementById("curr-to-input");
+  const resultDiv = document.getElementById("currency-live-result");
+  const amount = parseFloat(amountInput.value) || 100.0;
+  const toCurr = (toInput.value || "USD").toUpperCase();
+
+  resultDiv.innerHTML = "<span style='color: var(--text-muted);'>Interrogation BCE / ECB...</span>";
+  try {
+    const res = await fetch(`/api/integrations/currency/convert?amount=${amount}&from_curr=EUR&to_curr=${toCurr}`);
+    const data = await res.json();
+
+    if (data.status === "error") {
+      resultDiv.innerHTML = `<span style="color: var(--warning-text);">${data.error}</span>`;
+      return;
+    }
+
+    const item = (data.items && data.items[0]) || {};
+    const det = item.details || {};
+
+    resultDiv.innerHTML = `
+      <div style="margin-top: 0.25rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.35rem;">
+          <strong style="color: #fff;">${amount.toFixed(2)} EUR = ${det.converted_amount !== undefined ? det.converted_amount.toFixed(2) : 'N/A'} ${toCurr}</strong>
+          <span class="badge ${data.mode === 'live' ? 'badge-official' : 'badge-cross_checked'}">${data.mode || 'offline'}</span>
+        </div>
+        <div style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.35rem;">
+          Date du taux : <strong>${det.rate_date || 'Aujourd\'hui'}</strong> (1 EUR = ${det.exchange_rate || 'N/A'})
+        </div>
+        <div style="font-size: 0.75rem; color: var(--warning-text); margin-bottom: 0.35rem;">
+          ⚠️ Taux de référence indicatif (les cartes bancaires appliquent +1.5% à 3.5% de commission).
+        </div>
+        <div style="font-size: 0.75rem; color: var(--text-muted); border-top: 1px solid var(--border-light); padding-top: 0.25rem;">
+          ${data.attribution || 'Source: BCE / ECB'}
+        </div>
+      </div>
+    `;
+  } catch (err) {
+    resultDiv.innerHTML = `<span style="color: var(--danger-text);">Erreur : ${err.message}</span>`;
+  }
+}
+
+async function queryLiveGuide() {
+  const destInput = document.getElementById("guide-dest-input");
+  const resultDiv = document.getElementById("guide-live-result");
+  const dest = (destInput && destInput.value) || (currentTrip && currentTrip.destinations && currentTrip.destinations[0]?.name) || "Barcelone";
+
+  resultDiv.innerHTML = "<span style='color: var(--text-muted);'>Interrogation Wikivoyage...</span>";
+  try {
+    const res = await fetch(`/api/integrations/guides/destination?destination=${encodeURIComponent(dest)}`);
+    const data = await res.json();
+
+    if (data.status === "error") {
+      resultDiv.innerHTML = `<span style="color: var(--warning-text);">${data.error}</span>`;
+      return;
+    }
+
+    const item = (data.items && data.items[0]) || {};
+    const det = item.details || {};
+
+    resultDiv.innerHTML = `
+      <div style="margin-top: 0.25rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.35rem;">
+          <strong style="color: #fff;">${det.title || dest}</strong>
+          <span class="badge badge-community">Wikivoyage CC BY-SA</span>
+        </div>
+        <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.35rem; max-height: 80px; overflow-y: auto;">
+          ${item.description || 'Guide éditorial communautaire.'}
+        </p>
+        <div style="font-size: 0.75rem; margin-bottom: 0.35rem;">
+          <a href="${det.url || '#'}" target="_blank" style="color: #38bdf8; text-decoration: underline;">Consulter l'article officiel sur Wikivoyage ↗</a>
+        </div>
+        <div style="font-size: 0.75rem; color: var(--text-muted); border-top: 1px solid var(--border-light); padding-top: 0.25rem;">
+          ${data.attribution || 'Wikivoyage CC BY-SA 4.0'}
+        </div>
+      </div>
+    `;
+  } catch (err) {
+    resultDiv.innerHTML = `<span style="color: var(--danger-text);">Erreur : ${err.message}</span>`;
+  }
+}
+
 // Initialization on DOMContentLoaded
 document.addEventListener("DOMContentLoaded", () => {
   initTabs();
   initForm();
+  loadKeylessStatus();
   // Auto-load reference city trip so user immediately sees a live dossier
   loadExample("city-trip");
 });
+

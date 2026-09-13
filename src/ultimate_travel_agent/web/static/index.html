@@ -48,6 +48,7 @@
       <button class="tab-btn" data-tab="tab-budget">💰 Budget & Réservations</button>
       <button class="tab-btn" data-tab="tab-multiagent">🤖 Pipeline Multi-Agents (9 Étapes)</button>
       <button class="tab-btn" data-tab="tab-contingency">🛡️ Plans B & Préparation</button>
+      <button class="tab-btn" data-tab="tab-keyless">🌐 Données Ouvertes (Phase 10)</button>
       <button class="tab-btn" data-tab="tab-create">✏️ Configurer Nouveau Voyage</button>
       <button class="tab-btn" data-tab="tab-export">📄 Export Markdown</button>
     </nav>
@@ -97,7 +98,74 @@
       </div>
     </div>
 
-    <!-- Tab 7: Create Trip Form -->
+    <!-- Tab 7: Keyless Open Data Providers (Phase 10) -->
+    <div id="tab-keyless" class="tab-pane">
+      <div class="card">
+        <div class="card-title">
+          <span>🌐 Fournisseurs de Données Ouvertes Sans Clé (Phase 10)</span>
+          <button class="btn btn-sm btn-secondary" onclick="loadKeylessStatus()">🔄 Actualiser l'audit</button>
+        </div>
+        <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.25rem;">
+          Intégrations ouvertes sans compte développeur, sans clé API, sans carte bancaire et sans partenariat commercial.
+          Respect strict des quotas, des licences ouvertes (CC BY 4.0, CC BY-SA 4.0, ODbL) et de l'attribution légale.
+        </p>
+
+        <!-- Keyless Provider Status Cards -->
+        <div id="keyless-providers-summary" class="grid-3" style="margin-bottom: 1.5rem;">
+          <p style="color: var(--text-muted);">Chargement de l'audit des fournisseurs ouverts...</p>
+        </div>
+
+        <!-- Live Open Data Interactive Widgets -->
+        <div class="grid-3" style="margin-bottom: 1.5rem;">
+          <!-- Weather Widget (Open-Meteo) -->
+          <div class="card" style="background: var(--bg-card-alt); padding: 1rem;">
+            <h4 style="color: #38bdf8; margin-bottom: 0.5rem;">🌤️ Météo Live & Plan B (Open-Meteo)</h4>
+            <div style="display: flex; gap: 0.5rem; margin-bottom: 0.75rem;">
+              <input type="text" id="weather-city-input" placeholder="Ville..." style="padding: 0.35rem 0.5rem; font-size: 0.85rem; width: 65%;">
+              <button class="btn btn-sm btn-primary" onclick="queryLiveWeather()">Météo</button>
+            </div>
+            <div id="weather-live-result" style="font-size: 0.85rem; color: var(--text-muted);">
+              Prêt pour l'interrogation météo.
+            </div>
+          </div>
+
+          <!-- Currency Widget (ECB) -->
+          <div class="card" style="background: var(--bg-card-alt); padding: 1rem;">
+            <h4 style="color: #4ade80; margin-bottom: 0.5rem;">💶 Taux Officiels (BCE / ECB)</h4>
+            <div style="display: flex; gap: 0.5rem; margin-bottom: 0.75rem;">
+              <input type="number" id="curr-amount-input" value="100" style="padding: 0.35rem 0.5rem; font-size: 0.85rem; width: 35%;">
+              <input type="text" id="curr-to-input" value="USD" style="padding: 0.35rem 0.5rem; font-size: 0.85rem; width: 30%;">
+              <button class="btn btn-sm btn-primary" onclick="queryLiveCurrency()">Convertir</button>
+            </div>
+            <div id="currency-live-result" style="font-size: 0.85rem; color: var(--text-muted);">
+              Prêt pour la conversion ECB.
+            </div>
+          </div>
+
+          <!-- Guide Context (Wikivoyage) -->
+          <div class="card" style="background: var(--bg-card-alt); padding: 1rem;">
+            <h4 style="color: #c084fc; margin-bottom: 0.5rem;">📖 Guide Libre (Wikivoyage)</h4>
+            <div style="display: flex; gap: 0.5rem; margin-bottom: 0.75rem;">
+              <input type="text" id="guide-dest-input" placeholder="Destination..." style="padding: 0.35rem 0.5rem; font-size: 0.85rem; width: 65%;">
+              <button class="btn btn-sm btn-primary" onclick="queryLiveGuide()">Guide</button>
+            </div>
+            <div id="guide-live-result" style="font-size: 0.85rem; color: var(--text-muted);">
+              Prêt pour la recherche Wikivoyage.
+            </div>
+          </div>
+        </div>
+
+        <!-- Limited Providers Disclaimer Banner -->
+        <div style="padding: 0.75rem 1rem; background: rgba(234, 179, 8, 0.1); border: 1px solid rgba(234, 179, 8, 0.3); border-radius: 6px; font-size: 0.85rem;">
+          ⚠️ <strong>Services Ouverts Limités / Expérimentaux :</strong>
+          <span style="color: var(--text-muted);">
+            Nominatim OpenStreetMap est plafonné à 1 req/sec max sous mutex et désactivé par défaut. OSRM est un serveur démo sans SLA désactivé par défaut. Données géographiques © OpenStreetMap contributors, licence ODbL.
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tab 8: Create Trip Form -->
     <div id="tab-create" class="tab-pane">
       <div class="card">
         <div class="card-title">Paramétrer et Générer un Nouveau Voyage Local</div>
@@ -237,8 +305,12 @@
 
   <!-- Footer -->
   <footer>
-    Ultimate Travel Agent v1.1 • Open Source, Local-First & Privacy-Focused • Licence MIT • Aucune action financière ou réservation automatique.
+    Ultimate Travel Agent v1.2 • Open Source, Local-First & Privacy-Focused • Licence MIT • Aucune action financière ou réservation automatique.<br>
+    <span style="font-size: 0.8rem; color: var(--text-muted);">
+      Données cartographiques & géocodage © OpenStreetMap contributors, ODbL • Météo Open-Meteo (CC BY 4.0) • Taux de référence Banque Centrale Européenne (BCE) • Guides Wikivoyage (CC BY-SA 4.0).
+    </span>
   </footer>
+
 
   <script src="/static/app.js"></script>
 </body>

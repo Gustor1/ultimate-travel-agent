@@ -763,3 +763,576 @@ def search_travel_sources(
             "mode": mode,
             "requires_booking_verification": False,
         }
+
+
+# ===========================================================================
+# Phase 10: Keyless Public Data MCP Tools (Zero API Key Required)
+# ===========================================================================
+
+def geocode_destination(destination: str, mode: str = "offline") -> Dict[str, Any]:
+    """Geocode a destination to latitude, longitude, and country using Open-Meteo or Nominatim.
+
+    Args:
+        destination: Destination city or landmark name (e.g. 'Barcelona', 'Reykjavik', 'Paris').
+        mode: 'offline', 'mock', or 'live'.
+
+    Returns:
+        Structured geocoding coordinates with license attribution and provenance metadata.
+    """
+    from datetime import datetime, timezone
+    from ultimate_travel_agent.integrations import default_registry, ProviderConfigurationError
+    from ultimate_travel_agent.integrations.weather.open_meteo import OpenMeteoProvider, OPEN_METEO_ATTRIBUTION, OPEN_METEO_SOURCE_URL
+
+    clean_dest = destination.strip()
+    now_iso = datetime.now(timezone.utc).isoformat()
+
+    if mode.lower() == "live":
+        prov = default_registry.get_provider("open_meteo")
+        if isinstance(prov, OpenMeteoProvider) and prov.is_configured():
+            geo = prov.geocode_destination(clean_dest)
+            if geo:
+                return {
+                    "provider": "open_meteo",
+                    "mode": "live",
+                    "retrieved_at": now_iso,
+                    "source_url": OPEN_METEO_SOURCE_URL,
+                    "attribution": OPEN_METEO_ATTRIBUTION,
+                    "verification_level": "official_verified",
+                    "cache_status": "hit" if prov.http_client else "miss",
+                    "result_status": "live",
+                    "destination": geo["name"],
+                    "latitude": geo["latitude"],
+                    "longitude": geo["longitude"],
+                    "country": geo.get("country"),
+                    "timezone": geo.get("timezone", "UTC"),
+                    "admin_region": geo.get("admin1"),
+                    "requires_booking_verification": False,
+                }
+            return {
+                "provider": "open_meteo",
+                "mode": "live",
+                "retrieved_at": now_iso,
+                "source_url": OPEN_METEO_SOURCE_URL,
+                "attribution": OPEN_METEO_ATTRIBUTION,
+                "verification_level": "unverified",
+                "cache_status": "miss",
+                "result_status": "unavailable",
+                "error": f"Destination '{clean_dest}' could not be resolved by geocoding.",
+                "requires_booking_verification": False,
+            }
+        # If open_meteo not configured in live mode, check if nominatim is configured
+        prov_nom = default_registry.get_provider("nominatim")
+        if prov_nom and prov_nom.is_configured() and hasattr(prov_nom, "geocode"):
+            geo_nom = prov_nom.geocode(clean_dest)
+            if geo_nom:
+                return {
+                    "provider": "nominatim",
+                    "mode": "live",
+                    "retrieved_at": now_iso,
+                    "source_url": "https://nominatim.openstreetmap.org/",
+                    "attribution": "Geocoding data © OpenStreetMap contributors, ODbL 1.0",
+                    "verification_level": "cross_checked",
+                    "cache_status": geo_nom.get("cache_status", "miss"),
+                    "result_status": "live",
+                    "destination": clean_dest,
+                    "display_name": geo_nom.get("display_name"),
+                    "latitude": geo_nom.get("latitude"),
+                    "longitude": geo_nom.get("longitude"),
+                    "requires_booking_verification": False,
+                }
+
+        # If live requested but keyless live providers are not enabled
+        return {
+            "status": "error",
+            "error_type": "ProviderConfigurationError",
+            "error": "Live geocoding requires TRAVEL_MCP_ENABLE_KEYLESS_LIVE_PROVIDERS=true and TRAVEL_MCP_ENABLE_OPEN_METEO=true.",
+            "provider": "open_meteo",
+            "mode": mode,
+            "requires_booking_verification": False,
+        }
+
+    # Deterministic offline / mock fallback coordinates
+    from ultimate_travel_agent.integrations.maps.osrm import CITY_COORDINATES
+    coords = CITY_COORDINATES.get(clean_dest.lower(), (48.8566, 2.3522))
+    return {
+        "provider": "mock_maps",
+        "mode": mode,
+        "retrieved_at": now_iso,
+        "source_url": "local://offline-catalog",
+        "attribution": "Offline deterministic coordinates database",
+        "verification_level": "cross_checked",
+        "cache_status": "hit",
+        "result_status": "needs_verification",
+        "destination": clean_dest,
+        "latitude": coords[0],
+        "longitude": coords[1],
+        "country": "Offline / Catalog",
+        "timezone": "UTC",
+        "requires_booking_verification": False,
+    }
+
+
+def get_weather_forecast(city: str, days: int = 7, mode: str = "offline") -> Dict[str, Any]:
+    """Retrieve 7-day weather forecast (temperatures, precipitation, wind) from Open-Meteo.
+
+    Args:
+        city: Target city name (e.g. 'Paris', 'Barcelona', 'Reykjavik').
+        days: Forecast window in days (default 7, max 14).
+        mode: 'offline', 'mock', or 'live'.
+
+    Returns:
+        Structured weather forecast with rain probability, temperature ranges, and CC BY 4.0 attribution.
+    """
+    from ultimate_travel_agent.integrations import ProviderCategory, ProviderConfigurationError, default_registry
+    try:
+        res = default_registry.search(
+            category=ProviderCategory.WEATHER,
+            provider_name="open_meteo",
+            city=city,
+            days=days,
+            mode=mode,
+        )
+        return res.model_dump()
+    except (ProviderConfigurationError, KeyError) as err:
+        return {
+            "status": "error",
+            "error_type": "ProviderConfigurationError",
+            "error": str(err),
+            "provider": "open_meteo",
+            "category": "weather",
+            "mode": mode,
+            "requires_booking_verification": False,
+        }
+
+
+def get_weather_activity_advice(
+    city: str,
+    date: Optional[str] = None,
+    planned_activity: Optional[str] = None,
+    mode: str = "offline",
+) -> Dict[str, Any]:
+    """Evaluate weather conditions and recommend indoor Plan B or optimal outdoor windows.
+
+    Args:
+        city: Target city name.
+        date: Target travel date (YYYY-MM-DD).
+        planned_activity: Optional description of outdoor activity planned (e.g. 'Park walk', 'Boat tour').
+        mode: 'offline', 'mock', or 'live'.
+
+    Returns:
+        Rain risk evaluation, activity advice, and indoor backup suggestions.
+    """
+    from datetime import datetime, timezone
+    now_iso = datetime.now(timezone.utc).isoformat()
+    fc = get_weather_forecast(city=city, days=7, mode=mode)
+
+    if fc.get("status") == "error":
+        return fc
+
+    items = fc.get("items", [])
+    target_item = None
+    if date:
+        for it in items:
+            if it.get("details", {}).get("date") == date:
+                target_item = it
+                break
+
+    if not target_item and items:
+        # Fall back to first daily forecast item or current conditions
+        target_item = items[1] if len(items) > 1 else items[0]
+
+    details = target_item.get("details", {}) if target_item else {}
+    p_prob = details.get("precipitation_probability_pct", 10)
+    p_sum = details.get("precipitation_sum_mm", 0.0)
+    cond = details.get("condition", "Mild conditions")
+    rain_risk = details.get("rain_risk", p_prob >= 40 or p_sum >= 2.0)
+
+    if rain_risk:
+        advice = (
+            f"Adverse weather / rain risk detected ({p_prob}% chance, {p_sum}mm) in {city}. "
+            f"Switch outdoor activities ('{planned_activity or 'outdoor visits'}') to indoor contingency Plan B: "
+            "major museums, covered food halls, historical galleries, or transit tours."
+        )
+        indoor_backup = "Visit national art museum, historic basilica interior, or covered market."
+    else:
+        advice = (
+            f"Favorable outdoor conditions in {city} ({cond}). "
+            f"Proceed with outdoor activities ('{planned_activity or 'walking tour'}')."
+        )
+        indoor_backup = "Standard indoor alternative on standby if afternoon showers develop."
+
+    return {
+        "provider": fc.get("provider", "open_meteo"),
+        "mode": fc.get("mode", mode),
+        "retrieved_at": fc.get("retrieved_at", now_iso),
+        "source_url": fc.get("source_url", "https://open-meteo.com/"),
+        "attribution": fc.get("attribution", "Weather data by Open-Meteo.com under CC BY 4.0"),
+        "verification_level": fc.get("verification_level", "official_verified"),
+        "cache_status": fc.get("cache_status", "hit"),
+        "result_status": fc.get("result_status", "live"),
+        "city": city,
+        "date": date or "upcoming",
+        "condition": cond,
+        "precipitation_probability_pct": p_prob,
+        "precipitation_sum_mm": p_sum,
+        "rain_risk_detected": rain_risk,
+        "indoor_plan_b_recommended": rain_risk,
+        "recommended_indoor_backup": indoor_backup,
+        "activity_advice": advice,
+        "requires_booking_verification": False,
+    }
+
+
+def get_exchange_rates(
+    base_currency: str = "EUR",
+    symbols: Optional[List[str]] = None,
+    mode: str = "offline",
+) -> Dict[str, Any]:
+    """Retrieve daily official reference exchange rates published by the European Central Bank.
+
+    STRICT NOTICE: ECB reference rates are non-commercial benchmarks and do not include credit card markups (1.5-3.5%).
+
+    Args:
+        base_currency: Base 3-letter currency code (default 'EUR').
+        symbols: Optional list of target currencies (e.g. ['USD', 'GBP', 'JPY', 'ISK']).
+        mode: 'offline', 'mock', or 'live'.
+
+    Returns:
+        Table of reference rates, publication date, and mandatory card fee disclaimer.
+    """
+    from datetime import datetime, timezone
+    from ultimate_travel_agent.integrations import default_registry, ProviderConfigurationError
+    from ultimate_travel_agent.integrations.currency.ecb import (
+        ECBCurrencyProvider,
+        ECB_ATTRIBUTION,
+        ECB_SOURCE_URL,
+        LOCAL_RATE_FALLBACK,
+    )
+
+    base = base_currency.strip().upper()
+    now_iso = datetime.now(timezone.utc).isoformat()
+    advisory = (
+        "Official European Central Bank (ECB) reference rate. "
+        "Indicative only: commercial card and bank exchange rates typically incur 1.5% - 3.5% markup."
+    )
+
+    if mode.lower() == "live":
+        prov = default_registry.get_provider("ecb_currency")
+        if isinstance(prov, ECBCurrencyProvider) and prov.is_configured():
+            try:
+                rates_raw, rate_date, cache_status = prov.fetch_ecb_rates()
+                base_rate = rates_raw.get(base, 1.0)
+                rates_out: Dict[str, float] = {}
+                for curr, r in rates_raw.items():
+                    if not symbols or curr in [s.upper() for s in symbols]:
+                        rates_out[curr] = round(r / base_rate, 5)
+                return {
+                    "provider": "ecb_currency",
+                    "mode": "live",
+                    "retrieved_at": now_iso,
+                    "source_url": ECB_SOURCE_URL,
+                    "attribution": ECB_ATTRIBUTION,
+                    "verification_level": "official_verified",
+                    "cache_status": cache_status,
+                    "result_status": "live",
+                    "base_currency": base,
+                    "rate_date": rate_date,
+                    "rates": rates_out,
+                    "advisory": advisory,
+                    "requires_booking_verification": False,
+                }
+            except Exception as err:
+                return {
+                    "status": "error",
+                    "error_type": "ProviderNetworkError",
+                    "error": f"Failed to retrieve live ECB rates: {str(err)}",
+                    "provider": "ecb_currency",
+                    "mode": mode,
+                }
+        return {
+            "status": "error",
+            "error_type": "ProviderConfigurationError",
+            "error": "Live ECB feed requires TRAVEL_MCP_ENABLE_KEYLESS_LIVE_PROVIDERS=true and TRAVEL_MCP_ENABLE_ECB=true.",
+            "provider": "ecb_currency",
+            "mode": mode,
+        }
+
+    # Offline table
+    base_rate = LOCAL_RATE_FALLBACK.get(base, 1.0)
+    rates_out = {
+        k: round(v / base_rate, 5)
+        for k, v in LOCAL_RATE_FALLBACK.items()
+        if not symbols or k in [s.upper() for s in symbols]
+    }
+    return {
+        "provider": "mock_currency",
+        "mode": mode,
+        "retrieved_at": now_iso,
+        "source_url": "local://offline-catalog",
+        "attribution": "Local deterministic exchange rate reference table",
+        "verification_level": "cross_checked",
+        "cache_status": "hit",
+        "result_status": "needs_verification",
+        "base_currency": base,
+        "rate_date": "2026-09-01 (offline catalog)",
+        "rates": rates_out,
+        "advisory": advisory,
+        "requires_booking_verification": False,
+    }
+
+
+def convert_currency_live(
+    amount: float,
+    from_currency: str,
+    to_currency: str,
+    mode: str = "offline",
+) -> Dict[str, Any]:
+    """Convert an amount using official ECB reference rates (keyless, zero API fee).
+
+    Args:
+        amount: Number of units to convert (>= 0).
+        from_currency: Source currency ISO code (e.g. 'EUR', 'USD', 'GBP').
+        to_currency: Target currency ISO code (e.g. 'ISK', 'JPY', 'CHF').
+        mode: 'offline', 'mock', or 'live'.
+
+    Returns:
+        Converted value, reference rate, publication date, and card markup advisory.
+    """
+    from ultimate_travel_agent.integrations import ProviderCategory, ProviderConfigurationError, default_registry
+    try:
+        res = default_registry.search(
+            category=ProviderCategory.CURRENCY,
+            provider_name="ecb_currency",
+            amount=amount,
+            from_currency=from_currency,
+            to_currency=to_currency,
+            mode=mode,
+        )
+        return res.model_dump()
+    except (ProviderConfigurationError, KeyError) as err:
+        return {
+            "status": "error",
+            "error_type": "ProviderConfigurationError",
+            "error": str(err),
+            "provider": "ecb_currency",
+            "category": "currency",
+            "mode": mode,
+            "requires_booking_verification": False,
+        }
+
+
+def search_wikivoyage_destination(destination: str, mode: str = "offline") -> Dict[str, Any]:
+    """Search Wikivoyage for matching destination guide articles (CC BY-SA 4.0).
+
+    Args:
+        destination: Query keyword or city name (e.g. 'Barcelone', 'Reykjavik', 'Kyoto').
+        mode: 'offline', 'mock', or 'live'.
+
+    Returns:
+        List of matching articles with titles, descriptions, and official Wikivoyage URLs.
+    """
+    from datetime import datetime, timezone
+    from ultimate_travel_agent.integrations import default_registry, ProviderConfigurationError
+    from ultimate_travel_agent.integrations.guides.wikivoyage import (
+        WikivoyageProvider,
+        WIKIVOYAGE_ATTRIBUTION,
+        WIKIVOYAGE_COMMUNITY_ADVISORY,
+    )
+
+    clean_dest = destination.strip()
+    now_iso = datetime.now(timezone.utc).isoformat()
+
+    if mode.lower() == "live":
+        prov = default_registry.get_provider("wikivoyage")
+        if isinstance(prov, WikivoyageProvider) and prov.is_configured():
+            articles = prov.search_destinations(clean_dest)
+            return {
+                "provider": "wikivoyage",
+                "mode": "live",
+                "retrieved_at": now_iso,
+                "source_url": "https://en.wikivoyage.org/",
+                "attribution": WIKIVOYAGE_ATTRIBUTION,
+                "verification_level": "community_recommended",
+                "cache_status": "hit" if prov.http_client else "miss",
+                "result_status": "live",
+                "query": clean_dest,
+                "total_results": len(articles),
+                "articles": articles,
+                "advisory": WIKIVOYAGE_COMMUNITY_ADVISORY,
+                "requires_booking_verification": False,
+            }
+        return {
+            "status": "error",
+            "error_type": "ProviderConfigurationError",
+            "error": "Live Wikivoyage requires TRAVEL_MCP_ENABLE_KEYLESS_LIVE_PROVIDERS=true and TRAVEL_MCP_ENABLE_WIKIVOYAGE=true.",
+            "provider": "wikivoyage",
+            "mode": mode,
+        }
+
+    # Offline / mock response
+    return {
+        "provider": "mock_guide",
+        "mode": mode,
+        "retrieved_at": now_iso,
+        "source_url": f"https://en.wikivoyage.org/wiki/{clean_dest.replace(' ', '_')}",
+        "attribution": WIKIVOYAGE_ATTRIBUTION,
+        "verification_level": "community_recommended",
+        "cache_status": "hit",
+        "result_status": "needs_verification",
+        "query": clean_dest,
+        "total_results": 1,
+        "articles": [
+            {
+                "title": clean_dest,
+                "description": f"Curated guide overview for {clean_dest} (offline catalog).",
+                "url": f"https://en.wikivoyage.org/wiki/{clean_dest.replace(' ', '_')}",
+            }
+        ],
+        "advisory": WIKIVOYAGE_COMMUNITY_ADVISORY,
+        "requires_booking_verification": False,
+    }
+
+
+def get_wikivoyage_summary(destination: str, mode: str = "offline") -> Dict[str, Any]:
+    """Retrieve encyclopedic introduction and essential cultural context from Wikivoyage.
+
+    Args:
+        destination: Destination name (e.g. 'Barcelona', 'Kyoto', 'Paris').
+        mode: 'offline', 'mock', or 'live'.
+
+    Returns:
+        Structured destination summary, canonical URL, and CC BY-SA 4.0 license attribution.
+    """
+    from ultimate_travel_agent.integrations import ProviderCategory, ProviderConfigurationError, default_registry
+    try:
+        res = default_registry.search(
+            category=ProviderCategory.GUIDE,
+            provider_name="wikivoyage",
+            city=destination,
+            mode=mode,
+        )
+        return res.model_dump()
+    except (ProviderConfigurationError, KeyError) as err:
+        return {
+            "status": "error",
+            "error_type": "ProviderConfigurationError",
+            "error": str(err),
+            "provider": "wikivoyage",
+            "category": "guide",
+            "mode": mode,
+            "requires_booking_verification": False,
+        }
+
+
+def get_limited_route_options(origin: str, destination: str, mode: str = "offline") -> Dict[str, Any]:
+    """Calculate driving distance and durations using OSRM demo routing (experimental, disabled by default).
+
+    Args:
+        origin: Origin city or coordinates (lat, lon).
+        destination: Destination city or coordinates.
+        mode: 'offline', 'mock', or 'live'.
+
+    Returns:
+        Distance, driving duration, fatigue alerts, and OSRM/OSM attribution.
+    """
+    from ultimate_travel_agent.integrations import ProviderCategory, ProviderConfigurationError, default_registry
+    try:
+        res = default_registry.search(
+            category=ProviderCategory.MAP,
+            provider_name="osrm",
+            origin=origin,
+            destination=destination,
+            mode=mode,
+        )
+        return res.model_dump()
+    except ProviderConfigurationError as err:
+        return {
+            "status": "error",
+            "error_type": "ProviderConfigurationError",
+            "error": str(err),
+            "provider": "osrm",
+            "category": "map",
+            "mode": mode,
+            "requires_booking_verification": False,
+            "advisory": "OSRM demo routing is disabled by default to respect public demo quotas. Use mock/offline mode or self-host OSRM.",
+        }
+
+
+def get_keyless_provider_status() -> Dict[str, Any]:
+    """Inspect operational readiness, rate limits, and configuration of all Phase 10 keyless providers.
+
+    Returns:
+        Status audit of Open-Meteo, ECB, Wikivoyage, Nominatim, and OSRM.
+    """
+    from datetime import datetime, timezone
+    import os
+    from ultimate_travel_agent.integrations import default_registry
+
+    keyless_active = os.getenv("TRAVEL_MCP_ENABLE_KEYLESS_LIVE_PROVIDERS", "").lower() in ("true", "1", "yes") or \
+                     os.getenv("ENABLE_LIVE_KEYLESS_APIS", "").lower() in ("true", "1", "yes")
+    user_agent = os.getenv("TRAVEL_MCP_HTTP_USER_AGENT", "UltimateTravelAgent/1.0 (https://github.com/Gustor1/ultimate-travel-agent)")
+
+    providers_info = [
+        {
+            "provider": "open_meteo",
+            "category": "weather",
+            "status": "live_ready" if (keyless_active and os.getenv("TRAVEL_MCP_ENABLE_OPEN_METEO", "true").lower() in ("true", "1", "yes")) else "offline_mock",
+            "decision": "approved",
+            "rate_limit": "5 req/s max",
+            "requires_key": False,
+            "license": "CC BY 4.0",
+            "attribution": "Weather data by Open-Meteo.com under CC BY 4.0",
+        },
+        {
+            "provider": "ecb_currency",
+            "category": "currency",
+            "status": "live_ready" if (keyless_active and os.getenv("TRAVEL_MCP_ENABLE_ECB", "true").lower() in ("true", "1", "yes")) else "offline_mock",
+            "decision": "approved",
+            "rate_limit": "2 req/s max",
+            "requires_key": False,
+            "license": "Open ECB Data",
+            "attribution": "Source: European Central Bank (ECB) euro reference exchange rates",
+        },
+        {
+            "provider": "wikivoyage",
+            "category": "guide",
+            "status": "live_ready" if (keyless_active and os.getenv("TRAVEL_MCP_ENABLE_WIKIVOYAGE", "true").lower() in ("true", "1", "yes")) else "offline_mock",
+            "decision": "approved",
+            "rate_limit": "3 req/s max",
+            "requires_key": False,
+            "license": "CC BY-SA 4.0",
+            "attribution": "Text from Wikivoyage under CC BY-SA 4.0",
+        },
+        {
+            "provider": "nominatim",
+            "category": "map",
+            "status": "live_ready" if (keyless_active and os.getenv("TRAVEL_MCP_ENABLE_NOMINATIM", "false").lower() in ("true", "1", "yes")) else "disabled_by_default",
+            "decision": "limited",
+            "rate_limit": "1 req/s absolute max (single worker mutex)",
+            "requires_key": False,
+            "license": "ODbL 1.0",
+            "attribution": "Data © OpenStreetMap contributors, ODbL 1.0",
+        },
+        {
+            "provider": "osrm",
+            "category": "map",
+            "status": "live_ready" if (keyless_active and os.getenv("TRAVEL_MCP_ENABLE_OSRM", "false").lower() in ("true", "1", "yes")) else "disabled_by_default",
+            "decision": "experimental",
+            "rate_limit": "1 req/s max (public demo server, no SLA)",
+            "requires_key": False,
+            "license": "BSD 2-Clause / ODbL",
+            "attribution": "Routing data © Project OSRM / OpenStreetMap contributors",
+        },
+    ]
+
+    return {
+        "status": "healthy",
+        "hub_phase": "Phase 10 — Keyless Public Data Integrations",
+        "checked_at": datetime.now(timezone.utc).isoformat(),
+        "keyless_live_master_enabled": keyless_active,
+        "http_user_agent": user_agent,
+        "total_keyless_providers": len(providers_info),
+        "providers": providers_info,
+        "commercial_providers_status": "disabled_for_phase_10",
+    }
+

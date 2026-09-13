@@ -271,6 +271,88 @@ def search_travel_sources(
     )
 
 
+# ===========================================================================
+# Phase 10: Keyless Public Data MCP Tools (Zero API Key)
+# ===========================================================================
+
+@server.tool(name="geocode_destination", description="Geocode destination to latitude/longitude coordinates with CC BY 4.0 or ODbL attribution.")
+def geocode_destination(destination: str, mode: str = "offline") -> Dict[str, Any]:
+    """Geocode destination with provenance and license attribution."""
+    return tools.geocode_destination(destination=destination, mode=mode)
+
+
+@server.tool(name="get_weather_forecast", description="Get 7-day weather forecast (temp, precip, wind) from Open-Meteo with CC BY 4.0 license.")
+def get_weather_forecast(city: str, days: int = 7, mode: str = "offline") -> Dict[str, Any]:
+    """Get multi-day weather forecast."""
+    return tools.get_weather_forecast(city=city, days=days, mode=mode)
+
+
+@server.tool(name="get_weather_activity_advice", description="Evaluate rain risk and recommend indoor contingency Plan B for bad weather.")
+def get_weather_activity_advice(
+    city: str,
+    date: Optional[str] = None,
+    planned_activity: Optional[str] = None,
+    mode: str = "offline",
+) -> Dict[str, Any]:
+    """Get weather-adapted activity advice and rain backup suggestions."""
+    return tools.get_weather_activity_advice(
+        city=city,
+        date=date,
+        planned_activity=planned_activity,
+        mode=mode,
+    )
+
+
+@server.tool(name="get_exchange_rates", description="Retrieve official ECB daily reference exchange rates (non-commercial benchmark, card markups excluded).")
+def get_exchange_rates(
+    base_currency: str = "EUR",
+    symbols: Optional[List[str]] = None,
+    mode: str = "offline",
+) -> Dict[str, Any]:
+    """Get official ECB exchange reference rates."""
+    return tools.get_exchange_rates(base_currency=base_currency, symbols=symbols, mode=mode)
+
+
+@server.tool(name="convert_currency_live", description="Convert currency amounts using official ECB daily reference exchange rates.")
+def convert_currency_live(
+    amount: float,
+    from_currency: str,
+    to_currency: str,
+    mode: str = "offline",
+) -> Dict[str, Any]:
+    """Convert amount via ECB reference rate with publication date."""
+    return tools.convert_currency_live(
+        amount=amount,
+        from_currency=from_currency,
+        to_currency=to_currency,
+        mode=mode,
+    )
+
+
+@server.tool(name="search_wikivoyage_destination", description="Search Wikivoyage for matching destination guide articles (CC BY-SA 4.0).")
+def search_wikivoyage_destination(destination: str, mode: str = "offline") -> Dict[str, Any]:
+    """Search Wikivoyage travel knowledge articles."""
+    return tools.search_wikivoyage_destination(destination=destination, mode=mode)
+
+
+@server.tool(name="get_wikivoyage_summary", description="Retrieve encyclopedic summary and essential cultural context from Wikivoyage (CC BY-SA 4.0).")
+def get_wikivoyage_summary(destination: str, mode: str = "offline") -> Dict[str, Any]:
+    """Get destination article extract and canonical URL."""
+    return tools.get_wikivoyage_summary(destination=destination, mode=mode)
+
+
+@server.tool(name="get_limited_route_options", description="Calculate driving distance and durations via OSRM demo routing (experimental, disabled by default).")
+def get_limited_route_options(origin: str, destination: str, mode: str = "offline") -> Dict[str, Any]:
+    """Get road route estimate via OSRM demo."""
+    return tools.get_limited_route_options(origin=origin, destination=destination, mode=mode)
+
+
+@server.tool(name="get_keyless_provider_status", description="Audit status, rate limits, and configuration of all Phase 10 keyless providers.")
+def get_keyless_provider_status() -> Dict[str, Any]:
+    """Get readiness audit of all keyless open providers."""
+    return tools.get_keyless_provider_status()
+
+
 def main() -> None:
     """Run the MCP server over stdio transport."""
     server.run(transport="stdio")
@@ -278,3 +360,4 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+
