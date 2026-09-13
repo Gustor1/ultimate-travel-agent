@@ -203,3 +203,39 @@ def test_social_discovery_strict_unverified_tagging() -> None:
         assert item.availability_status == AvailabilityStatus.UNKNOWN.value
         assert item.requires_booking_verification is True
     assert any("SOCIAL DISCOVERY WARNING" in w for w in res.warnings)
+
+
+def test_mock_provider_rejects_live_mode() -> None:
+    """Test that mock providers refuse to execute in live mode to avoid false live claims."""
+    mock_flight = MockFlightProvider()
+    with pytest.raises(ProviderConfigurationError) as exc_info:
+        mock_flight.execute_query(mode="live", origin="PAR", destination="BCN")
+    assert "Mock provider" in str(exc_info.value)
+    assert "cannot execute in live mode" in str(exc_info.value)
+
+
+def test_registry_live_mode_routes_to_live_candidate() -> None:
+    """Test that registry search in live mode routes to live provider and raises clear error if unconfigured."""
+    with pytest.raises(ProviderConfigurationError) as exc_flight:
+        default_registry.search(category=ProviderCategory.FLIGHT, mode="live", origin="PAR", destination="BCN")
+    assert "amadeus_flight" in str(exc_flight.value)
+
+    with pytest.raises(ProviderConfigurationError) as exc_train:
+        default_registry.search(category=ProviderCategory.TRAIN, mode="live", origin="PAR", destination="BCN", date="2026-10-15")
+    assert "sncf_train" in str(exc_train.value)
+
+
+def test_keyless_providers_require_activation_for_live_mode() -> None:
+    """Test that keyless providers (ECB, Wikivoyage, Open-Meteo) require explicit activation for live calls."""
+    from ultimate_travel_agent.integrations import ECBCurrencyProvider, OpenMeteoProvider, WikivoyageProvider
+
+    ecb = ECBCurrencyProvider()
+    with pytest.raises(ProviderConfigurationError) as exc_ecb:
+        ecb.execute_query(mode="live", amount=100.0, from_currency="EUR", to_currency="USD")
+    assert "not configured" in str(exc_ecb.value) or "not activated" in str(exc_ecb.value)
+
+    wiki = WikivoyageProvider()
+    with pytest.raises(ProviderConfigurationError) as exc_wiki:
+        wiki.execute_query(mode="live", city="Paris")
+    assert "not configured" in str(exc_wiki.value) or "not activated" in str(exc_wiki.value)
+

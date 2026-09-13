@@ -8,6 +8,7 @@ from ultimate_travel_agent.integrations.models import (
     AvailabilityStatus,
     PriceStatus,
     ProviderCategory,
+    ProviderConfigurationError,
     ProviderMode,
     ProviderResultItem,
     ProviderSearchResult,
@@ -39,13 +40,19 @@ class OpenMeteoProvider(Provider):
         self._mock_delegate = MockWeatherProvider(mode=mode)
 
     def is_configured(self) -> bool:
-        return True
+        return os.getenv("ENABLE_LIVE_KEYLESS_APIS", "").lower() in ("true", "1", "yes")
 
     def normalize_result(self, raw: Dict[str, Any]) -> ProviderResultItem:
         return self._mock_delegate.normalize_result(raw)
 
     def search(self, **kwargs: Any) -> ProviderSearchResult:
-        # In offline/mock mode or default run, delegate to mock data
+        if self.mode == ProviderMode.LIVE:
+            if not self.is_configured():
+                raise ProviderConfigurationError(
+                    "Open-Meteo live weather feed is not activated. Set ENABLE_LIVE_KEYLESS_APIS=true in .env or run in offline/mock mode."
+                )
+            raise ProviderConfigurationError("Live API calls to Open-Meteo disabled during development/testing.")
+
         res = self._mock_delegate.search(**kwargs)
         res.provider = self.name
         for it in res.items:

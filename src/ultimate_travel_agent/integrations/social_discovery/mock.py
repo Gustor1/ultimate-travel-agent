@@ -37,7 +37,8 @@ class SocialDiscoveryProvider(Provider):
         )
 
     def is_configured(self) -> bool:
-        return True
+        # Social discovery does not run live without explicit API partnership
+        return False
 
     def normalize_result(self, raw: Dict[str, Any]) -> ProviderResultItem:
         return ProviderResultItem(
@@ -68,6 +69,11 @@ class SocialDiscoveryProvider(Provider):
         keyword: Optional[str] = None,
         **kwargs: Any,
     ) -> ProviderSearchResult:
+        if self.mode == ProviderMode.LIVE:
+            raise ProviderConfigurationError(
+                "Social discovery does not support live automated scraping without authorized API partner access."
+            )
+
         trends = [
             {
                 "platform": "RedNote (Xiaohongshu)",

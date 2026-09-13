@@ -40,14 +40,19 @@ class OSRMProvider(Provider):
         self._mock_delegate = MockMapsProvider(mode=mode)
 
     def is_configured(self) -> bool:
-        # OSRM can run locally without any API key
-        return True
+        return os.getenv("ENABLE_LIVE_KEYLESS_APIS", "").lower() in ("true", "1", "yes")
 
     def normalize_result(self, raw: Dict[str, Any]) -> ProviderResultItem:
         return self._mock_delegate.normalize_result(raw)
 
     def search(self, **kwargs: Any) -> ProviderSearchResult:
-        # In offline/mock mode or if backend not queried, delegate to deterministic math
+        if self.mode == ProviderMode.LIVE:
+            if not self.is_configured():
+                raise ProviderConfigurationError(
+                    "OSRM backend routing service is not activated. Set ENABLE_LIVE_KEYLESS_APIS=true in .env or run in offline/mock mode."
+                )
+            raise ProviderConfigurationError("Live API calls to OSRM disabled during development/testing.")
+
         res = self._mock_delegate.search(**kwargs)
         res.provider = self.name
         for it in res.items:

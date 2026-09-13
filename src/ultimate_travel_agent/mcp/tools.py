@@ -361,6 +361,7 @@ def search_flight_options(
     max_budget: Optional[float] = None,
     currency: str = "EUR",
     sort_by: str = "price",
+    provider: Optional[str] = None,
     mode: str = "offline",
 ) -> Dict[str, Any]:
     """Search flight offers with fare estimation, duration, and official ticketing links.
@@ -376,6 +377,7 @@ def search_flight_options(
         max_budget: Optional maximum total budget threshold.
         currency: Currency code (default 'EUR').
         sort_by: 'price', 'duration', 'stops', or 'comfort'.
+        provider: Optional target provider name (e.g. 'amadeus_flight', 'aviation_edge', 'mock_flight').
         mode: 'offline', 'mock', or 'live'.
 
     Returns:
@@ -388,6 +390,7 @@ def search_flight_options(
     try:
         res = default_registry.search(
             category=ProviderCategory.FLIGHT,
+            provider_name=provider,
             origin=origin,
             destination=destination,
             departure_date=departure_date,
@@ -399,7 +402,7 @@ def search_flight_options(
             mode=mode,
         )
         return res.model_dump()
-    except ProviderConfigurationError as err:
+    except (ProviderConfigurationError, KeyError) as err:
         return {
             "status": "error",
             "error_type": "ProviderConfigurationError",
@@ -414,6 +417,7 @@ def search_train_options(
     origin: str,
     destination: str,
     date: str,
+    provider: Optional[str] = None,
     mode: str = "offline",
 ) -> Dict[str, Any]:
     """Search rail connections with door-to-door transit time, transfers, and official booking portals.
@@ -424,6 +428,7 @@ def search_train_options(
         origin: Departure station or city name.
         destination: Arrival station or city name.
         date: Travel date (YYYY-MM-DD).
+        provider: Optional target provider name (e.g. 'sncf_train', 'navitia_train', 'mock_train').
         mode: 'offline', 'mock', or 'live'.
 
     Returns:
@@ -433,13 +438,14 @@ def search_train_options(
     try:
         res = default_registry.search(
             category=ProviderCategory.TRAIN,
+            provider_name=provider,
             origin=origin,
             destination=destination,
             date=date,
             mode=mode,
         )
         return res.model_dump()
-    except ProviderConfigurationError as err:
+    except (ProviderConfigurationError, KeyError) as err:
         return {
             "status": "error",
             "error_type": "ProviderConfigurationError",
@@ -458,6 +464,7 @@ def search_accommodation_options(
     guests: int = 2,
     max_price_per_night: Optional[float] = None,
     currency: str = "EUR",
+    provider: Optional[str] = None,
     mode: str = "offline",
 ) -> Dict[str, Any]:
     """Curate accommodations in strategic, quiet neighborhoods with price estimates.
@@ -472,6 +479,7 @@ def search_accommodation_options(
         guests: Number of guests (default 2).
         max_price_per_night: Maximum nightly budget limit.
         currency: Currency code (default 'EUR').
+        provider: Optional target provider name (e.g. 'amadeus_hotel', 'booking_hotel', 'mock_hotel').
         mode: 'offline', 'mock', or 'live'.
 
     Returns:
@@ -481,6 +489,7 @@ def search_accommodation_options(
     try:
         res = default_registry.search(
             category=ProviderCategory.HOTEL,
+            provider_name=provider,
             city=city,
             checkin_date=checkin_date,
             checkout_date=checkout_date,
@@ -491,7 +500,7 @@ def search_accommodation_options(
             mode=mode,
         )
         return res.model_dump()
-    except ProviderConfigurationError as err:
+    except (ProviderConfigurationError, KeyError) as err:
         return {
             "status": "error",
             "error_type": "ProviderConfigurationError",
@@ -505,6 +514,7 @@ def search_accommodation_options(
 def search_hotel_reviews(
     hotel_name: str,
     city: str,
+    provider: Optional[str] = None,
     mode: str = "offline",
 ) -> Dict[str, Any]:
     """Retrieve community ratings and customer sentiment reviews for a lodging venue.
@@ -514,6 +524,7 @@ def search_hotel_reviews(
     Args:
         hotel_name: Name of hotel or accommodation property.
         city: City where property is located.
+        provider: Optional target provider name (e.g. 'stayapi_review', 'tripadvisor_review', 'mock_review').
         mode: 'offline', 'mock', or 'live'.
 
     Returns:
@@ -523,12 +534,13 @@ def search_hotel_reviews(
     try:
         res = default_registry.search(
             category=ProviderCategory.REVIEW,
+            provider_name=provider,
             hotel_name=hotel_name,
             city=city,
             mode=mode,
         )
         return res.model_dump()
-    except ProviderConfigurationError as err:
+    except (ProviderConfigurationError, KeyError) as err:
         return {
             "status": "error",
             "error_type": "ProviderConfigurationError",
@@ -545,6 +557,7 @@ def search_activity_options(
     indoor_only: Optional[bool] = None,
     max_price: Optional[float] = None,
     currency: str = "EUR",
+    provider: Optional[str] = None,
     mode: str = "offline",
 ) -> Dict[str, Any]:
     """Explore curated activities with crowd avoidance advice, weather alternatives, and official tickets.
@@ -557,6 +570,7 @@ def search_activity_options(
         indoor_only: Filter for indoor activities (useful during rain).
         max_price: Maximum admission cost per person.
         currency: Currency code (default 'EUR').
+        provider: Optional target provider name (e.g. 'gyg_activity', 'viator', 'opentripmap', 'mock_activity').
         mode: 'offline', 'mock', or 'live'.
 
     Returns:
@@ -566,6 +580,7 @@ def search_activity_options(
     try:
         res = default_registry.search(
             category=ProviderCategory.ACTIVITY,
+            provider_name=provider,
             city=city,
             category_filter=category,
             indoor_only=indoor_only,
@@ -574,7 +589,7 @@ def search_activity_options(
             mode=mode,
         )
         return res.model_dump()
-    except ProviderConfigurationError as err:
+    except (ProviderConfigurationError, KeyError) as err:
         return {
             "status": "error",
             "error_type": "ProviderConfigurationError",
@@ -588,6 +603,7 @@ def search_activity_options(
 def get_route_options(
     origin: str,
     destination: str,
+    provider: Optional[str] = None,
     mode: str = "offline",
 ) -> Dict[str, Any]:
     """Calculate distance, travel durations (walking, driving, transit), and detect transit fatigue overload.
@@ -595,6 +611,7 @@ def get_route_options(
     Args:
         origin: Origin city or landmark.
         destination: Destination city or landmark.
+        provider: Optional target provider name (e.g. 'google_maps', 'openrouteservice', 'osrm', 'nominatim', 'mock_maps').
         mode: 'offline', 'mock', or 'live'.
 
     Returns:
@@ -604,12 +621,13 @@ def get_route_options(
     try:
         res = default_registry.search(
             category=ProviderCategory.MAP,
+            provider_name=provider,
             origin=origin,
             destination=destination,
             mode=mode,
         )
         return res.model_dump()
-    except ProviderConfigurationError as err:
+    except (ProviderConfigurationError, KeyError) as err:
         return {
             "status": "error",
             "error_type": "ProviderConfigurationError",
@@ -623,6 +641,7 @@ def get_route_options(
 def get_weather_outlook(
     city: str,
     date: Optional[str] = None,
+    provider: Optional[str] = None,
     mode: str = "offline",
 ) -> Dict[str, Any]:
     """Retrieve weather forecast and indoor contingency recommendations for rain or extreme weather.
@@ -630,6 +649,7 @@ def get_weather_outlook(
     Args:
         city: Destination city name.
         date: Target date (YYYY-MM-DD).
+        provider: Optional target provider name (e.g. 'openweather', 'open_meteo', 'mock_weather').
         mode: 'offline', 'mock', or 'live'.
 
     Returns:
@@ -639,12 +659,13 @@ def get_weather_outlook(
     try:
         res = default_registry.search(
             category=ProviderCategory.WEATHER,
+            provider_name=provider,
             city=city,
             date=date,
             mode=mode,
         )
         return res.model_dump()
-    except ProviderConfigurationError as err:
+    except (ProviderConfigurationError, KeyError) as err:
         return {
             "status": "error",
             "error_type": "ProviderConfigurationError",
@@ -660,6 +681,7 @@ def convert_currency(
     from_currency: str,
     to_currency: str,
     custom_rate: Optional[float] = None,
+    provider: Optional[str] = None,
     mode: str = "offline",
 ) -> Dict[str, Any]:
     """Convert monetary amounts between currencies with published reference date tracking.
@@ -669,6 +691,7 @@ def convert_currency(
         from_currency: 3-letter currency code (e.g. 'EUR', 'USD', 'ISK').
         to_currency: 3-letter target currency code.
         custom_rate: Optional manual exchange rate override.
+        provider: Optional target provider name (e.g. 'ecb_currency', 'mock_currency').
         mode: 'offline', 'mock', or 'live'.
 
     Returns:
@@ -681,6 +704,7 @@ def convert_currency(
     try:
         res = default_registry.search(
             category=ProviderCategory.CURRENCY,
+            provider_name=provider,
             amount=amount,
             from_currency=from_currency,
             to_currency=to_currency,
@@ -688,7 +712,7 @@ def convert_currency(
             mode=mode,
         )
         return res.model_dump()
-    except ProviderConfigurationError as err:
+    except (ProviderConfigurationError, KeyError) as err:
         return {
             "status": "error",
             "error_type": "ProviderConfigurationError",
@@ -702,6 +726,7 @@ def convert_currency(
 def search_travel_sources(
     query: str,
     category: Optional[str] = None,
+    provider: Optional[str] = None,
     mode: str = "offline",
 ) -> Dict[str, Any]:
     """Query travel guide knowledge, local etiquette, and social discovery trends.
@@ -712,6 +737,7 @@ def search_travel_sources(
     Args:
         query: Destination city or topic keyword.
         category: 'guide' (Wikivoyage editorial) or 'social' (community trends).
+        provider: Optional target provider name (e.g. 'wikivoyage', 'social_discovery', 'mock_guide').
         mode: 'offline', 'mock', or 'live'.
 
     Returns:
@@ -722,12 +748,13 @@ def search_travel_sources(
     try:
         res = default_registry.search(
             category=cat,
+            provider_name=provider,
             city=query,
             keyword=query,
             mode=mode,
         )
         return res.model_dump()
-    except ProviderConfigurationError as err:
+    except (ProviderConfigurationError, KeyError) as err:
         return {
             "status": "error",
             "error_type": "ProviderConfigurationError",

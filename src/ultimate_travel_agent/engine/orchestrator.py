@@ -2,6 +2,7 @@ import os
 from typing import Any, Dict, List, Optional, Tuple
 from ultimate_travel_agent.integrations import (
     ProviderCategory,
+    ProviderConfigurationError,
     ProviderMode,
     default_registry,
 )
@@ -229,13 +230,24 @@ class TravelOrchestrationEngine:
             risks.extend(budget.warnings)
 
         # Query currency provider for rate reference date
-        curr_res = self.registry.search(
-            category=ProviderCategory.CURRENCY,
-            amount=budget.grand_total,
-            from_currency=trip.currency,
-            to_currency="USD" if trip.currency != "USD" else "EUR",
-            mode=self.mode,
-        )
+        try:
+            curr_res = self.registry.search(
+                category=ProviderCategory.CURRENCY,
+                amount=budget.grand_total,
+                from_currency=trip.currency,
+                to_currency="USD" if trip.currency != "USD" else "EUR",
+                mode=self.mode,
+            )
+        except ProviderConfigurationError:
+            curr_res = self.registry.search(
+                category=ProviderCategory.CURRENCY,
+                amount=budget.grand_total,
+                from_currency=trip.currency,
+                to_currency="USD" if trip.currency != "USD" else "EUR",
+                mode="offline",
+            )
+            risks.append("Live currency feed unconfigured; offline reference rate table used.")
+
         rate_date = "2026-09-01"
         if curr_res.items and curr_res.items[0].details:
             rate_date = curr_res.items[0].details.get("rate_date", rate_date)

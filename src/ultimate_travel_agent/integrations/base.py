@@ -32,6 +32,7 @@ class Provider(ABC):
         privacy_level: str = "strict_no_pii",
         supported_countries: Optional[List[str]] = None,
         capabilities: Optional[List[str]] = None,
+        is_mock: bool = False,
     ) -> None:
         self.name = name
         self.category = category
@@ -42,6 +43,7 @@ class Provider(ABC):
         self.privacy_level = privacy_level
         self.supported_countries = supported_countries or ["*"]
         self.capabilities = capabilities or []
+        self.is_mock = is_mock or ("mock" in name.lower())
 
     @abstractmethod
     def is_configured(self) -> bool:
@@ -92,6 +94,11 @@ class Provider(ABC):
         selected_mode = ProviderMode(mode) if mode else self.mode
 
         if selected_mode == ProviderMode.LIVE:
+            if getattr(self, "is_mock", False) or "mock" in self.name.lower():
+                raise ProviderConfigurationError(
+                    f"Mock provider '{self.name}' cannot execute in live mode. "
+                    f"An official live provider must be configured and activated."
+                )
             if not self.is_configured():
                 raise ProviderConfigurationError(
                     f"Provider '{self.name}' is not configured for live queries. "

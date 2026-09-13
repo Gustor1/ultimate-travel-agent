@@ -2,12 +2,14 @@
 
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
+import os
 from ultimate_travel_agent.integrations.base import Provider
 from ultimate_travel_agent.integrations.maps.mock import MockMapsProvider
 from ultimate_travel_agent.integrations.models import (
     AvailabilityStatus,
     PriceStatus,
     ProviderCategory,
+    ProviderConfigurationError,
     ProviderMode,
     ProviderResultItem,
     ProviderSearchResult,
@@ -33,12 +35,19 @@ class NominatimProvider(Provider):
         self._mock_delegate = MockMapsProvider(mode=mode)
 
     def is_configured(self) -> bool:
-        return True
+        return os.getenv("ENABLE_LIVE_KEYLESS_APIS", "").lower() in ("true", "1", "yes")
 
     def normalize_result(self, raw: Dict[str, Any]) -> ProviderResultItem:
         return self._mock_delegate.normalize_result(raw)
 
     def search(self, **kwargs: Any) -> ProviderSearchResult:
+        if self.mode == ProviderMode.LIVE:
+            if not self.is_configured():
+                raise ProviderConfigurationError(
+                    "Nominatim live geocoding service is not activated. Set ENABLE_LIVE_KEYLESS_APIS=true in .env or run in offline/mock mode."
+                )
+            raise ProviderConfigurationError("Live API calls to Nominatim disabled during development/testing.")
+
         res = self._mock_delegate.search(**kwargs)
         res.provider = self.name
         for it in res.items:

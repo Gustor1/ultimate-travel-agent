@@ -83,8 +83,20 @@ def test_mcp_search_flight_options() -> None:
         departure_date="2026-10-15",
         mode="live",
     )
-    # amadeus_flight in live mode raises ProviderConfigurationError
-    assert "offline" in live_err.get("error", "") or live_err.get("status") == "error" or live_err.get("total_results", 0) >= 0
+    assert live_err["status"] == "error"
+    assert live_err["error_type"] == "ProviderConfigurationError"
+    assert "amadeus_flight" in live_err["error"] or "not configured" in live_err["error"]
+
+    # Target specific provider via provider parameter
+    av_live = tools.search_flight_options(
+        origin="PAR",
+        destination="BCN",
+        departure_date="2026-10-15",
+        provider="aviation_edge",
+        mode="live",
+    )
+    assert av_live["status"] == "error"
+    assert "aviation_edge" in av_live["error"]
 
 
 def test_mcp_search_train_options() -> None:
@@ -94,6 +106,11 @@ def test_mcp_search_train_options() -> None:
     assert len(res["items"]) >= 1
     assert "door-to-door" in res["items"][0]["description"].lower()
 
+    # Live mode unconfigured returns clear error
+    live_err = tools.search_train_options(origin="Paris", destination="Barcelona", date="2026-10-15", mode="live")
+    assert live_err["status"] == "error"
+    assert live_err["error_type"] == "ProviderConfigurationError"
+
 
 def test_mcp_search_accommodation_options() -> None:
     """Test search_accommodation_options tool."""
@@ -102,12 +119,22 @@ def test_mcp_search_accommodation_options() -> None:
     assert len(res["items"]) >= 1
     assert res["requires_booking_verification"] is True
 
+    # Live mode unconfigured returns clear error
+    live_err = tools.search_accommodation_options(city="Barcelona", checkin_date="2026-10-15", checkout_date="2026-10-18", mode="live")
+    assert live_err["status"] == "error"
+    assert live_err["error_type"] == "ProviderConfigurationError"
+
 
 def test_mcp_search_hotel_reviews() -> None:
     """Test search_hotel_reviews tool."""
     res = tools.search_hotel_reviews(hotel_name="Casa Bonay", city="Barcelona")
     assert res["category"] == "review"
     assert res["items"][0]["rating"] >= 4.0
+
+    # Live mode unconfigured returns clear error
+    live_err = tools.search_hotel_reviews(hotel_name="Casa Bonay", city="Barcelona", mode="live")
+    assert live_err["status"] == "error"
+    assert live_err["error_type"] == "ProviderConfigurationError"
 
 
 def test_mcp_search_activity_options() -> None:
@@ -117,6 +144,11 @@ def test_mcp_search_activity_options() -> None:
     assert len(res["items"]) >= 1
     assert res["items"][0]["details"]["is_indoor"] is True
 
+    # Live mode unconfigured returns clear error
+    live_err = tools.search_activity_options(city="Barcelona", mode="live")
+    assert live_err["status"] == "error"
+    assert live_err["error_type"] == "ProviderConfigurationError"
+
 
 def test_mcp_get_route_options() -> None:
     """Test get_route_options tool."""
@@ -125,12 +157,22 @@ def test_mcp_get_route_options() -> None:
     assert len(res["items"]) >= 1
     assert res["items"][0]["details"]["distance_km"] > 0
 
+    # Live mode unconfigured returns clear error
+    live_err = tools.get_route_options(origin="Paris", destination="Barcelona", mode="live")
+    assert live_err["status"] == "error"
+    assert live_err["error_type"] == "ProviderConfigurationError"
+
 
 def test_mcp_get_weather_outlook() -> None:
     """Test get_weather_outlook tool."""
     res = tools.get_weather_outlook(city="Barcelona", date="2026-10-15")
     assert res["category"] == "weather"
     assert res["items"][0]["details"]["temp_high_c"] > 0
+
+    # Live mode unconfigured returns clear error
+    live_err = tools.get_weather_outlook(city="Barcelona", mode="live")
+    assert live_err["status"] == "error"
+    assert live_err["error_type"] == "ProviderConfigurationError"
 
 
 def test_mcp_convert_currency() -> None:
@@ -143,6 +185,11 @@ def test_mcp_convert_currency() -> None:
     err = tools.convert_currency(amount=-5.0, from_currency="EUR", to_currency="USD")
     assert err["status"] == "error"
 
+    # Live mode unconfigured returns clear error
+    live_err = tools.convert_currency(amount=100.0, from_currency="EUR", to_currency="USD", mode="live")
+    assert live_err["status"] == "error"
+    assert live_err["error_type"] == "ProviderConfigurationError"
+
 
 def test_mcp_search_travel_sources() -> None:
     """Test search_travel_sources for guide and social sources."""
@@ -151,7 +198,17 @@ def test_mcp_search_travel_sources() -> None:
     assert res_guide["category"] == "guide"
     assert len(res_guide["items"]) >= 1
 
+    # Guide live unconfigured returns clear error
+    live_guide_err = tools.search_travel_sources(query="Barcelona", category="guide", mode="live")
+    assert live_guide_err["status"] == "error"
+    assert live_guide_err["error_type"] == "ProviderConfigurationError"
+
     # Social
     res_soc = tools.search_travel_sources(query="Barcelona", category="social")
     assert res_soc["category"] == "social"
     assert res_soc["items"][0]["verification_level"] == "social_discovery_only"
+
+    # Social live returns clear error
+    live_soc_err = tools.search_travel_sources(query="Barcelona", category="social", mode="live")
+    assert live_soc_err["status"] == "error"
+    assert live_soc_err["error_type"] == "ProviderConfigurationError"

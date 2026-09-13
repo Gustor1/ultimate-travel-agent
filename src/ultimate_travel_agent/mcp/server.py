@@ -103,6 +103,7 @@ def search_flight_options(
     max_budget: Optional[float] = None,
     currency: str = "EUR",
     sort_by: str = "price",
+    provider: Optional[str] = None,
     mode: str = "offline",
 ) -> Dict[str, Any]:
     """Search flight offers in offline, mock, or live mode."""
@@ -115,6 +116,7 @@ def search_flight_options(
         max_budget=max_budget,
         currency=currency,
         sort_by=sort_by,
+        provider=provider,
         mode=mode,
     )
 
@@ -124,6 +126,7 @@ def search_train_options(
     origin: str,
     destination: str,
     date: str,
+    provider: Optional[str] = None,
     mode: str = "offline",
 ) -> Dict[str, Any]:
     """Search rail timetables in offline, mock, or live mode."""
@@ -131,6 +134,7 @@ def search_train_options(
         origin=origin,
         destination=destination,
         date=date,
+        provider=provider,
         mode=mode,
     )
 
@@ -144,6 +148,7 @@ def search_accommodation_options(
     guests: int = 2,
     max_price_per_night: Optional[float] = None,
     currency: str = "EUR",
+    provider: Optional[str] = None,
     mode: str = "offline",
 ) -> Dict[str, Any]:
     """Search accommodation options in offline, mock, or live mode."""
@@ -155,6 +160,7 @@ def search_accommodation_options(
         guests=guests,
         max_price_per_night=max_price_per_night,
         currency=currency,
+        provider=provider,
         mode=mode,
     )
 
@@ -163,12 +169,14 @@ def search_accommodation_options(
 def search_hotel_reviews(
     hotel_name: str,
     city: str,
+    provider: Optional[str] = None,
     mode: str = "offline",
 ) -> Dict[str, Any]:
     """Search reviews from sources like StayAPI Trip.com or TripAdvisor."""
     return tools.search_hotel_reviews(
         hotel_name=hotel_name,
         city=city,
+        provider=provider,
         mode=mode,
     )
 
@@ -180,6 +188,7 @@ def search_activity_options(
     indoor_only: Optional[bool] = None,
     max_price: Optional[float] = None,
     currency: str = "EUR",
+    provider: Optional[str] = None,
     mode: str = "offline",
 ) -> Dict[str, Any]:
     """Search activities across cultural, nature, and dining dimensions."""
@@ -189,6 +198,7 @@ def search_activity_options(
         indoor_only=indoor_only,
         max_price=max_price,
         currency=currency,
+        provider=provider,
         mode=mode,
     )
 
@@ -197,12 +207,14 @@ def search_activity_options(
 def get_route_options(
     origin: str,
     destination: str,
+    provider: Optional[str] = None,
     mode: str = "offline",
 ) -> Dict[str, Any]:
     """Calculate route distance and transit durations."""
     return tools.get_route_options(
         origin=origin,
         destination=destination,
+        provider=provider,
         mode=mode,
     )
 
@@ -211,12 +223,14 @@ def get_route_options(
 def get_weather_outlook(
     city: str,
     date: Optional[str] = None,
+    provider: Optional[str] = None,
     mode: str = "offline",
 ) -> Dict[str, Any]:
     """Get weather outlook with rainy-day Plan B recommendations."""
     return tools.get_weather_outlook(
         city=city,
         date=date,
+        provider=provider,
         mode=mode,
     )
 
@@ -227,6 +241,7 @@ def convert_currency(
     from_currency: str,
     to_currency: str,
     custom_rate: Optional[float] = None,
+    provider: Optional[str] = None,
     mode: str = "offline",
 ) -> Dict[str, Any]:
     """Convert currency amounts with reference rate tracking."""
@@ -235,6 +250,7 @@ def convert_currency(
         from_currency=from_currency,
         to_currency=to_currency,
         custom_rate=custom_rate,
+        provider=provider,
         mode=mode,
     )
 
@@ -243,12 +259,14 @@ def convert_currency(
 def search_travel_sources(
     query: str,
     category: Optional[str] = None,
+    provider: Optional[str] = None,
     mode: str = "offline",
 ) -> Dict[str, Any]:
     """Search travel knowledge sources and trends."""
     return tools.search_travel_sources(
         query=query,
         category=category,
+        provider=provider,
         mode=mode,
     )
 

@@ -27,9 +27,26 @@ This skill establishes strict evaluation criteria for every piece of travel data
 4. **`social_discovery_only`**:
    - Content from viral social media platforms (TikTok, RedNote/Xiaohongshu, Instagram Reels).
    - Must be explicitly labeled to alert the user that opening times and prices are unverified.
+   - Quality controller rule: Never permit `price_status: confirmed` on `social_discovery_only` items.
 
 5. **`unverified`**:
    - LLM estimates, extrapolations, or third-party claims lacking direct validation.
 
 6. **`outdated`**:
    - Information known to precede recent policy, schedule, or price changes.
+
+## Provider Hub V1.2 Provenance Protocol
+Every item produced by a Provider Hub adapter must return standard provenance metadata:
+```yaml
+provider: provider_name
+category: flight | train | hotel | activity | review | map | weather | currency
+mode: offline | mock | live
+retrieved_at: <ISO timestamp>
+source_url: <Official booking/reference URL>
+verification_level: official_verified | cross_checked | community_recommended | social_discovery_only | unverified
+currency: <3-letter ISO code or null>
+price_status: confirmed | estimated | needs_verification
+availability_status: live | estimated | unavailable | unknown
+requires_booking_verification: true
+```
+All recommendations remain subject to manual booking verification on official partner channels. Direct transactions or financial payments are strictly prohibited.

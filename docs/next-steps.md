@@ -14,7 +14,7 @@ Toutes les étapes de la Phase 8 (V1.2) sont achevées et testées :
 - [x] **Serveur MCP V1.2 Étendu (21 outils)** : 11 nouveaux outils standardisés pour interroger le Provider Hub en lecture seule.
 - [x] **Sous-Agents & Moteur V1.2 Consolidés** : Prise en compte du temps de trajet porte-à-porte, dissociation avis vs inventaire, blocage strict des items sociaux maquillés en confirmés.
 - [x] **Documentation Complète des Politiques & Intégrations** : `provider-configuration.md`, `live-data-policy.md`, `provider-comparison.md`, `privacy-and-data-flow.md`, `credentials-request.md`.
-- [x] **Tests Automatisés à 100% Hors-Ligne** : 96 tests unitaires et d'intégration validés sans réseau ni clés requises.
+- [x] **Tests Automatisés à 100% Hors-Ligne** : 100 tests unitaires et d'intégration validés sans réseau ni clés requises.
 
 ---
 

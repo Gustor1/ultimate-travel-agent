@@ -219,3 +219,32 @@ def test_web_validation_six_categories() -> None:
     assert len(val["confirmed_data"]) >= 1
     assert len(val["estimated_recommendations"]) >= 1
 
+
+def test_web_integrations_endpoints() -> None:
+    """Verify Provider Hub REST API endpoints in the web application."""
+    # 1. List providers
+    res = client.get("/api/integrations/providers")
+    assert res.status_code == 200
+    providers = res.json()
+    assert len(providers) >= 15
+    provider_names = {p["name"] for p in providers}
+    assert "mock_flight" in provider_names
+    assert "amadeus_flight" in provider_names
+
+    # 2. Filter by category
+    res_fl = client.get("/api/integrations/providers?category=flight")
+    assert res_fl.status_code == 200
+    assert all(p["category"] == "flight" for p in res_fl.json())
+
+    # 3. Provider status - existing
+    res_stat = client.get("/api/integrations/status/mock_flight")
+    assert res_stat.status_code == 200
+    status_data = res_stat.json()
+    assert status_data["provider"] == "mock_flight"
+    assert status_data["status"] == "healthy"
+
+    # 4. Provider status - 404 for unknown provider
+    res_404 = client.get("/api/integrations/status/nonexistent_provider_123")
+    assert res_404.status_code == 404
+
+

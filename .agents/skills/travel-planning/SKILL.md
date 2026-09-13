@@ -28,3 +28,9 @@ This skill guides the creation of realistic, well-paced, and comprehensive trave
 4. **Crowd Avoidance ("Moins de personne")**:
    - Target opening hours (08:30 - 09:30) or late afternoon slots (after 16:30) for high-density landmarks.
    - Favor quiet residential and pedestrianized neighborhoods for accommodations.
+
+5. **Provider Hub Integration & Zero-Booking Protocol**:
+   - Query flights and trains for multi-option door-to-door comparisons without triggering any reservation requests.
+   - Separate lodging reviews (`StayAPIReviewProvider` / `TripadvisorReviewProvider`) from live room inventory and pricing.
+   - Ground budget calculations in published exchange rates (`ECBCurrencyProvider`) and always distinguish estimated from confirmed live prices.
+   - Zero automated booking: All tickets, lodging, and excursions must be confirmed directly by the traveler on the provider's official portal.
