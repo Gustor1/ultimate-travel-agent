@@ -1,0 +1,96 @@
+# Installing Travel Skills Pack in Any Antigravity Project
+
+The `ultimate-travel-agent` repository is designed with a **Skills-First** philosophy.
+You can install this comprehensive travel planning toolkit directly into any existing or new Antigravity project with a single command.
+
+---
+
+## 1. Quick Installation
+
+From the root of this project (or after installing via pip):
+
+```bash
+# Install the 13 core travel skills into your target project:
+python -m ultimate_travel_agent.cli install-skills --target /path/to/my-project
+```
+
+### Installing Sub-Agents and Workflows
+
+To also install the 11 specialized sub-agents and 9 end-to-end travel workflows:
+
+```bash
+python -m ultimate_travel_agent.cli install-skills \
+  --target /path/to/my-project \
+  --include-agents \
+  --include-workflows
+```
+
+---
+
+## 2. Command-Line Options
+
+| Flag | Description |
+|---|---|
+| `--target <path>` | **Required.** The absolute or relative path to the destination project. |
+| `--include-agents` | Copies the 11 specialized sub-agents into `<target>/.agents/agents/`. |
+| `--include-workflows` | Copies the 9 travel workflows into `<target>/.agents/workflows/`. |
+| `--force` | Overwrites existing files in the target project. Without this flag, existing files are safely skipped. |
+
+---
+
+## 3. Directory Structure in the Target Project
+
+After installation with all flags enabled, your target project will have:
+
+```text
+my-project/
+└── .agents/
+    ├── skills/
+    │   ├── travel-orchestrator/SKILL.md
+    │   ├── travel-web-research/SKILL.md
+    │   ├── transport-research/SKILL.md
+    │   ├── accommodation-research/SKILL.md
+    │   ├── activity-curator/SKILL.md
+    │   ├── local-discovery/SKILL.md
+    │   ├── itinerary-builder/SKILL.md
+    │   ├── budget-and-booking-checker/SKILL.md
+    │   ├── travel-safety/SKILL.md
+    │   ├── source-verification/SKILL.md
+    │   ├── travel-quality-control/SKILL.md
+    │   ├── multi-agent-orchestration/SKILL.md
+    │   └── mcp-skill-auditing/SKILL.md
+    ├── agents/
+    │   ├── travel-orchestrator/agent.md
+    │   ├── destination-researcher/agent.md
+    │   ├── transport-planner/agent.md
+    │   ├── accommodation-researcher/agent.md
+    │   ├── activity-curator/agent.md
+    │   ├── local-discovery-agent/agent.md
+    │   ├── travel-preparation-agent/agent.md
+    │   ├── budget-analyst/agent.md
+    │   ├── itinerary-optimizer/agent.md
+    │   ├── quality-controller/agent.md
+    │   └── mcp-skill-auditor/agent.md
+    └── workflows/
+        ├── plan-complete-trip.md
+        ├── research-destination.md
+        ├── compare-transport.md
+        ├── find-accommodation.md
+        ├── curate-activities.md
+        ├── build-itinerary.md
+        ├── validate-trip.md
+        ├── prepare-departure.md
+        └── audit-external-tool.md
+```
+
+---
+
+## 4. Safe Uninstallation
+
+If you ever wish to remove the travel skills from your project:
+
+```bash
+python -m ultimate_travel_agent.cli uninstall-skills --target /path/to/my-project
+```
+
+This removes the `.agents/skills/` travel folders while leaving unrelated project files untouched.

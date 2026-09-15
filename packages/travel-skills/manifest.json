@@ -1,40 +1,75 @@
 {
   "name": "travel-skills",
-  "version": "1.0.0",
-  "description": "Reusable travel planning, source verification, budgeting, safety, multi-agent orchestration, and MCP auditing skills pack for Antigravity and compatible AI agents.",
+  "version": "1.1.0",
+  "description": "Comprehensive open-source travel planning skills pack for Antigravity and compatible AI agents.",
   "author": "Ultimate Travel Agent Contributors",
   "license": "MIT",
   "homepage": "https://github.com/Gustor1/ultimate-travel-agent",
   "skills": [
     {
-      "name": "travel-planning",
-      "description": "Best practices and structured protocols for assembling end-to-end travel itineraries across city-trips, road-trips, and nature expeditions.",
-      "path": "skills/travel-planning/SKILL.md"
+      "name": "accommodation-research",
+      "description": "Skill for accommodation-research",
+      "path": "skills/accommodation-research/SKILL.md"
     },
     {
-      "name": "source-verification",
-      "description": "Protocols for grading information reliability, verifying travel facts, cross-referencing sources, and tagging verification levels.",
-      "path": "skills/source-verification/SKILL.md"
+      "name": "activity-curator",
+      "description": "Skill for activity-curator",
+      "path": "skills/activity-curator/SKILL.md"
     },
     {
-      "name": "budget-validation",
-      "description": "Rules and formulas for estimating total trip expenditure, applying multi-currency conversions, factoring safety reserves, and detecting cost overruns.",
-      "path": "skills/budget-validation/SKILL.md"
+      "name": "budget-and-booking-checker",
+      "description": "Skill for budget-and-booking-checker",
+      "path": "skills/budget-and-booking-checker/SKILL.md"
     },
     {
-      "name": "travel-safety",
-      "description": "Safety protocols, emergency contact verification, embassy registries, outdoor hazard warnings, and health compliance.",
-      "path": "skills/travel-safety/SKILL.md"
+      "name": "itinerary-builder",
+      "description": "Skill for itinerary-builder",
+      "path": "skills/itinerary-builder/SKILL.md"
     },
     {
-      "name": "multi-agent-orchestration",
-      "description": "Directives for scheduling, wave synchronization, context budget management, and DAG pipeline execution across specialized sub-agents.",
-      "path": "skills/multi-agent-orchestration/SKILL.md"
+      "name": "local-discovery",
+      "description": "Skill for local-discovery",
+      "path": "skills/local-discovery/SKILL.md"
     },
     {
       "name": "mcp-skill-auditing",
-      "description": "Guidelines and automated checks for auditing external MCP servers, tool definitions, URL allowlists, and prompt injection vectors.",
+      "description": "Skill for mcp-skill-auditing",
       "path": "skills/mcp-skill-auditing/SKILL.md"
+    },
+    {
+      "name": "multi-agent-orchestration",
+      "description": "Skill for multi-agent-orchestration",
+      "path": "skills/multi-agent-orchestration/SKILL.md"
+    },
+    {
+      "name": "source-verification",
+      "description": "Skill for source-verification",
+      "path": "skills/source-verification/SKILL.md"
+    },
+    {
+      "name": "transport-research",
+      "description": "Skill for transport-research",
+      "path": "skills/transport-research/SKILL.md"
+    },
+    {
+      "name": "travel-orchestrator",
+      "description": "Skill for travel-orchestrator",
+      "path": "skills/travel-orchestrator/SKILL.md"
+    },
+    {
+      "name": "travel-quality-control",
+      "description": "Skill for travel-quality-control",
+      "path": "skills/travel-quality-control/SKILL.md"
+    },
+    {
+      "name": "travel-safety",
+      "description": "Skill for travel-safety",
+      "path": "skills/travel-safety/SKILL.md"
+    },
+    {
+      "name": "travel-web-research",
+      "description": "Skill for travel-web-research",
+      "path": "skills/travel-web-research/SKILL.md"
     }
   ]
 }

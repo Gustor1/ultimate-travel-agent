@@ -115,3 +115,17 @@ Ce registre consigne les décisions structurantes prises au cours de la concepti
   4. **Extension protocolaire MCP** : Version passée à 1.1.0 et exposition de `get_inter_city_routes` et `get_contingency_dossier`.
 - **Conséquences :** Expérience produit V1.1 totalement interactive, conforme au cahier des charges et vérifiée par 69 tests automatisés.
 
+
+## Décision 11 — Pivot Skills-First et Archivage du Prototype MCP/API
+
+- **Date** : 2026-09-15
+- **Statut** : Approuvé et Exécuté
+- **Contexte** :
+  Les phases 7 à 10 ont permis d'explorer la création d'un serveur MCP distant, de multiples adaptateurs de fournisseurs (vols, trains, hôtels, activités, cartes), d'images Docker et de configurations de déploiement cloud. L'audit complet a démontré que le maintien d'une infrastructure cloud et d'APIs commerciales tierces imposait des coûts, des comptes obligatoires et des risques d'obsolescence incompatibles avec la mission open-source, local-first et sans clé obligatoire du projet.
+- **Décision** :
+  1. Le projet adopte définitivement une stratégie **Skills-First**.
+  2. L'ensemble du prototype MCP distant, Docker, Provider Hub et déploiements cloud est intégralement archivé et préservé sur la branche :
+     `archive/mcp-api-prototype-v1.2`
+  3. La branche principale `main` est recentrée sur le **Travel Skills Pack** : 13 skills complètes, 11 sous-agents, 9 workflows, des exemples de briefs, un installateur CLI cross-projet et une documentation exhaustive.
+  4. L'IA utilise les outils de recherche web et de navigation disponibles dans son environnement runtime, avec un comportement de repli sécurisé en mode hors ligne.
+  5. Règle absolue maintenue : aucun achat, aucune réservation, aucun paiement, aucune collecte de données personnelles.
