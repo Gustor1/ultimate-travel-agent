@@ -1,10 +1,10 @@
 ---
-name: source-verification
-description: Skill for source-verification
+name: travel-orchestrator
+description: Skill for travel-orchestrator
 conditions: Use only when needed
 ---
-# source-verification
-Role: Handle source-verification tasks.
+# travel-orchestrator
+Role: Handle travel-orchestrator tasks.
 Inputs: user brief
 Outputs: structured data
 Tools: filesystem_read, web_search (optional), browser (optional), local_calculation

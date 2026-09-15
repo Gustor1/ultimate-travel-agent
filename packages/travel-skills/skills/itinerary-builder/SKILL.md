@@ -1,10 +1,10 @@
 ---
-name: source-verification
-description: Skill for source-verification
+name: itinerary-builder
+description: Skill for itinerary-builder
 conditions: Use only when needed
 ---
-# source-verification
-Role: Handle source-verification tasks.
+# itinerary-builder
+Role: Handle itinerary-builder tasks.
 Inputs: user brief
 Outputs: structured data
 Tools: filesystem_read, web_search (optional), browser (optional), local_calculation

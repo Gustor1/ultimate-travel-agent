@@ -1,10 +1,10 @@
 ---
-name: source-verification
-description: Skill for source-verification
+name: accommodation-research
+description: Skill for accommodation-research
 conditions: Use only when needed
 ---
-# source-verification
-Role: Handle source-verification tasks.
+# accommodation-research
+Role: Handle accommodation-research tasks.
 Inputs: user brief
 Outputs: structured data
 Tools: filesystem_read, web_search (optional), browser (optional), local_calculation

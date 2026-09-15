@@ -1,0 +1,11 @@
+name: local-discovery-agent
+mission: Perform local-discovery-agent tasks.
+skills: [ "relevant skill" ]
+inputs: brief
+sources: official
+tools: web_search
+fallback: local only
+output: yaml
+limits: no booking
+safety: strict
+return_condition: validation ok

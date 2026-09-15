@@ -1,10 +1,10 @@
 ---
-name: source-verification
-description: Skill for source-verification
+name: activity-curator
+description: Skill for activity-curator
 conditions: Use only when needed
 ---
-# source-verification
-Role: Handle source-verification tasks.
+# activity-curator
+Role: Handle activity-curator tasks.
 Inputs: user brief
 Outputs: structured data
 Tools: filesystem_read, web_search (optional), browser (optional), local_calculation

@@ -1,10 +1,10 @@
 ---
-name: source-verification
-description: Skill for source-verification
+name: travel-quality-control
+description: Skill for travel-quality-control
 conditions: Use only when needed
 ---
-# source-verification
-Role: Handle source-verification tasks.
+# travel-quality-control
+Role: Handle travel-quality-control tasks.
 Inputs: user brief
 Outputs: structured data
 Tools: filesystem_read, web_search (optional), browser (optional), local_calculation

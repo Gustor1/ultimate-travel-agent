@@ -1,31 +1,47 @@
 ---
 name: travel-safety
-description: Safety protocols, emergency contact verification, embassy registries, outdoor hazard warnings, and health compliance.
+description: Skill for travel-safety
+conditions: Use only when needed
 ---
+# travel-safety
+Role: Handle travel-safety tasks.
+Inputs: user brief
+Outputs: structured data
+Tools: filesystem_read, web_search (optional), browser (optional), local_calculation
 
-# Travel Safety Skill
+Fallback:
+State clearly that live research cannot be completed.
+Use only user-provided or local information.
+List the exact information requiring verification.
+Never invent live prices, availability, opening hours, visa rules or booking status.
 
-## Overview
-This skill mandates systematic verification of health, diplomatic, and physical safety constraints before any itinerary is considered viable.
+Source Policy:
+Tier 1 : source officielle
+Tier 2 : opérateur officiel ou fournisseur direct
+Tier 3 : institution touristique reconnue
+Tier 4 : source éditoriale reconnue
+Tier 5 : avis communautaires
+Tier 6 : réseaux sociaux / découverte uniquement
 
-## Core Rules
+Safety Policy:
+Never make purchases.
+Never make reservations.
+Never enter personal or payment data.
+Never share travel documents.
+Never bypass login, paywalls, robots rules or site restrictions.
+Never present social-media content as verified logistical information.
 
-1. **Official Health & Entry Regulations**:
-   - Verify passport expiration date requirements (minimum 3 to 6 months beyond intended stay depending on destination).
-   - Check mandatory vaccination certificates and international health declarations.
-   - For European travel: remind EU travelers about the European Health Insurance Card (EHIC / CEAM).
+Output format:
+```yaml
+summary: ""
+recommendations: []
+source_log: []
+assumptions: []
+missing_information: []
+verification_required: []
+risks: []
+```
 
-2. **Emergency Contacts Directory**:
-   - Every trip file must include verified emergency telephone numbers:
-     - Local police, fire, and medical dispatch (e.g. 112 in EU, 911 in US/Canada, 110/119 in Japan).
-     - Address and emergency contact of the traveler's national embassy/consulate.
-
-3. **Hazard & Extreme Weather Warnings**:
-   - For road trips or nature trails: include direct references to official safety platforms (e.g. safetravel.is and road.is for Iceland, avalanche services for alpine regions).
-   - Specifically identify natural hazards (sneaker waves, sudden blizzards, flash floods).
-   - Leverage Open-Meteo weather outlooks to detect heavy rain, storm wind gusts, or freezing temperatures; mandate indoor backups when adverse weather is indicated.
-
-4. **Community Guide vs. Official Diplomatic Directives**:
-   - Community guide sources (e.g. Wikivoyage `Stay safe` sections) offer valuable neighborhood awareness and practical scam avoidance advice.
-   - However, community guides must NEVER be used as the sole authority for mandatory visa regimes, passport validity rules, embassy contacts, or official diplomatic travel bans. Always link directly to official consular authorities.
-
+Example:
+User: "Find a flight"
+Output: structured yaml
