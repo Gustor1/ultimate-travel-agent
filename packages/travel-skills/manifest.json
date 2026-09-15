@@ -1,6 +1,6 @@
 {
   "name": "travel-skills",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Comprehensive open-source travel planning skills pack for Antigravity and compatible AI agents.",
   "author": "Ultimate Travel Agent Contributors",
   "license": "MIT",
@@ -8,67 +8,67 @@
   "skills": [
     {
       "name": "accommodation-research",
-      "description": "Skill for accommodation-research",
+      "description": "Investigates strategic neighborhoods and vets lodging options for safety, noise levels, transit access, amenities, and cancellation terms.",
       "path": "skills/accommodation-research/SKILL.md"
     },
     {
       "name": "activity-curator",
-      "description": "Skill for activity-curator",
+      "description": "Curates cultural, historical, outdoor, and culinary activities with duration estimates, ticketing requirements, anti-crowd tactics, and bad-weather contingencies.",
       "path": "skills/activity-curator/SKILL.md"
     },
     {
       "name": "budget-and-booking-checker",
-      "description": "Skill for budget-and-booking-checker",
+      "description": "Consolidates all estimated trip expenditures, validates totals against user budget with safety reserves, and compiles a chronological pre-departure booking requirement checklist.",
       "path": "skills/budget-and-booking-checker/SKILL.md"
     },
     {
       "name": "itinerary-builder",
-      "description": "Skill for itinerary-builder",
+      "description": "Synthesizes destinations, transit segments, lodgings, and activities into a coherent chronological day-by-day itinerary with geographic clustering and realistic buffers.",
       "path": "skills/itinerary-builder/SKILL.md"
     },
     {
       "name": "local-discovery",
-      "description": "Skill for local-discovery",
+      "description": "Discovers off-the-beaten-path neighborhood spots, authentic eateries, and emerging cultural venues, tagging community and social sources strictly for verification.",
       "path": "skills/local-discovery/SKILL.md"
     },
     {
       "name": "mcp-skill-auditing",
-      "description": "Skill for mcp-skill-auditing",
+      "description": "Audits third-party Model Context Protocol (MCP) servers and external AI skills for security integrity, permission scope, data leakage, and prompt injection risks.",
       "path": "skills/mcp-skill-auditing/SKILL.md"
     },
     {
       "name": "multi-agent-orchestration",
-      "description": "Skill for multi-agent-orchestration",
+      "description": "Coordinates multi-agent execution topologies, wave dependencies, data-passing pipelines, and fallback states for autonomous travel planning teams.",
       "path": "skills/multi-agent-orchestration/SKILL.md"
     },
     {
       "name": "source-verification",
-      "description": "Skill for source-verification",
+      "description": "Cross-checks travel facts, timetables, fares, opening hours, and policies against primary official tiers, flagging discrepancies and unconfirmed data.",
       "path": "skills/source-verification/SKILL.md"
     },
     {
       "name": "transport-research",
-      "description": "Skill for transport-research",
+      "description": "Researches and compares multi-modal door-to-door transit options with time, cost, and official booking links.",
       "path": "skills/transport-research/SKILL.md"
     },
     {
       "name": "travel-orchestrator",
-      "description": "Skill for travel-orchestrator",
+      "description": "Orchestrates end-to-end travel planning across 5 sequential waves, coordinating specialized sub-agents and synthesizing the final sourced travel dossier.",
       "path": "skills/travel-orchestrator/SKILL.md"
     },
     {
       "name": "travel-quality-control",
-      "description": "Skill for travel-quality-control",
+      "description": "Performs comprehensive quality assurance on travel dossiers, verifying geographic coherence, connection feasibility, budget calculations, and contingency coverage.",
       "path": "skills/travel-quality-control/SKILL.md"
     },
     {
       "name": "travel-safety",
-      "description": "Skill for travel-safety",
+      "description": "Evaluates governmental travel advisories, entry visas, health prerequisites, emergency preparedness, and safety protocols from authoritative public sources.",
       "path": "skills/travel-safety/SKILL.md"
     },
     {
       "name": "travel-web-research",
-      "description": "Skill for travel-web-research",
+      "description": "Performs broad destination research across official tourism portals and reputable editorial guides for climate, cultural norms, seasonal windows, and regional context.",
       "path": "skills/travel-web-research/SKILL.md"
     }
   ]

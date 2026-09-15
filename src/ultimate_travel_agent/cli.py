@@ -1,114 +1,103 @@
 """CLI entry point for ultimate-travel-agent Skills-First pack."""
 
 import argparse
-import os
-import shutil
 import sys
 from pathlib import Path
 
-
-def get_base_dir() -> Path:
-    """Resolve repository root or package base directory."""
-    current = Path(__file__).resolve().parent
-    repo_root = current.parent.parent
-    if (repo_root / ".agents").exists():
-        return repo_root
-    if (Path.cwd() / ".agents").exists():
-        return Path.cwd()
-    return repo_root
+from ultimate_travel_agent.skills import (
+    find_pack_root,
+    install_pack_skills,
+    list_available_skills,
+    uninstall_pack_skills,
+)
 
 
-def copy_directory(src_dir: Path, dest_dir: Path, force: bool, installed_files: list):
-    """Recursively copy files from src_dir to dest_dir with overwrite protection."""
-    if not src_dir.exists():
-        return
-
-    dest_dir.mkdir(parents=True, exist_ok=True)
-
-    for item in src_dir.rglob("*"):
-        if item.is_file():
-            rel_path = item.relative_to(src_dir)
-            target_file = dest_dir / rel_path
-
-            if target_file.exists() and not force:
-                print(f"Skipping {target_file} (already exists, use --force to overwrite)")
-                continue
-
-            target_file.parent.mkdir(parents=True, exist_ok=True)
-            shutil.copy2(item, target_file)
-            installed_files.append(target_file)
-            print(f"Installed: {target_file}")
-
-
-def install_skills(args):
-    """Install travel skills into target project."""
+def install_skills_cmd(args):
     target = Path(args.target).resolve()
-    base_dir = get_base_dir()
+    print(f"Installing Ultimate Travel Agent pack into: {target}")
+    result = install_pack_skills(
+        target_dir=target,
+        include_agents=getattr(args, "include_agents", False),
+        include_workflows=getattr(args, "include_workflows", False),
+        force=getattr(args, "force", False),
+        dry_run=getattr(args, "dry_run", False),
+    )
 
-    installed_files = []
+    prefix = "[DRY-RUN] " if getattr(args, "dry_run", False) else ""
+    if result["installed"]:
+        print(f"\n{prefix}Installed files ({len(result['installed'])}):")
+        for f in result["installed"][:15]:
+            print(f"   + {f}")
+        if len(result["installed"]) > 15:
+            print(f"   ... and {len(result['installed']) - 15} more files.")
 
-    # 1. Install skills
-    skills_src = base_dir / "packages" / "travel-skills" / "skills"
-    if not skills_src.exists():
-        skills_src = base_dir / ".agents" / "skills"
+    if result["overwritten"]:
+        print(f"\n{prefix}Overwritten files (--force, {len(result['overwritten'])}):")
+        for f in result["overwritten"][:10]:
+            print(f"   ~ {f}")
 
-    skills_dest = target / ".agents" / "skills"
-    copy_directory(skills_src, skills_dest, args.force, installed_files)
+    if result["skipped"]:
+        print(f"\n{prefix}Skipped existing files ({len(result['skipped'])} - use --force to overwrite):")
+        for f in result["skipped"][:10]:
+            print(f"   - {f}")
 
-    # 2. Install agents
-    if getattr(args, "include_agents", False):
-        agents_src = base_dir / ".agents" / "agents"
-        if agents_src.exists():
-            agents_dest = target / ".agents" / "agents"
-            copy_directory(agents_src, agents_dest, args.force, installed_files)
-
-    # 3. Install workflows
-    if getattr(args, "include_workflows", False):
-        workflows_src = base_dir / ".agents" / "workflows"
-        if workflows_src.exists():
-            workflows_dest = target / ".agents" / "workflows"
-            copy_directory(workflows_src, workflows_dest, args.force, installed_files)
-
-    print(f"\nSummary: {len(installed_files)} files installed successfully into {target}.")
+    print(f"\nSummary: {len(result['installed'])} files installed. Target skills: {result['skills_count']}, agents: {result['agents_count']}, workflows: {result['workflows_count']}.")
+    if result.get("manifest_path"):
+        print(f"Manifest written to: {result['manifest_path']}")
 
 
-def uninstall_skills(args):
-    """Uninstall travel skills and components from target project."""
+def uninstall_skills_cmd(args):
     target = Path(args.target).resolve()
+    print(f"Uninstalling Ultimate Travel Agent pack from: {target}")
+    result = uninstall_pack_skills(
+        target_dir=target,
+        force=getattr(args, "force", False),
+        clean_modified=getattr(args, "clean_modified", False),
+        dry_run=getattr(args, "dry_run", False),
+    )
 
-    skills_dest = target / ".agents" / "skills"
-    if skills_dest.exists():
-        shutil.rmtree(skills_dest)
-        print(f"Removed skills: {skills_dest}")
+    prefix = "[DRY-RUN] " if getattr(args, "dry_run", False) else ""
+    if result["removed"]:
+        print(f"\n{prefix}Removed files ({len(result['removed'])}):")
+        for f in result["removed"][:15]:
+            print(f"   - {f}")
+        if len(result["removed"]) > 15:
+            print(f"   ... and {len(result['removed']) - 15} more files.")
 
-    agents_dest = target / ".agents" / "agents"
-    if agents_dest.exists():
-        shutil.rmtree(agents_dest)
-        print(f"Removed agents: {agents_dest}")
+    if result["skipped_modified"]:
+        print(f"\n[WARNING] Skipped user-modified files ({len(result['skipped_modified'])}):")
+        for f in result["skipped_modified"]:
+            print(f"   ! {f} (modified after install; use --clean-modified or --force to delete)")
 
-    workflows_dest = target / ".agents" / "workflows"
-    if workflows_dest.exists():
-        shutil.rmtree(workflows_dest)
-        print(f"Removed workflows: {workflows_dest}")
+    if result["not_found"]:
+        print(f"\nAlready removed or missing ({len(result['not_found'])} files).")
 
-    print(f"\nSummary: Uninstalled travel skills from {target}")
+    status = "Manifest cleaned." if result.get("manifest_cleaned") else "Manifest updated with remaining files."
+    print(f"\nSummary: {len(result['removed'])} files removed. {status}")
 
 
-def list_skills(args):
-    """List available travel skills."""
-    base_dir = get_base_dir()
-    skills_dir = base_dir / "packages" / "travel-skills" / "skills"
-    if not skills_dir.exists():
-        skills_dir = base_dir / ".agents" / "skills"
+def list_skills_cmd(args):
+    skills = list_available_skills()
+    print(f"Available Travel Skills ({len(skills)}):")
+    for s in skills:
+        desc = s.get("description", "")
+        print(f"  - {s['name']}: {desc}")
 
-    if not skills_dir.exists():
-        print("No skills directory found.")
-        return
 
-    print("Available Travel Skills:")
-    for s in sorted(skills_dir.iterdir()):
-        if s.is_dir() and (s / "SKILL.md").exists():
-            print(f"  - {s.name}")
+def validate_skills_cmd(args):
+    from ultimate_travel_agent.validator import validate_all_skills
+    pack_dir = Path(args.path).resolve() if getattr(args, "path", None) else None
+    passed, reports = validate_all_skills(pack_dir)
+    print(f"Skill Quality Validation: {'PASSED' if passed else 'FAILED'}")
+    for skill_name, issues in reports.items():
+        if issues:
+            print(f"  [FAIL] {skill_name}:")
+            for issue in issues:
+                print(f"     - {issue}")
+        else:
+            print(f"  [OK]   {skill_name}")
+    if not passed:
+        sys.exit(1)
 
 
 def main():
@@ -120,21 +109,43 @@ def main():
     install_parser.add_argument("--include-agents", action="store_true", help="Include sub-agents")
     install_parser.add_argument("--include-workflows", action="store_true", help="Include workflows")
     install_parser.add_argument("--force", "-f", action="store_true", help="Overwrite existing files")
+    install_parser.add_argument("--dry-run", action="store_true", help="Simulate installation without touching files")
 
     uninstall_parser = subparsers.add_parser("uninstall-skills", help="Uninstall travel skills from a project")
     uninstall_parser.add_argument("--target", "-t", required=True, help="Target project path")
+    uninstall_parser.add_argument("--force", "-f", action="store_true", help="Remove even if files were modified")
+    uninstall_parser.add_argument("--clean-modified", action="store_true", help="Remove user-modified files")
+    uninstall_parser.add_argument("--dry-run", action="store_true", help="Simulate uninstallation")
 
-    list_parser = subparsers.add_parser("list-skills", help="List available travel skills")
+    subparsers.add_parser("list-skills", help="List available travel skills")
+
+    val_parser = subparsers.add_parser("validate-skills", help="Validate quality and standards of travel skills")
+    val_parser.add_argument("--path", "-p", help="Optional path to skills folder")
 
     args = parser.parse_args()
 
     if args.command == "install-skills":
-        install_skills(args)
+        install_skills_cmd(args)
     elif args.command == "uninstall-skills":
-        uninstall_skills(args)
+        uninstall_skills_cmd(args)
     elif args.command == "list-skills":
-        list_skills(args)
+        list_skills_cmd(args)
+    elif args.command == "validate-skills":
+        validate_skills_cmd(args)
 
 
 if __name__ == "__main__":
     main()
+
+# Backward compatibility aliases for CLI functions and tests
+install_skills = install_skills_cmd
+uninstall_skills = uninstall_skills_cmd
+
+def get_base_dir() -> Path:
+    """Return repository or pack base directory."""
+    root = find_pack_root()
+    if (root / ".agents").exists():
+        return root
+    if root.name == "travel-skills" and (root.parent.parent / ".agents").exists():
+        return root.parent.parent
+    return root

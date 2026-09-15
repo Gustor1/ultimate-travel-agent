@@ -129,3 +129,21 @@ Ce registre consigne les décisions structurantes prises au cours de la concepti
   3. La branche principale `main` est recentrée sur le **Travel Skills Pack** : 13 skills complètes, 11 sous-agents, 9 workflows, des exemples de briefs, un installateur CLI cross-projet et une documentation exhaustive.
   4. L'IA utilise les outils de recherche web et de navigation disponibles dans son environnement runtime, avec un comportement de repli sécurisé en mode hors ligne.
   5. Règle absolue maintenue : aucun achat, aucune réservation, aucun paiement, aucune collecte de données personnelles.
+
+---
+
+## ADR 012 — Phase 12 : Qualité, Sécurité et Validation en Situation Réelle du Pack de Skills
+
+- **Date** : 2026-09-15
+- **Statut** : Approuvé et Exécuté
+- **Contexte** :
+  Suite au pivot Skills-First (Phase 11), le pack de skills de voyage doit pouvoir être installé, testé, mis à jour et désinstallé dans n'importe quel projet Antigravity sans risquer de supprimer ou d'altérer les compétences personnelles de l'utilisateur, tout en garantissant des standards de qualité et de sécurité stricts.
+- **Décision** :
+  1. **Désinstallation sûre basée sur manifeste** : Création d'un fichier de suivi .agents/.ultimate-travel-agent-install.json enregistrant l'empreinte SHA-256 de chaque fichier installé. La désinstallation ne supprime que les fichiers intacts enregistrés et préserve systématiquement tout fichier modifié par l'utilisateur (sauf avec --clean-modified explicite) ainsi que tous les skills, agents ou workflows créés par l'utilisateur.
+  2. **Validateur de qualité des skills** : Ajout de la commande alidate-skills et du module src/ultimate_travel_agent/validator.py vérifiant la conformité des 13 skills (YAML frontmatter, rôle, entrées/sorties, outils requis, politique de repli hors-ligne, pyramide des sources Tier 1 à Tier 6, politique de sécurité zéro-réservation/zéro-paiement, schéma de sortie structuré et exemple complet avec requête utilisateur).
+  3. **Scénarios réels et sorties attendues** : Création de 6 scénarios représentatifs (city-break-europe, 
+oad-trip-nature, amily-trip, ackpacking-budget, low-crowd-cultural-trip, usiness-trip) avec leurs briefs d'entrée et sorties attendues structurées.
+  4. **Protocole de recherche web enrichi** : Mise à jour de 	ravel-web-research avec un protocole d'investigation en 12 étapes, des règles spécifiques par domaine (vols, trains, hébergements, météo, santé/sécurité, restrictions Tier 6 sur réseaux sociaux) et une déclaration hors-ligne bilingue (EN/FR).
+  5. **Documentation intégrale bilingue** : Rédaction des guides en français (docs/use-with-antigravity.fr.md, docs/install-in-any-project.fr.md, docs/skills-catalog.fr.md, examples/trip-brief-template.fr.md) et mise à jour du README principal.
+- **Conséquences** :
+  Le pack de skills est totalement robuste, réutilisable en isolation, bilingue, audité par des tests automatisés et immunisé contre la suppression accidentelle de données utilisateur.

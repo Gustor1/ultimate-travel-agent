@@ -7,119 +7,105 @@ An open-source **Travel Skills Pack** for AI agents.
 [![Skills-First](https://img.shields.io/badge/Architecture-Skills--First-blue.svg)](#skills-first-approach)
 [![Python: 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/)
 
----
-
-## Skills-First Approach
-
-`ultimate-travel-agent` is an open-source, local-first travel planning toolkit designed for AI coding environments like **Antigravity**, Claude Code, and Cursor.
-
-Following our Phase 11 architectural pivot, the project focuses entirely on a **Skills-First** model:
-- **No commercial API keys required**: No Amadeus, Trip.com, TripAdvisor, Google Maps, or Viator accounts needed.
-- **No mandatory cloud servers or SaaS subscriptions**: Operates locally on your machine.
-- **Tool-Adaptive**: The AI leverages the web search and browser tools already present in its runtime environment to find up-to-date travel information.
-- **Safe Offline Fallback**: If web search tools are absent, the skills execute a safe estimation protocol without inventing fares or hours.
-- **Strict Safety Invariants**: The system **never** makes purchases, **never** books rooms or flights, **never** collects credit card or passport details, and **never** bypasses paywalls.
-
-> [!NOTE]
-> The previous experimental remote MCP server, Docker manifests, and commercial provider adapters have been safely preserved on the archive branch:
-> [`archive/mcp-api-prototype-v1.2`](https://github.com/Gustor1/ultimate-travel-agent/tree/archive/mcp-api-prototype-v1.2).
+[Documentation en Français](docs/install-in-any-project.fr.md) | [Catalogue des Skills (FR)](docs/skills-catalog.fr.md) | [Utilisation Antigravity (FR)](docs/use-with-antigravity.fr.md)
 
 ---
 
-## The 13 Core Travel Skills
+## ⚡ Quick Start (< 2 Minutes)
 
-The repository distributes 13 specialized, modular skills:
-
-1. **`travel-orchestrator`**: Master coordinator managing the 5-wave planning lifecycle and assembling the final travel dossier.
-2. **`travel-web-research`**: Researches destination climate, regional norms, and seasonal crowd windows.
-3. **`transport-research`**: Compares door-to-door transit options (air, rail, road, ferry) with official links.
-4. **`accommodation-research`**: Vets strategic neighborhoods and curates a shortlist of 3-5 accommodations.
-5. **`activity-curator`**: Curates cultural, culinary, and outdoor experiences with anti-crowd tactics and rain backups.
-6. **`local-discovery`**: Scouts authentic neighborhood eateries and hidden gems, tagging community sources.
-7. **`itinerary-builder`**: Assembles chronological daily schedules with geographic clustering to prevent backtracking.
-8. **`budget-and-booking-checker`**: Audits line-item costs, enforces 10-15% safety reserves, and lists booking deadlines.
-9. **`travel-safety`**: Reviews visa rules, passport validity, health advisories, and emergency protocols.
-10. **`source-verification`**: Cross-checks facts, hours, and fares against a strict 6-tier sourcing hierarchy.
-11. **`travel-quality-control`**: Audits transit feasibility, pacing realism, and budget arithmetic before delivery.
-12. **`multi-agent-orchestration`**: Provides execution topologies and dependency graphs for multi-agent teams.
-13. **`mcp-skill-auditing`**: Audits external tools and MCP servers for security and credential safety.
-
-See the complete [Skills Catalog](docs/skills-catalog.md) for detailed descriptions.
-
----
-
-## Installation in Any Antigravity Project
-
-You can install this Travel Skills Pack into any other Antigravity project with a single command:
+Install the 13 travel skills, 11 sub-agents, and 9 workflows directly into your Antigravity project:
 
 ```bash
-# Clone or navigate to ultimate-travel-agent:
+# 1. Clone ultimate-travel-agent:
 git clone https://github.com/Gustor1/ultimate-travel-agent.git
 cd ultimate-travel-agent
 
-# Install the 13 skills into your target project:
-python -m ultimate_travel_agent.cli install-skills --target /path/to/my-project
-```
-
-### Installing Sub-Agents and Workflows
-
-To also install the 11 specialized sub-agents and 9 end-to-end workflows:
-
-```bash
+# 2. Install everything into your target project:
 python -m ultimate_travel_agent.cli install-skills \
   --target /path/to/my-project \
   --include-agents \
   --include-workflows
 ```
 
-See [Installation Guide](docs/install-in-any-project.md) for full documentation.
-
----
-
-## How to Plan a Complete Trip
-
-### Step 1: Fill Out a Trip Brief
-Copy the universal template from [`examples/trip-brief-template.md`](examples/trip-brief-template.md):
-
-```markdown
-Destination(s): Tokyo & Kyoto, Japan
-Dates or duration: October 18 - October 24 (7 days)
-Origin: Paris (CDG)
-Travelers: 2 adults (couple)
-Budget and currency: €3,000 EUR
-Pace preference: balanced
-Interests: Gastronomy, historic temples, modern architecture
-```
-
-Explore full realistic examples:
-- [Tokyo & Kyoto City Break](examples/city-break-brief.md)
-- [Scottish Highlands Road Trip](examples/road-trip-brief.md)
-- [Western Norway Fjords Solo Trip](examples/nature-low-crowd-brief.md)
-
-### Step 2: Trigger the Workflow in Antigravity
-Prompt Antigravity:
+Then, open your project in Antigravity, copy a brief from [`examples/trip-brief-template.md`](examples/trip-brief-template.md) (or [`examples/trip-brief-template.fr.md`](examples/trip-brief-template.fr.md)), and prompt:
 
 ```text
 Follow the workflow .agents/workflows/plan-complete-trip.md using this brief:
-[Paste your filled brief here]
+[Paste your brief here]
 ```
-
-### Step 3: Receive Your Sourced Travel Dossier
-The agents will execute across 5 waves, producing:
-- A day-by-day chronological itinerary clustered by neighborhood.
-- Door-to-door transit plans with official operator links.
-- Vetted lodging recommendations with cancellation terms.
-- Rainy day backup plans (Plan B) for every outdoor activity.
-- An itemized budget with a 15% safety contingency reserve.
-- A pre-departure checklist for visas, vaccinations, and currency.
-- A pre-booking verification action list with direct official links.
 
 ---
 
-## Sourcing Hierarchy
+## What is Ultimate Travel Agent?
 
-All agents strictly follow our [6-Tier Sourcing Policy](docs/source-verification.md):
+`ultimate-travel-agent` is an open-source, local-first toolkit that gives your AI assistant the capability to plan realistic, sourced, and well-budgeted trips without relying on expensive proprietary travel APIs or third-party cloud services.
 
+### Skills-First Approach
+- **No API keys or developer accounts required**: No Amadeus, Trip.com, TripAdvisor, Google Maps, or Viator subscriptions.
+- **Tool-Adaptive**: The AI leverages the web search and browser tools already active in your environment (Antigravity, Claude Code, Cursor) to find real schedules and operator booking links.
+- **Safe Offline Fallback**: If web search tools are unavailable, the skills execute a safe estimation protocol without inventing fares or hours.
+- **Strict Safety Invariants**: The system **never** makes automatic purchases, **never** books rooms or flights, **never** asks for credit cards or passports, and **never** bypasses paywalls.
+- **Manifest-Based Safe Uninstallation**: Only files installed by the toolkit are removed. Your custom skills, agents, and user-modified files are safely preserved.
+
+> [!NOTE]
+> The previous experimental remote MCP server, Docker virtualization, and commercial provider adapters are safely preserved on the archive branch:
+> [`archive/mcp-api-prototype-v1.2`](https://github.com/Gustor1/ultimate-travel-agent/tree/archive/mcp-api-prototype-v1.2).
+
+---
+
+## The 13 Core Travel Skills
+
+| Skill | Role |
+|---|---|
+| [`travel-orchestrator`](.agents/skills/travel-orchestrator/SKILL.md) | Coordinates the 5-wave planning lifecycle and consolidates the final travel dossier. |
+| [`travel-web-research`](.agents/skills/travel-web-research/SKILL.md) | 12-step research protocol for climate, crowd calendars, and official operator data. |
+| [`transport-research`](.agents/skills/transport-research/SKILL.md) | Door-to-door multi-modal transit comparison (air, rail, road, ferry) with official links. |
+| [`accommodation-research`](.agents/skills/accommodation-research/SKILL.md) | Vets strategic neighborhoods and curates 3-5 accommodations with cancellation terms. |
+| [`activity-curator`](.agents/skills/activity-curator/SKILL.md) | Curates cultural, culinary, and outdoor experiences with anti-crowd tactics and rain backups. |
+| [`local-discovery`](.agents/skills/local-discovery/SKILL.md) | Scouts authentic neighborhood eateries and hidden gems, tagging community sources. |
+| [`itinerary-builder`](.agents/skills/itinerary-builder/SKILL.md) | Assembles daily schedules with geographic clustering to eliminate backtracking. |
+| [`budget-and-booking-checker`](.agents/skills/budget-and-booking-checker/SKILL.md) | Audits line items, adds a 10-15% safety reserve, and generates booking timelines. |
+| [`travel-safety`](.agents/skills/travel-safety/SKILL.md) | Reviews entry visas, passport validity, health prerequisites, and emergency plans. |
+| [`source-verification`](.agents/skills/source-verification/SKILL.md) | Cross-checks claims against our strict 6-tier sourcing hierarchy. |
+| [`travel-quality-control`](.agents/skills/travel-quality-control/SKILL.md) | Audits transit feasibility, pacing realism, and budget arithmetic before delivery. |
+| [`multi-agent-orchestration`](.agents/skills/multi-agent-orchestration/SKILL.md) | Provides execution topologies and dependency graphs for multi-agent teams. |
+| [`mcp-skill-auditing`](.agents/skills/mcp-skill-auditing/SKILL.md) | Audits external tools and MCP servers for security and credential safety. |
+
+See the complete [Skills Catalog (EN)](docs/skills-catalog.md) or [Catalogue des Skills (FR)](docs/skills-catalog.fr.md).
+
+---
+
+## 6 Realistic Demonstration Scenarios
+
+Explore full scenario briefs and their corresponding expected outputs in [`examples/scenarios/`](examples/scenarios/):
+
+1. [Barcelona 4-Day Cultural City Break](examples/scenarios/city-break-europe.md) → [Expected Output](examples/expected-outputs/city-break-europe-output.md)
+2. [Iceland 7-Day Ring Road Nature Expedition](examples/scenarios/road-trip-nature.md) → [Expected Output](examples/expected-outputs/road-trip-nature-output.md)
+3. [Brittany & Normandy 6-Day Family Vacation](examples/scenarios/family-trip.md) → [Expected Output](examples/expected-outputs/family-trip-output.md)
+4. [Vietnam 10-Day Central Backpacking Adventure](examples/scenarios/backpacking-budget.md) → [Expected Output](examples/expected-outputs/backpacking-budget-output.md)
+5. [Umbria 5-Day Low-Crowd Hill Town Exploration](examples/scenarios/low-crowd-cultural-trip.md) → [Expected Output](examples/expected-outputs/low-crowd-cultural-trip-output.md)
+6. [London 3-Day Corporate Trip + West End Evening](examples/scenarios/business-trip.md) → [Expected Output](examples/expected-outputs/business-trip-output.md)
+
+---
+
+## Safe, Non-Destructive Uninstallation
+
+Unlike naive installers, `ultimate-travel-agent` records every file it creates in `<target>/.agents/.ultimate-travel-agent-install.json` with SHA-256 hashes.
+
+To uninstall:
+```bash
+python -m ultimate_travel_agent.cli uninstall-skills --target /path/to/my-project
+```
+
+- **User-Created Skills Protected**: Any skill you added yourself (e.g. `.agents/skills/my-ski-skill/`) is never touched.
+- **User Modifications Protected**: If you edited an installed skill, it will **not** be deleted automatically.
+- **Clean Empty Directories**: Folders are only removed if they become completely empty.
+
+---
+
+## Sourcing Hierarchy & Disclaimers
+
+All agents follow our [6-Tier Sourcing Policy](docs/source-verification.md):
 - **Tier 1**: Official government portals, tourism ministries, embassies.
 - **Tier 2**: Direct transport operators (rail, airlines) and official museum box offices.
 - **Tier 3**: Recognized regional tourism institutions and public park authorities.
@@ -127,45 +113,11 @@ All agents strictly follow our [6-Tier Sourcing Policy](docs/source-verification
 - **Tier 5**: Community reviews (TripAdvisor, Google Reviews) for qualitative feedback only.
 - **Tier 6**: Social media (TikTok, RedNote) tagged strictly as `social_discovery_only`.
 
----
-
-## Example Structured Output
-
-```yaml
-summary: "7-day balanced cultural and culinary itinerary in Tokyo and Kyoto for 2 adults (€2,950 total estimated)."
-recommendations:
-  - transit: "Tokaido Shinkansen Hikari between Tokyo and Kyoto (2h15m, mountain-side window seats for Mt Fuji view)."
-  - lodging: "Traditional boutique ryokan in Kyoto Karasuma district with quiet courtyard rooms."
-  - activity: "Dawn hike at Fushimi Inari Taisha (07:00 entry to avoid peak tour bus crowds)."
-  - rain_plan_b: "Museum of Fine Arts and indoor Mercado de Triana craft market."
-source_log:
-  - name: "Kyoto City Official Travel Guide"
-    tier: 1
-    url: "https://kyoto.travel/en/"
-verification_required:
-  - "Verify Shinkansen oversized baggage rules if luggage exceeds 160 cm linear dimensions."
-  - "Confirm tea ceremony timed slot 30 days in advance."
-risks:
-  - "Autumn foliage peak can cause crowded transit between Gion and Arashiyama."
-```
+> [!IMPORTANT]
+> **No Guaranteed Fares or Availability**: The AI does not have real-time access to live airline seat inventory or hotel reservation databases. All prices and timetables must be verified by the user on the provided official operator links prior to travel.
 
 ---
 
-## Safety & Invariants
+## License & Contributing
 
-- **No Bookings or Payments**: The agent provides direct links; you book directly with the provider.
-- **No Personal Data Stored**: No passport numbers, credit cards, or passwords required.
-- **Transparent Verification**: Unconfirmed estimates are explicitly flagged.
-- **Open Source**: Released under the permissive [MIT License](LICENSE).
-
----
-
-## Project Documentation
-
-- [Skills Catalog](docs/skills-catalog.md)
-- [How to Use with Antigravity](docs/use-with-antigravity.md)
-- [Using with Browser Tools & Offline Fallback](docs/use-with-browser-tools.md)
-- [Sourcing Hierarchy & Verification](docs/source-verification.md)
-- [Cross-Project Installation](docs/install-in-any-project.md)
-- [Skills-First Pivot Audit](docs/skills-first-pivot-audit.md)
-- [Archived MCP/API Prototype](https://github.com/Gustor1/ultimate-travel-agent/tree/archive/mcp-api-prototype-v1.2)
+Distributed under the [MIT License](LICENSE). Open to contributions! See [CONTRIBUTING.md](CONTRIBUTING.md).
