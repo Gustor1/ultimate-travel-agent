@@ -101,3 +101,9 @@ verification_required:
 risks:
   - "Late Eurostar bookings experience steep price escalation." 
 ```
+
+
+## Direct Link Requirements & Regional Grounding Rules
+- London: TfL Contactless vs Oyster (tfl.gov.uk/fares)
+- China: China Railway 12306 (12306.cn)
+- Portugal: CP Portugal Promo fares (cp.pt), Easytoll/Via Verde (portugaltolls.com)

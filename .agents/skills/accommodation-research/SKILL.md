@@ -103,3 +103,8 @@ verification_required:
 risks:
   - "Central Florence properties may face pedestrian street noise unless courtyard rooms are explicitly requested." 
 ```
+
+
+## Direct Link Requirements & Regional Grounding Rules
+- China: PSB/?? foreign guest registration
+- Portugal: RNET/Alojamento Local license check

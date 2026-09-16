@@ -147,3 +147,11 @@ oad-trip-nature, amily-trip, ackpacking-budget, low-crowd-cultural-trip, usin
   5. **Documentation intégrale bilingue** : Rédaction des guides en français (docs/use-with-antigravity.fr.md, docs/install-in-any-project.fr.md, docs/skills-catalog.fr.md, examples/trip-brief-template.fr.md) et mise à jour du README principal.
 - **Conséquences** :
   Le pack de skills est totalement robuste, réutilisable en isolation, bilingue, audité par des tests automatisés et immunisé contre la suppression accidentelle de données utilisateur.
+
+
+## ADR 013: Phase 13 - Regional Grounding & Security Hardening
+**Date:** 2026-09-16
+**Status:** Accepted
+**Context:** Need to ensure regional accuracy for China, Portugal, and London, and harden agent security (least privilege, untrusted web content handling).
+**Decision:** Added specific rules to skills for these regions, created source-verification agent, and restricted internal agents from using web tools.
+**Consequences:** Safer and more accurate AI travel research.

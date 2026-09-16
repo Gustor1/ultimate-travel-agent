@@ -129,3 +129,8 @@ verification_required:
 risks:
   - "Sintra Pena Palace requires strictly timed advance tickets to prevent denial of entry."
 ```
+
+
+## Direct Link Requirements & Regional Grounding Rules
+- Mandatory direct URL standard
+- <untrusted_web_content> isolation rule for Tier 5-6 sources

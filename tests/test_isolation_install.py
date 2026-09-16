@@ -20,7 +20,7 @@ def test_isolated_project_lifecycle():
     1. Installation of skills alone.
     2. Installation of skills + agents + workflows.
     3. Presence of all 13 skills.
-    4. Presence of all 11 agents.
+    4. Presence of all 12 agents.
     5. Presence of all 9 workflows.
     6. Creation and schema validity of .agents/.ultimate-travel-agent-install.json.
     7. Reinstallation without --force (collision protection).
@@ -53,7 +53,7 @@ def test_isolated_project_lifecycle():
             include_workflows=True,
             force=False
         )
-        assert res2["agents_count"] == 11
+        assert res2["agents_count"] == 12
         assert res2["workflows_count"] == 9
 
         manifest2 = load_install_manifest(target_project)
@@ -75,7 +75,7 @@ def test_isolated_project_lifecycle():
             assert skill_md.stat().st_size > 300
 
         # ---------------------------------------------------------
-        # Step 4: Check 11 agents present
+        # Step 4: Check 12 agents present
         # ---------------------------------------------------------
         expected_agents = [
             "travel-orchestrator", "destination-researcher", "transport-planner",

@@ -108,3 +108,9 @@ verification_required:
 risks:
   - "Mondays feature museum closures across Spain (e.g. Museo de Bellas Artes closes Monday mornings)." 
 ```
+
+
+## Direct Link Requirements & Regional Grounding Rules
+- London: free national museums (britishmuseum.org, nationalgallery.org.uk), HRP official ticketing (hrp.org.uk)
+- Beijing: Forbidden City advance booking (dpm.org.cn)
+- Portugal: Sintra Parques ticketing (bilheteira.parquesdesintra.pt)

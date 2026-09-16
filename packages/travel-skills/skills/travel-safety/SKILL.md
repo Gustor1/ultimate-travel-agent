@@ -96,3 +96,8 @@ verification_required:
 risks:
   - "River crossings and rural secondary roads can experience washouts during late rainy season storms." 
 ```
+
+
+## Direct Link Requirements & Regional Grounding Rules
+- China: visa exemption 15-day (en.nia.gov.cn)
+- Portugal: AIMA replacing SEF (aima.gov.pt, vistos.mne.gov.pt)
