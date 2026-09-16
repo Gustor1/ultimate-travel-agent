@@ -106,5 +106,5 @@ risks:
 
 
 ## Direct Link Requirements & Regional Grounding Rules
-- China: PSB/?? foreign guest registration
+- China: PSB/涉外 foreign guest registration
 - Portugal: RNET/Alojamento Local license check

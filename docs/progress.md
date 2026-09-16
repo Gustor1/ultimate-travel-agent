@@ -24,4 +24,4 @@ Dernière mise à jour : 2026-09-13
 | Phase 11 | Skills-First Pivot | Terminée | Pivot vers 13 skills modulaires, 11 agents, 9 workflows, archivage MCP v1.2 |
 | **Phase 12** | Qualité, Sécurité et Validation du Pack | **Terminée (Consolidée)** | Désinstallation sûre avec manifeste SHA-256 (.ultimate-travel-agent-install.json), protection des skills/agents/workflows utilisateur, validateur de conformité alidate-skills, 6 scénarios réels et sorties attendues (examples/scenarios/, examples/expected-outputs/), protocole de recherche web en 12 étapes avec règles de domaine, documentation française complète, README enrichi, 18 tests automatisés 100% hors-ligne. |
 
-- [x] Phase 13: Regional Grounding & Security Hardening
+| **Phase 13** | Regional Grounding & Security Hardening | **Terminée** | Ajout de vérifications régionales spécifiques (Chine, Portugal, Londres), création de l'agent source-verification et sécurisation stricte des permissions (least-privilege) sur l'ensemble des agents. |
