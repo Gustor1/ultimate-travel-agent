@@ -106,5 +106,29 @@ risks:
 
 
 ## Direct Link Requirements & Regional Grounding Rules
-- China: PSB/涉外 foreign guest registration
-- Portugal: RNET/Alojamento Local license check
+
+### 1. Mandatory Direct Property URL Standard
+- Every lodging option must feature a direct URL to the specific hotel official website or an identified listing page (Tier 2/Tier 1).
+- Generic aggregator root domains (e.g. `booking.com/`, `expedia.com/` without a property slug) and search engine queries are strictly prohibited.
+- Each lodging entry must include:
+  - Hotel Name
+  - City & Neighborhood
+  - Establishment Type / Style
+  - Recommendation Rationale
+  - Direct URL / Official Booking Link
+  - Verification Date (`YYYY-MM-DD`)
+  - Source confidence tier (Tier 1-6)
+
+### 2. China Grounding Invariants (Foreign Guest Acceptance)
+- **PSB / 涉外 Foreign Guest Registration**: Chinese regulations require hotels hosting foreign travelers to register their passports with the local Public Security Bureau (PSB / 公安局).
+- Budget accommodations and domestic guesthouses frequently lack the foreign passport terminal or authorization to accept international guests.
+- Every lodging recommended in China must explicitly confirm foreign guest acceptance status:
+  - `confirmed` / `confirmée` (verified directly via property or international chain)
+  - `unconfirmed` / `non confirmée`
+  - `to verify` / `à vérifier` (mandatory pre-booking verification action item)
+
+### 3. Portugal Grounding Invariants (Official Licensing)
+- **RNET / RNAL Tourism License Check**: Accommodations in Portugal must operate under legal registration:
+  - Hotels & Resorts: RNET (Registo Nacional de Empreendimentos Turísticos)
+  - Apartments & Guesthouses: RNAL (Registo Nacional do Alojamento Local)
+- Verify registration status or record the official license number via the Turismo de Portugal directory: `https://rnt.turismodeportugal.pt/`. If unconfirmed at drafting, flag explicitly as `à vérifier`.

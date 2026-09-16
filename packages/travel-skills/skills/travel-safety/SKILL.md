@@ -99,5 +99,21 @@ risks:
 
 
 ## Direct Link Requirements & Regional Grounding Rules
-- China: visa exemption 15-day (en.nia.gov.cn)
-- Portugal: AIMA replacing SEF (aima.gov.pt, vistos.mne.gov.pt)
+
+### 1. Mandatory Direct URL Standard
+- All visa and travel advisory claims must provide complete, clickable direct URLs pointing to official government immigration, foreign affairs, or consular portals (Tier 1).
+- Generic search engine links (Google, Bing) and third-party commercial visa expediter blogs (Tier 5/6) are strictly forbidden as primary sources.
+- Every entry requirement must specify an explicit verification date (`YYYY-MM-DD`).
+
+### 2. China Grounding Invariants
+- **No Automatic Visa Assumption**: Never automatically prescribe a tourist visa without verifying traveler nationality, length of stay, and travel dates.
+- **Visa-Free Exemptions**: Highlight unilateral visa exemption policies (e.g. 15-day or 30-day visa-free entry for eligible European and other nationalities) and 144-hour transit exemptions.
+- **Official Direct Portals**:
+  - National Immigration Administration (NIA): `https://en.nia.gov.cn`
+  - Chinese Visa Application Service Centre: `https://www.visaforchina.cn`
+- **Zero-PII Mandate**: Never include traveler full names, passport numbers, or personal identity details in queries.
+
+### 3. Portugal Grounding Invariants
+- **Extinction of SEF**: The Portuguese Immigration and Borders Service (SEF) was permanently dissolved in October 2023. Never present SEF as an active agency.
+- **Active Authority (AIMA)**: All immigration, residence, and border regulatory references must cite AIMA (Agência para a Integração, Migrações e Asilo): `https://aima.gov.pt`.
+- **Consular & Visa Portal**: Direct foreign visa inquiries to the Ministry of Foreign Affairs Consular Portal: `https://vistos.mne.gov.pt`.

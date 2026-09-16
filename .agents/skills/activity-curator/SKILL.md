@@ -111,6 +111,30 @@ risks:
 
 
 ## Direct Link Requirements & Regional Grounding Rules
-- London: free national museums (britishmuseum.org, nationalgallery.org.uk), HRP official ticketing (hrp.org.uk)
-- Beijing: Forbidden City advance booking (dpm.org.cn)
-- Portugal: Sintra Parques ticketing (bilheteira.parquesdesintra.pt)
+
+### 1. Mandatory Direct Official Ticketing Standard
+- Every activity and cultural attraction must link directly to the primary monument portal, public cultural institution, or official ticketing operator (Tier 1/Tier 2).
+- Generic search queries (Google, Bing) and third-party commercial reseller blogs (Tier 5/6) are strictly prohibited when an official portal exists.
+- Each activity entry must include:
+  - Activity Name & Location
+  - Verified Pricing (or explicit statement of free admission)
+  - Booking Policy (mandatory pre-booking vs recommended vs walk-in)
+  - Direct Official URL
+  - Rain/Bad-Weather Contingency Alternative
+  - Verification Date (`YYYY-MM-DD`)
+
+### 2. London Grounding Invariants (Free Museums vs Paid Highlights)
+- **Distinguish Free Permanent Collections from Paid Exhibitions**:
+  - British Museum: Free general admission to permanent galleries (advance timed entry recommended); special temporary exhibitions are ticketed: `https://www.britishmuseum.org/visit`.
+  - National Gallery: Free admission to permanent national collection; special temporary exhibitions require paid tickets: `https://www.nationalgallery.org.uk/visiting`.
+- **Historic Royal Palaces (Tower of London)**:
+  - Tickets for the Tower of London must link directly to the official operating charity Historic Royal Palaces (HRP): `https://www.hrp.org.uk/tower-of-london/visit/tickets-and-prices/`. Reseller blog links are rejected.
+
+### 3. China Grounding Invariants (Palace Museum / Forbidden City)
+- **Advance Timed Booking Requirement**: The Palace Museum (Forbidden City) in Beijing strictly enforces 100% advance online ticketing with passport real-name verification (tickets release 7 days in advance at 20:00 Beijing time; zero on-site ticket sales).
+- **Official Portal**: Link directly to `https://bookingticket.dpm.org.cn/` or `https://www.dpm.org.cn/`.
+- **Alternative**: Jingshan Park (`https://www.bjmaco.gov.cn`) for panoramic rooftop views of the Forbidden City.
+
+### 4. Portugal Grounding Invariants (Sintra Pena Palace)
+- **Parques de Sintra Official Ticketing**: Tickets for Parque e Palácio Nacional da Pena must be booked through the official entity Parques de Sintra - Monte da Lua: `https://bilheteira.parquesdesintra.pt/evento/parque-e-palacio-nacional-da-pena/263/en`.
+- **Strict Timed Entry Slots**: The ticket slot applies strictly to the Palace interior; late arrivals are systematically denied entry with zero refund. Note that private motor vehicles are prohibited on the access road to the palace.

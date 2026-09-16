@@ -104,6 +104,25 @@ risks:
 
 
 ## Direct Link Requirements & Regional Grounding Rules
-- London: TfL Contactless vs Oyster (tfl.gov.uk/fares)
-- China: China Railway 12306 (12306.cn)
-- Portugal: CP Portugal Promo fares (cp.pt), Easytoll/Via Verde (portugaltolls.com)
+
+### 1. Mandatory Direct Operator Link Standard
+- Every transit recommendation must provide a direct, clickable URL to the official operating carrier or transport authority (Tier 1/Tier 2).
+- Generic search engines (Google, Bing) and third-party ticket reseller blogs are strictly forbidden.
+- Fares, timetables, and rules must include an explicit verification date (`YYYY-MM-DD`).
+
+### 2. London Grounding Invariants
+- **Airport Transfers**: Specify direct operator options from London airports (e.g. Heathrow Elizabeth Line: `https://tfl.gov.uk/modes/elizabeth-line/`, Tube Piccadilly Line: `https://tfl.gov.uk/modes/tube/`, Heathrow Express: `https://www.heathrowexpress.com/`, Thameslink: `https://www.thameslinkrailway.com/`).
+- **Contactless vs Oyster Comparison**:
+  - Ground recommendation in traveler profile, length of stay, card foreign exchange fees, and child/concession eligibility.
+  - Contactless cards/devices share the exact same pay-as-you-go fares and automatic daily/weekly caps as Oyster, without the £7 non-refundable Oyster card issuance fee.
+  - Oyster cards are recommended if the traveler's bank charges international transaction fees per tap, or if traveling with children requiring concession discounts (e.g. Young Visitor Discount).
+  - Official TfL fares comparison link: `https://tfl.gov.uk/fares/how-to-pay-and-save/pay-as-you-go/contactless-and-oyster-compared` and `https://tfl.gov.uk/fares/`.
+
+### 3. China Grounding Invariants
+- **China Railway 12306 Official Portal**: China Railway operates the exclusive national ticketing system at `https://www.12306.cn/en/index.html`.
+- Real-name registration requires passport validation; ticket purchasing window is open 05:00 to 01:00 (next day).
+- If the official web portal is unreachable or international SMS verification fails, travelers must be directed to the official "Railway 12306" mobile application or official station ticket counters.
+
+### 4. Portugal Grounding Invariants
+- **Intercity Trains (CP)**: Rail journeys between Lisbon, Porto, and regions must cite CP (Comboios de Portugal) at `https://www.cp.pt/`. Cite advance "Promo Tickets" (discounts up to 65% when booked 5-60 days ahead) at `https://www.cp.pt/passageiros/en/discounts-tickets/discounts/promo-tickets`.
+- **Electronic Tolls (Portagens Eletrónicas)**: Motorways without toll booths (former SCUT routes) require electronic registration. For foreign-registered vehicles, mandate EasyToll (credit card linked to license plate for 30 days) or TollCard via `https://www.portugaltolls.com/en/tolls-payment`. For Portuguese car rentals, instruct travelers to request the Via Verde electronic transponder from the rental agency.
