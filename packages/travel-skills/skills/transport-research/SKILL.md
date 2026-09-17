@@ -119,9 +119,18 @@ risks:
   - Official TfL fares comparison link: `https://tfl.gov.uk/fares/how-to-pay-and-save/pay-as-you-go/contactless-and-oyster-compared` and `https://tfl.gov.uk/fares/`.
 
 ### 3. China Grounding Invariants
-- **China Railway 12306 Official Portal**: China Railway operates the exclusive national ticketing system at `https://www.12306.cn/en/index.html`.
-- Real-name registration requires passport validation; ticket purchasing window is open 05:00 to 01:00 (next day).
-- If the official web portal is unreachable or international SMS verification fails, travelers must be directed to the official "Railway 12306" mobile application or official station ticket counters.
+- **Ticketing Options Structure**: Present **Trip.com** as the primary practical recommendation for foreign travelers, and **China Railway 12306** as the official direct operator alternative.
+- **Trip.com (Primary Practical Recommendation for International Travelers)**:
+  - **Authorized Partner**: Official international distribution partner of China Railway (`https://www.trip.com/trains/china/`).
+  - **Friction-Free Booking**: Full English interface and mobile app, accepts international credit cards (Visa, Mastercard, Amex) and PayPal without requiring a Chinese bank account, Alipay/WeChat Pay setup, or a Chinese (+86) phone number.
+  - **No Preliminary Station Validation**: Issues instant electronic tickets (e-tickets) tied directly to foreign passport numbers without requiring advance in-person passport identity verification at railway station ticket windows or China Railway 12306 account creation.
+  - **Service Commission**: Charges a clear service fee of approximately 15 RMB (~$2-3 / ~2-3 €) per ticket.
+  - **Cancellation & Refunds**: Cancellations can be handled directly online in the app/website prior to departure, following standard China Railway refund deduction tiers (up to 20% within 24h of departure, 5% to 10% earlier) plus booking fee terms.
+- **China Railway 12306 (Official Direct Carrier Alternative)**:
+  - **Direct Operator Portal**: National carrier portal at `https://www.12306.cn/en/index.html` or official "Railway 12306" mobile application.
+  - **Zero Service Fee**: Sells tickets at exact state railway tariffs without third-party commission.
+  - **Administrative Constraints**: Real-name registration mandates passport photo submission and online account validation (which may take hours or days, occasionally requiring in-person counter verification at a train station before first purchase). International SMS verification delivery may be inconsistent depending on foreign telecom carriers. Ticketing purchase window operates 05:00 to 01:00 (next day) Beijing time.
+  - If the web portal is unreachable or international SMS fails, direct travelers to the official "Railway 12306" mobile app or railway station ticket counters.
 
 ### 4. Portugal Grounding Invariants
 - **Intercity Trains (CP)**: Rail journeys between Lisbon, Porto, and regions must cite CP (Comboios de Portugal) at `https://www.cp.pt/`. Cite advance "Promo Tickets" (discounts up to 65% when booked 5-60 days ahead) at `https://www.cp.pt/passageiros/en/discounts-tickets/discounts/promo-tickets`.

@@ -11,6 +11,7 @@ from ultimate_travel_agent.validator import (
     validate_flight_pass_order,
     validate_flight_search_skill_file,
     validate_fixed_dates_skip,
+    validate_retained_flight_options,
     validate_skill_file,
     validate_synthesis_has_reference,
 )
@@ -424,3 +425,155 @@ class TestWorkflowIntegration:
         workflow_path = REPO_ROOT / ".agents" / "workflows" / "compare-transport.md"
         content = workflow_path.read_text(encoding="utf-8")
         assert "flight-search" in content, "compare-transport.md missing flight-search reference"
+
+
+# ──────────────────────────────────────────────
+# 9. Retained options deep links and instructions
+# ──────────────────────────────────────────────
+
+
+class TestRetainedOptionsDeepLinks:
+    """Ensure every retained option has direct booking links and instructions."""
+
+    def test_retained_option_without_direct_link_fails(self):
+        """A retained option in Pass 2, 3, or 4 missing direct link must fail."""
+        option = {
+            "airport": "FAO",
+            "airline": "easyJet",
+            "retained": True,
+            "verification_date": "2026-09-17",
+            "booking_instructions": "Sélectionner ORY → FAO",
+            "door_to_door_total": "€261",
+            "cost_breakdown": {
+                "flight_base": "€150",
+                "checked_bag": "€30",
+                "origin_access": "€41",
+                "ground_transfer": "€40",
+            },
+        }
+        passed, issues = validate_flight_option(option, is_alternative=True)
+        assert not passed, "Retained option without direct URL should fail"
+        assert any("missing direct booking link" in i.lower() for i in issues)
+
+    def test_retained_option_without_booking_instructions_fails(self):
+        """A retained option missing step-by-step instructions must fail."""
+        option = {
+            "airport": "FAO",
+            "airline": "easyJet",
+            "retained": True,
+            "direct_url": "https://www.easyjet.com/en/buy/flights",
+            "verification_date": "2026-09-17",
+            "door_to_door_total": "€261",
+            "cost_breakdown": {
+                "flight_base": "€150",
+                "checked_bag": "€30",
+                "origin_access": "€41",
+                "ground_transfer": "€40",
+            },
+        }
+        passed, issues = validate_flight_option(option, is_alternative=True)
+        assert not passed, "Retained option without booking instructions should fail"
+        assert any("step-by-step" in i.lower() or "instructions" in i.lower() for i in issues)
+
+    def test_validate_retained_flight_options_catches_missing_link_in_passes(self):
+        """validate_retained_flight_options checks passes for retained links."""
+        passes = [
+            {
+                "pass_2_multi_airport": [
+                    {
+                        "airport": "FAO",
+                        "retained": True,
+                        "booking_instructions": "Sélectionner ORY → FAO",
+                        # missing direct_url
+                    }
+                ]
+            }
+        ]
+        passed, issues = validate_retained_flight_options(passes)
+        assert not passed
+        assert any("missing direct booking link" in i.lower() for i in issues)
+
+    def test_validate_retained_flight_options_passes_when_all_complete(self):
+        """validate_retained_flight_options passes when all retained options have deep URLs and instructions."""
+        passes = [
+            {
+                "pass_1_base": {
+                    "is_baseline_reference": True,
+                    "direct_url": "https://www.easyjet.com/en/buy/flights",
+                    "booking_instructions": "Sélectionner CDG → LIS",
+                }
+            },
+            {
+                "pass_2_multi_airport": [
+                    {
+                        "airport": "FAO",
+                        "retained": True,
+                        "direct_url": "https://www.easyjet.com/en/buy/flights",
+                        "booking_instructions": "Sélectionner ORY → FAO",
+                    },
+                    {
+                        "airport": "OPO",
+                        "retained": False,
+                        # rejected option does not trigger retained failure
+                    },
+                ]
+            },
+        ]
+        passed, issues = validate_retained_flight_options(passes)
+        assert passed, f"Should pass: {issues}"
+
+
+# ──────────────────────────────────────────────
+# 10. Unopened inventories and price ranges (> 330 days)
+# ──────────────────────────────────────────────
+
+
+class TestUnopenedInventoriesPriceRanges:
+    """Ensure distant horizons (> 330 days) use price ranges and proper tagging."""
+
+    def test_unopened_inventory_with_exact_decimal_price_fails(self):
+        """An option marked as unopened inventory with a fictitious 2-decimal price fails."""
+        option = {
+            "airport": "PEK",
+            "airline": "Air China",
+            "direct_url": "https://www.airchina.fr/FR/GB/booking/flight-search/",
+            "booking_instructions": "Sélectionner CDG → PEK",
+            "verification_date": "2026-09-17",
+            "unopened_inventory": True,
+            "flight_price": "872.45 €",
+            "notes": "estimation, inventaire non ouvert",
+        }
+        passed, issues = validate_flight_option(option)
+        assert not passed, "Exact decimal price on unopened inventory should fail"
+        assert any("price range" in i.lower() or "fictitious" in i.lower() for i in issues)
+
+    def test_unopened_inventory_missing_tag_fails(self):
+        """An unopened inventory option missing 'estimation, inventaire non ouvert' fails."""
+        option = {
+            "airport": "PEK",
+            "airline": "Air China",
+            "direct_url": "https://www.airchina.fr/FR/GB/booking/flight-search/",
+            "booking_instructions": "Sélectionner CDG → PEK",
+            "verification_date": "2026-09-17",
+            "unopened_inventory": True,
+            "flight_price": "850-950 €",
+        }
+        passed, issues = validate_flight_option(option)
+        assert not passed, "Missing mandatory tag should fail"
+        assert any("inventaire non ouvert" in i.lower() for i in issues)
+
+    def test_unopened_inventory_with_price_range_and_tag_passes(self):
+        """An unopened inventory option with price range and mandatory tag passes."""
+        option = {
+            "airport": "PEK",
+            "airline": "Air China",
+            "direct_url": "https://www.airchina.fr/FR/GB/booking/flight-search/",
+            "booking_instructions": "Sélectionner CDG → PEK",
+            "verification_date": "2026-09-17",
+            "unopened_inventory": True,
+            "flight_price": "850-950 €",
+            "door_to_door_total": "850-950 €",
+            "status": "estimation, inventaire non ouvert",
+        }
+        passed, issues = validate_flight_option(option)
+        assert passed, f"Properly tagged range should pass: {issues}"

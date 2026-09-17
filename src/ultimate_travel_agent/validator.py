@@ -722,8 +722,12 @@ def validate_flight_option(
 
     # 1. Direct airline URL
     url = option.get("direct_url") or option.get("official_url") or option.get("url") or option.get("airline_url")
+    is_retained = option.get("retained") is True or option.get("is_baseline_reference") is True
     if not url:
-        issues.append("Flight option missing direct booking link")
+        if is_retained:
+            issues.append("Retained flight option missing direct booking link")
+        else:
+            issues.append("Flight option missing direct booking link")
     else:
         url_str = str(url).strip()
         if not is_valid_url(url_str):
@@ -736,12 +740,39 @@ def validate_flight_option(
             if is_generic:
                 issues.append(f"Flight booking link is a generic root homepage without deep booking path: {url_str} ({reason})")
 
+    # Retained options must have step-by-step instructions
+    if is_retained and not option.get("booking_instructions"):
+        issues.append("Retained flight option missing step-by-step booking instructions")
+
     # 2. Verification date
     verif_date = option.get("verification_date")
     if not verif_date:
         issues.append("Flight option missing verification date")
 
-    # 3. Alternative departure airport access cost check
+    # 3. Unopened inventory / price range check (> 11 months / > 330 days)
+    is_unopened = (
+        option.get("unopened_inventory") is True
+        or option.get("inventory_unopened") is True
+        or "inventaire non ouvert" in str(option).lower()
+        or "unopened inventory" in str(option).lower()
+    )
+    if is_unopened:
+        combined_price_text = " ".join([
+            str(option.get("door_to_door_total") or ""),
+            str(option.get("flight_price") or ""),
+            str(option.get("flight_total_with_luggage") or ""),
+            str(option.get("flight_base") or ""),
+        ])
+        has_range = bool(re.search(r"\d+\s*[-–]\s*\d+", combined_price_text))
+        has_exact_decimal = bool(re.search(r"\b\d+\.\d{2}\b", combined_price_text))
+        if has_exact_decimal and not has_range:
+            issues.append("Unopened inventory option must provide a price range (e.g. 850-950 €) rather than a fictitious exact price")
+
+        opt_text_lower = str(option).lower()
+        if "estimation, inventaire non ouvert" not in opt_text_lower and "inventaire non ouvert" not in opt_text_lower:
+            issues.append("Unopened inventory option missing mandatory tag 'estimation, inventaire non ouvert'")
+
+    # 4. Alternative departure airport access cost check
     route_str = str(option.get("route") or "").upper()
     airport_str = str(option.get("airport") or "").upper()
     detected_alt_origin = is_alternative_origin or any(alt in route_str for alt in ["BVA", "BEAUVAIS", "LTN", "LUTN", "STN", "STANSTED", "SEN", "GRO", "REU"])
@@ -756,7 +787,7 @@ def validate_flight_option(
         if not has_origin_access:
             issues.append("Alternative departure airport option presented without origin access cost (e.g. shuttle or regional train)")
 
-    # 4. Checked bag requirement check
+    # 5. Checked bag requirement check
     if requires_checked_bag:
         breakdown = option.get("cost_breakdown") or option.get("breakdown") or {}
         baggage_policy = str(option.get("baggage_policy") or "").lower()
@@ -770,7 +801,7 @@ def validate_flight_option(
         if not has_bag_fee and ("sans soute" in baggage_policy or "soute +" in baggage_policy or "petit sac" in baggage_policy or checked_bag_included is False):
             issues.append("Trip brief requires checked luggage but flight option cost excludes checked bag fees")
 
-    # 5. Door-to-door cost and decomposability for alternative airports
+    # 6. Door-to-door cost and decomposability for alternative airports
     d2d_val = option.get("door_to_door_total") or option.get("door_to_door_total_2pax") or option.get("door_to_door_cost")
 
     if is_alternative:
@@ -782,54 +813,56 @@ def validate_flight_option(
 
     # Check decomposability and arithmetic if door-to-door cost is present
     if d2d_val:
-        d2d_amount = _extract_amount(d2d_val)
-        breakdown = option.get("cost_breakdown") or option.get("breakdown")
+        is_range_d2d = bool(re.search(r"\d+\s*[-–]\s*\d+", str(d2d_val)))
+        if not is_range_d2d and not is_unopened:
+            d2d_amount = _extract_amount(d2d_val)
+            breakdown = option.get("cost_breakdown") or option.get("breakdown")
 
-        if breakdown and isinstance(breakdown, dict):
-            # Sum up breakdown components (excluding keys that represent the overall door-to-door total itself)
-            component_sum = 0.0
-            found_components = False
-            for k, v in breakdown.items():
-                k_lower = k.lower().strip()
-                if k_lower in ("total", "door_to_door_total", "total_door_to_door", "total_p2p", "door_to_door") or k_lower.endswith("_door_to_door"):
-                    continue
-                amt = _extract_amount(v)
-                if amt is not None:
-                    component_sum += amt
-                    found_components = True
+            if breakdown and isinstance(breakdown, dict):
+                # Sum up breakdown components (excluding keys that represent the overall door-to-door total itself)
+                component_sum = 0.0
+                found_components = False
+                for k, v in breakdown.items():
+                    k_lower = k.lower().strip()
+                    if k_lower in ("total", "door_to_door_total", "total_door_to_door", "total_p2p", "door_to_door") or k_lower.endswith("_door_to_door"):
+                        continue
+                    amt = _extract_amount(v)
+                    if amt is not None:
+                        component_sum += amt
+                        found_components = True
 
-            if not found_components:
-                issues.append("Door-to-door cost breakdown contains no parseable line item amounts")
-            elif d2d_amount is not None and abs(component_sum - d2d_amount) > 0.5:
-                issues.append(
-                    f"Door-to-door arithmetic mismatch: breakdown components sum to €{component_sum:.2f}, "
-                    f"but total is declared as {d2d_val} (€{d2d_amount:.2f})"
-                )
-        else:
-            # Check if separate itemized fields exist
-            flight_amt = _extract_amount(option.get("flight_price_2pax") or option.get("flight_total_2pax") or option.get("flight_price"))
-            transfer_cost_field = option.get("transfer_cost") or (
-                option.get("transfer_to_lisbon", {}).get("cost_2pax") if isinstance(option.get("transfer_to_lisbon"), dict) else None
-            ) or (
-                option.get("transfer_to_destination", {}).get("cost") if isinstance(option.get("transfer_to_destination"), dict) else None
-            )
-            transfer_amt = _extract_amount(transfer_cost_field)
-
-            if flight_amt is None or transfer_amt is None:
-                issues.append(
-                    "Door-to-door total is not decomposed line-by-line (missing cost_breakdown dict or explicit flight/transfer amounts)"
-                )
-            elif d2d_amount is not None:
-                origin_amt = _extract_amount(option.get("origin_access_cost") or option.get("origin_access")) or 0.0
-                overnight_amt = _extract_amount(option.get("overnight_stay") or option.get("overnight_cost")) or 0.0
-                extra_amt = _extract_amount(option.get("additional_fees")) or 0.0
-                total_computed = flight_amt + origin_amt + transfer_amt + overnight_amt + extra_amt
-                if abs(total_computed - d2d_amount) > 0.5:
+                if not found_components:
+                    issues.append("Door-to-door cost breakdown contains no parseable line item amounts")
+                elif d2d_amount is not None and abs(component_sum - d2d_amount) > 0.5:
                     issues.append(
-                        f"Door-to-door arithmetic mismatch: flight ({flight_amt}) + origin access ({origin_amt}) + "
-                        f"transfer ({transfer_amt}) + extras ({overnight_amt + extra_amt}) = €{total_computed:.2f}, "
-                        f"but total is declared as {d2d_val}"
+                        f"Door-to-door arithmetic mismatch: breakdown components sum to €{component_sum:.2f}, "
+                        f"but total is declared as {d2d_val} (€{d2d_amount:.2f})"
                     )
+            else:
+                # Check if separate itemized fields exist
+                flight_amt = _extract_amount(option.get("flight_price_2pax") or option.get("flight_total_2pax") or option.get("flight_price"))
+                transfer_cost_field = option.get("transfer_cost") or (
+                    option.get("transfer_to_lisbon", {}).get("cost_2pax") if isinstance(option.get("transfer_to_lisbon"), dict) else None
+                ) or (
+                    option.get("transfer_to_destination", {}).get("cost") if isinstance(option.get("transfer_to_destination"), dict) else None
+                )
+                transfer_amt = _extract_amount(transfer_cost_field)
+
+                if flight_amt is None or transfer_amt is None:
+                    issues.append(
+                        "Door-to-door total is not decomposed line-by-line (missing cost_breakdown dict or explicit flight/transfer amounts)"
+                    )
+                elif d2d_amount is not None:
+                    origin_amt = _extract_amount(option.get("origin_access_cost") or option.get("origin_access")) or 0.0
+                    overnight_amt = _extract_amount(option.get("overnight_stay") or option.get("overnight_cost")) or 0.0
+                    extra_amt = _extract_amount(option.get("additional_fees")) or 0.0
+                    total_computed = flight_amt + origin_amt + transfer_amt + overnight_amt + extra_amt
+                    if abs(total_computed - d2d_amount) > 0.5:
+                        issues.append(
+                            f"Door-to-door arithmetic mismatch: flight ({flight_amt}) + origin access ({origin_amt}) + "
+                            f"transfer ({transfer_amt}) + extras ({overnight_amt + extra_amt}) = €{total_computed:.2f}, "
+                            f"but total is declared as {d2d_val}"
+                        )
 
     return (len(issues) == 0), issues
 
@@ -865,6 +898,59 @@ def validate_synthesis_has_reference(synthesis_text: str) -> Tuple[bool, List[st
     return (len(issues) == 0), issues
 
 
+def validate_retained_flight_options(passes_or_options: Any) -> Tuple[bool, List[str]]:
+    """Validate that every retained flight option has a deep direct link and step-by-step instructions."""
+    issues: List[str] = []
+
+    def _check_opt(opt: Dict[str, Any], pass_name: str = "option"):
+        is_retained = opt.get("retained") is True or opt.get("is_baseline_reference") is True
+        if is_retained:
+            url = opt.get("direct_url") or opt.get("official_url") or opt.get("url") or opt.get("airline_url")
+            if not url:
+                issues.append(f"Retained option ({pass_name}) missing direct booking link")
+            else:
+                url_str = str(url).strip()
+                if not is_valid_url(url_str):
+                    issues.append(f"Retained option ({pass_name}) has invalid booking URL: {url_str}")
+                elif is_flight_ota_or_metasearch(url_str):
+                    issues.append(f"Retained option ({pass_name}) has OTA/metasearch booking link: {url_str}")
+                else:
+                    is_gen, rsn = is_generic_root_homepage(url_str, enforce_deep_path=True)
+                    if is_gen:
+                        issues.append(f"Retained option ({pass_name}) booking link is root homepage: {url_str} ({rsn})")
+            if not opt.get("booking_instructions"):
+                issues.append(f"Retained option ({pass_name}) missing step-by-step booking instructions")
+
+    if isinstance(passes_or_options, list):
+        for item in passes_or_options:
+            if isinstance(item, dict):
+                for p_key in ["pass_1_base", "pass_2_multi_airport", "pass_3_flexible_dates", "pass_4_combined"]:
+                    if p_key in item:
+                        p_val = item[p_key]
+                        if isinstance(p_val, dict):
+                            _check_opt(p_val, pass_name=p_key)
+                        elif isinstance(p_val, list):
+                            for sub_opt in p_val:
+                                if isinstance(sub_opt, dict):
+                                    _check_opt(sub_opt, pass_name=p_key)
+                if "airline" in item or "airport" in item or "direct_url" in item:
+                    _check_opt(item)
+    elif isinstance(passes_or_options, dict):
+        for p_key in ["pass_1_base", "pass_2_multi_airport", "pass_3_flexible_dates", "pass_4_combined"]:
+            if p_key in passes_or_options:
+                p_val = passes_or_options[p_key]
+                if isinstance(p_val, dict):
+                    _check_opt(p_val, pass_name=p_key)
+                elif isinstance(p_val, list):
+                    for sub_opt in p_val:
+                        if isinstance(sub_opt, dict):
+                            _check_opt(sub_opt, pass_name=p_key)
+        if "airline" in passes_or_options or "airport" in passes_or_options or "direct_url" in passes_or_options:
+            _check_opt(passes_or_options)
+
+    return (len(issues) == 0), issues
+
+
 def validate_flight_search_skill_file(skill_path: Path) -> Tuple[bool, List[str]]:
     """Extended validation specific to the flight-search SKILL.md."""
     # First run the generic skill validator
@@ -886,6 +972,12 @@ def validate_flight_search_skill_file(skill_path: Path) -> Tuple[bool, List[str]
     if "pass 4" not in content_lower and "pass_4" not in content_lower:
         issues.append("flight-search skill missing Pass 4 (Combined) methodology")
 
+    # Active discovery via metasearch (Google Flights / Skyscanner)
+    if "google flights" not in content_lower and "skyscanner" not in content_lower:
+        issues.append("flight-search skill missing active discovery step via Google Flights or Skyscanner")
+    if "source_log" not in content_lower:
+        issues.append("flight-search skill missing source_log requirement for discovery tools")
+
     # Door-to-door cost methodology and decomposition rule
     if "door" not in content_lower and "porte" not in content_lower:
         issues.append("flight-search skill missing door-to-door cost computation methodology")
@@ -896,9 +988,11 @@ def validate_flight_search_skill_file(skill_path: Path) -> Tuple[bool, List[str]
     if "origin_access_cost" not in content and "accès" not in content_lower and "origin_access" not in content_lower:
         issues.append("flight-search skill missing origin_access_cost in door-to-door formula")
 
-    # Defined transfer_time_value
-    if "transfer_time_value" not in content_lower and "15" not in content:
-        issues.append("flight-search skill missing explicit definition of transfer_time_value")
+    # Defined transfer_time_value and 4h default application rule
+    if "transfer_time_value" not in content_lower and "transfer_time_penalty" not in content_lower and "15" not in content:
+        issues.append("flight-search skill missing explicit definition of transfer_time_penalty")
+    if "4h" not in content_lower and "4 h" not in content_lower and "4 heures" not in content_lower:
+        issues.append("flight-search skill missing 4-hour threshold rule for transfer_time_penalty default application")
 
     # Fixed dates skip rule
     if "dates_fixed" not in content and "dates fixes" not in content_lower and "strictly fixed" not in content_lower:
@@ -923,6 +1017,8 @@ def validate_flight_search_skill_file(skill_path: Path) -> Tuple[bool, List[str]
         issues.append("flight-search skill missing OTA/aggregator exclusion rule for primary booking links")
     if "racine" not in content_lower and "deep" not in content_lower and "profonde" not in content_lower:
         issues.append("flight-search skill missing deep URL / root homepage avoidance rule")
+    if "retained" not in content_lower and "retenue" not in content_lower:
+        issues.append("flight-search skill missing deep link requirement on every retained option")
 
     # Baggage column in synthesis table and baggage inclusion in costs
     if "bagages" not in content_lower and "baggage" not in content_lower:
@@ -935,6 +1031,10 @@ def validate_flight_search_skill_file(skill_path: Path) -> Tuple[bool, List[str]
     # Single best Pass 1 baseline rule
     if "meilleur" not in content_lower and "best" not in content_lower and "unique" not in content_lower:
         issues.append("flight-search skill missing rule establishing the single best Pass 1 result as the baseline")
+
+    # Unopened inventories rule (> 11 months / > 330 days)
+    if "inventaire non ouvert" not in content_lower and "unopened" not in content_lower:
+        issues.append("flight-search skill missing price range rule for unopened inventories (> 11 months / > 330 days)")
 
     return (len(issues) == 0), issues
 

@@ -41,6 +41,13 @@ List the exact information requiring verification.
 Never invent live prices, availability, opening hours, visa rules or booking status.
 Mark all prices as "indicatif, à confirmer" with explicit verification dates.
 
+### Distant Horizons (> 11 months / > 330 days) & Unopened Airline Inventories
+- Commercial airline flight schedules and ticketing inventories are typically opened only 330 to 360 days in advance.
+- When travel dates exceed this horizon (> ~11 mois / > 330 jours) or when real-time live prices cannot be confirmed directly:
+  - The skill **must output a realistic price range** (e.g. `850-950 €` or `€850-€950`), rather than an illusory exact price with two decimals (e.g. `872.45 €`).
+  - The pricing status must be systematically and explicitly tagged: `"estimation, inventaire non ouvert"`.
+  - Fictitious exact pricing for unopened inventories is strictly forbidden.
+
 ## 6. Sourcing Policy
 All references must strictly adhere to the 6-tier sourcing hierarchy:
 - **Tier 1**: Official government portals, tourism ministries, embassies, municipal administrations.
@@ -52,11 +59,17 @@ All references must strictly adhere to the 6-tier sourcing hierarchy:
 
 ### Flight-Specific Source Rules & Deep Link Mandate
 - **Airline direct websites** (e.g., Air France, TAP Air Portugal, easyJet, Ryanair) are **Tier 2** and must always serve as the primary booking link.
-- **Meta-search aggregators** (Skyscanner, Google Flights, Kayak) may be cited in `source_log` as **Tier 4** discovery aids only, but must never replace the direct airline booking link.
+- **Active Discovery via Meta-Search (Tier 4)**:
+  - In Passes 2 and 3, systematically use **Google Flights** or **Skyscanner** as discovery engines:
+    - In Pass 2: use the "nearby airports" ("aéroports à proximité") feature to rapidly identify all viable alternative departure and arrival hubs.
+    - In Pass 3: use the flexible date matrix / calendar price grid ("grille de dates flexibles") to rapidly pinpoint the cheapest dates within the window.
+  - **Strict Verification Boundary**: Meta-search aggregators are used **exclusively for rapid discovery**. Every candidate flight, price, baggage condition, and timetable must then be verified directly on the official airline website (Tier 2).
+  - **Single Booking Link Rule**: The official airline direct portal remains the **sole booking link** displayed to the traveler. Aggregator or OTA links are never displayed as booking destinations.
+  - **Mandatory Source Logging**: The meta-search tool used for discovery (e.g. Google Flights or Skyscanner) **must be explicitly recorded in `source_log`** as a Tier 4 discovery aid.
 - **OTAs** (Expedia, eDreams, Kiwi, Opodo, Lastminute) are **Tier 5** and are strictly forbidden as primary booking links.
-- **Deep URLs Mandatory (No Root Homepages)**:
-  - Every flight link must point to a deep booking or flight selection page (e.g., `https://www.flytap.com/en/booking/flights`, `https://www.easyjet.com/en/buy/flights`, `https://www.ryanair.com/gb/en/trip/flights/select`). Generic root domain homepages (e.g., `ryanair.com`, `easyjet.com/en`, `airfrance.fr`) are strictly forbidden.
-  - If an airline's booking engine does not allow pre-filling search parameters directly via URL query strings, provide the deepest available booking portal path and supply the explicit user search instruction:
+- **Deep URLs Mandatory on EVERY Retained Option**:
+  - Every retained flight option (`retained: true` or Pass 1 `REF`) across Passes 1, 2, 3, and 4 **must provide a deep booking link** to the airline's flight selection portal (e.g., `https://www.flytap.com/en/booking/flights`, `https://www.easyjet.com/en/buy/flights`, `https://www.ryanair.com/gb/en/trip/flights/select`). Generic root domain homepages (e.g., `ryanair.com`, `easyjet.com/en`, `airfrance.fr`) are strictly forbidden.
+  - **Mandatory Step-by-Step Instructions**: On every retained option, provide explicit user search instructions:
     `"Action requise sur le site : sélectionner <Origine> → <Destination>, Dates <YYYY-MM-DD> au <YYYY-MM-DD>, <N> passagers, classe <Classe>."`
 
 ## 7. Safety Policy
@@ -76,6 +89,8 @@ Search flights to the **principal airport** of the destination city on the **exa
 
 ### Pass 2 — Multi-Airport (Fixed Dates)
 Keeping the exact travel dates from Pass 1, investigate alternative arrival gateways:
+- **Systematic Discovery Step**: Use Google Flights or Skyscanner (Tier 4) using the "nearby airports" ("aéroports à proximité") search feature to rapidly identify alternative departure and arrival hubs.
+- **Direct Carrier Verification**: Verify candidate flights, exact schedules, and live bag fees directly on official airline portals (Tier 2). Document the discovery engine in `source_log`.
 - Other airports serving the same metropolitan area (e.g., London: LHR, LGW, STN, LTN, SEN).
 - Airports of adjacent cities connected by direct high-speed rail or express bus (e.g., Porto or Faro for Lisbon; Girona or Reus for Barcelona; Bologna or Florence for Rome).
 - Alternative departure airports in the traveler's origin region (e.g., Paris Beauvais BVA instead of CDG/Orly).
@@ -91,7 +106,9 @@ Where:
 - `origin_access_cost`: Total cost of round-trip ground transit from the traveler's city center to the departure airport for all travelers (e.g., Beauvais official shuttle €16.90/pers each way = €67.60 round-trip for 2 pax; or RER B to CDG €11.80/pers each way = €47.20 round-trip for 2 pax). **To ensure a fair comparison, origin access must be computed for both the baseline and alternatives at equal equipment.**
 - `ground_transfer_cost`: Total round-trip ground transport (rail, express bus, shuttle) connecting the alternative arrival airport to the final destination city center for all travelers (citing Tier 2 operators like CP, SNCF, Renfe, Rede Expressos).
 - `overnight_stay_cost`: Cost of a transit overnight stay (standard rate: 60 € to 90 € / room) if flight arrival occurs too late to catch the last onward ground connection on the same day.
-- `transfer_time_penalty` (or `transfer_time_value`): Optional economic valuation of extra travel fatigue and lost vacation time. Defined as a flat rate of **15 € per hour of additional ground transit time** compared to the Pass 1 baseline journey, documented explicitly in `assumptions`. If time penalty is not requested by the user, this term is set to 0 €, but the extra travel time must remain clearly visible in hours.
+- `transfer_time_penalty` (or `transfer_time_value`): Economic valuation of extra travel fatigue and lost vacation time. Defined as a flat rate of **15 € per hour of additional ground transit time** compared to the Pass 1 baseline journey, documented explicitly in `assumptions`.
+  - **Default Application Rule**: This penalty is **applied by default** whenever the cumulative door-to-door transit time exceeds the Pass 1 baseline by **more than 4 hours** (> 4h). If the additional transit time is $\le 4\text{ h}$, `transfer_time_penalty` is 0 € by default.
+  - **Traveler Opt-Out**: The traveler can explicitly disable this penalty by setting `transfer_time_penalty: false` in the brief, in which case the penalty is 0 € regardless of duration, but the extra travel time must remain clearly visible in hours.
 
 #### Mandatory Arithmetic & Line-by-Line Decomposition
 Every door-to-door total MUST display its complete line-by-line itemization (`cost_breakdown`):
@@ -104,20 +121,25 @@ Every door-to-door total MUST display its complete line-by-line itemization (`co
 
 #### Retention Threshold
 Retain an alternative airport option **only if** it yields a net saving $\ge 20\%$ OR $\ge 50\,€$ compared to the single best Pass 1 reference baseline (`REF`). If an alternative departure airport adds substantial shuttle costs and extra hours without meeting this saving threshold, it must be **explicitly rejected (`retained: false`)** with documented reasons.
+- **Mandatory Deep Link on Retained Options**: Every retained alternative option (`retained: true`) must include a deep direct booking link (`direct_url`) and step-by-step user search instructions (`booking_instructions`).
 
 ### Pass 3 — Flexible Dates (Principal Airport)
 **Skip this pass entirely if the user specified `dates_fixed: true` or non-negotiable dates.**
 Using exclusively the principal airport from Pass 1:
+- **Systematic Discovery Step**: Use the flexible date matrix / calendar price grid ("grille de dates flexibles") on Google Flights or Skyscanner (Tier 4) to quickly identify the cheapest days in the target window.
+- **Direct Carrier Verification**: Verify prices, seats, and baggage policies directly on the airline website (Tier 2). Record the discovery engine in `source_log`.
 - For round-trip journeys: test date shifts of -3, -2, -1, +1, +2, +3 days on departure AND return **independently**.
 - For one-way journeys: test shifts of -3, -2, -1, +1, +2, +3 days on the departure date only.
 - Document the exact date shift (e.g., "Aller +2j, Retour identique") and price delta vs the single best Pass 1 baseline.
+- **Mandatory Deep Link on Retained Options**: Every retained date-shift option (`retained: true`) must include a deep direct booking link (`direct_url`) and step-by-step user search instructions (`booking_instructions`).
 
 ### Pass 4 — Combined (Flexible Dates × Multi-Airport)
 **Skip this pass entirely if the user specified `dates_fixed: true`.**
 Combine date flexibility with alternative airports:
 - **Combinatorial Limitation**: Limit date shifts to **$\pm 2$ days** (rather than $\pm 3$) centered around the **top 3 most promising alternative candidates** identified across Pass 2 and Pass 3.
 - The agent prioritizes high-saving combinations (e.g. low-cost midweek fare drops paired with high-speed rail connections).
-- Apply the complete door-to-door formula (including origin access and checked luggage) and the retention threshold ($\ge 20\%$ or $\ge 50\,€$ saving vs Pass 1 REF).
+- Apply the complete door-to-door formula (including origin access, checked luggage, and transfer time penalty if > 4h) and the retention threshold ($\ge 20\%$ or $\ge 50\,€$ saving vs Pass 1 REF).
+- **Mandatory Deep Link on Retained Options**: Every retained combined option (`retained: true`) must include a deep direct booking link (`direct_url`) and step-by-step user search instructions (`booking_instructions`).
 
 ### Night Transfers & Same-Day Connection Rule
 When evaluating alternative airports:
@@ -275,6 +297,10 @@ recommendations:
         verification_date: "2026-09-17"
   - synthesis_table: "Tableau comparatif trié par coût porte-à-porte croissant avec ligne REF unique"
 source_log:
+  - name: "Google Flights (Outil de découverte / grille tarifaire)"
+    tier: 4
+    url: "https://www.google.com/travel/flights"
+    verification_date: "2026-09-17"
   - name: "easyJet Official Flight Booking Engine"
     tier: 2
     url: "https://www.easyjet.com/en/buy/flights"
@@ -299,6 +325,7 @@ assumptions:
   - "L'option Passe 1 de référence (REF) retenue est la meilleure offre directe easyJet conforme au brief (€317 tout compris avec soute et RER B)."
   - "Accès à l'aéroport d'origine inclus pour toutes les options afin de comparer à équipement égal (RER B €47 pour CDG, Métro 14 €41 pour Orly, navette €68 pour Beauvais)."
   - "Les frais de soute requis par le brief sont rigoureusement intégrés dans le coût des billets de chaque option."
+  - "Pénalité de temps de transfert (transfer_time_penalty à 15 €/h) : s'applique par défaut si le temps additionnel dépasse 4h vs Pass 1. Pour Porto (+4h de trajet terrestre cumulé BVA+CP), le surcoût de temps et l'accès à Beauvais (€68) rendent l'option non rentable en Passe 2."
 missing_information:
   - "Adresse exacte de départ en Île-de-France (pour affiner le temps de trajet vers Porte Maillot vs Châtelet)."
 verification_required:
@@ -311,6 +338,8 @@ risks:
 
 ## Direct Link Requirements & Flight Source Rules
 - Every flight option must include a **deep direct URL to the airline's official booking engine** (Tier 2). Generic root domain homepages are strictly prohibited.
-- If pre-filled query parameters are unsupported by the carrier, provide the deep search page URL and specify step-by-step user input instructions.
+- **Deep link & Search Instructions Mandatory on ALL Retained Options**: Every retained option across Passes 1, 2, 3, and 4 must provide both the deep booking link (`direct_url`) and explicit step-by-step query instructions (`booking_instructions`) for the user.
+- **Active Discovery via Meta-Search**: Google Flights or Skyscanner (Tier 4) are systematically used for rapid gateway mapping ("aéroports à proximité") and date-grid screening ("grille de dates"), with the discovery tool systematically logged in `source_log`. Booking links are always airline direct (Tier 2).
+- **Unopened Inventories (> 11 months / > 330 days)**: Must output realistic price ranges (e.g. `850-950 €`), tagged `"estimation, inventaire non ouvert"`. Fictitious exact decimals are prohibited.
 - Ground transfer fares must cite the official operator URL (Tier 2, e.g. `cp.pt`, `rede-expressos.pt`, `aeroportparisbeauvais.com`).
 - Every price must carry an explicit `verification_date` in `YYYY-MM-DD` format.

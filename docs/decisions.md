@@ -165,12 +165,14 @@ oad-trip-nature, amily-trip, ackpacking-budget, low-crowd-cultural-trip, usin
 2. Complete door-to-door cost formula: `door_to_door_cost = flight_price + origin_access_cost + ground_transfer_cost + overnight_stay_cost + transfer_time_penalty`. Origin access cost (e.g. Beauvais shuttle €68 A/R for 2p vs RER B to CDG €47 A/R for 2p) is mandatory and evaluated fairly at equal equipment.
 3. Baggage requirements strictly integrated into evaluated flight totals (not merely listed in policy).
 4. Single best Pass 1 baseline rule: the cheapest option conforming to the brief's baggage and timing requirements serves as the unique reference baseline (`REF`) for comparison and in the synthesis matrix.
-5. Formally defined `transfer_time_value` (15 €/h extra ground transit time or 0 €).
-6. Deep booking URLs only (generic root/locale homepages forbidden) with search instructions fallback.
-7. Input support for one-way and multi-city flights.
-8. Combinatorial limitation (max 5 alternative airports, ±2 days around top 3 options in Pass 4).
-9. Night transfer verification and mandatory transit overnight stay cost inclusion if late arrival prevents same-day connection.
-10. Mandatory `Bagages` column in the synthesis matrix.
-**Consequences:** Rigorous, mathematically verifiable air travel optimization capability. 14 skills in the pack (manifest v1.3.0). 98 automated tests.
+5. Formally defined `transfer_time_penalty`: flat rate of 15 €/h extra ground transit time, **applied by default whenever additional transit time exceeds 4 hours (> 4h) vs Pass 1 baseline**, with explicit traveler opt-out (`transfer_time_penalty: false`).
+6. Active discovery step via meta-search: Google Flights or Skyscanner (Tier 4) are systematically used in Passes 2 & 3 for rapid mapping of nearby airports and flexible date grids, followed by direct Tier 2 carrier verification and mandatory discovery logging in `source_log`.
+7. Deep booking URLs and step-by-step search instructions mandatory on **every retained option** across Passes 1, 2, 3, and 4 (not only Pass 1).
+8. Distant horizons (> 11 months / > 330 days) and unopened airline inventories: output realistic price ranges (e.g. 850-950 €) systematically tagged `"estimation, inventaire non ouvert"`, prohibiting fictitious exact 2-decimal pricing.
+9. Chinese rail ticketing dual-structure in `transport-research`: Trip.com documented as the primary practical recommendation for foreign tourists (~15 RMB fee, English UI, passport e-ticket, no 12306 account/counter check), with China Railway 12306 as the direct official carrier alternative.
+10. Combinatorial limitation (max 5 alternative airports, ±2 days around top 3 options in Pass 4).
+11. Night transfer verification and mandatory transit overnight stay cost inclusion if late arrival prevents same-day connection.
+12. Mandatory `Bagages` column in the synthesis matrix.
+**Consequences:** Rigorous, mathematically verifiable air travel optimization capability. 14 skills in the pack (manifest v1.3.0). 105 automated tests.
 
 

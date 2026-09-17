@@ -227,6 +227,10 @@ pass_4_combined:
 
 ```yaml
 source_log:
+  - name: "Google Flights (Outil de découverte / grille tarifaire)"
+    tier: 4
+    url: "https://www.google.com/travel/flights"
+    verification_date: "2026-09-17"
   - name: "easyJet Official Flight Booking Engine"
     tier: 2
     url: "https://www.easyjet.com/en/buy/flights"
@@ -260,7 +264,7 @@ assumptions:
   - "L'option Passe 1 de référence (REF) retenue est la meilleure offre directe easyJet conforme au brief (€317 tout compris avec soute et RER B)."
   - "Accès à l'aéroport d'origine inclus pour toutes les options afin de comparer à équipement égal (RER B €47 pour CDG, Métro 14 €41 pour Orly, navette €68 pour Beauvais)."
   - "Frais de soute demandés par le brief intégrés pour chaque option (+€30 easyJet, +€35 Ryanair, +€28 Transavia)."
-  - "Valorisation forfaitaire du temps de transfert (transfer_time_value) : 0 € par défaut, mais la durée additionnelle (+4h via Beauvais/Porto, +3h15 via Faro) est mentionnée."
+  - "Pénalité de temps de transfert (transfer_time_penalty à 15 €/h) : appliquée par défaut si le temps additionnel dépasse 4h vs Pass 1. Pour Porto (+4h de trajet terrestre cumulé), le surcoût de temps et l'accès à Beauvais (€68) rendent l'option non rentable en Passe 2."
 ```
 
 ## Verification Required
