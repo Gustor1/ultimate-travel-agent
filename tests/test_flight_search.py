@@ -6,6 +6,7 @@ import pytest
 
 from ultimate_travel_agent.validator import (
     is_flight_ota_or_metasearch,
+    is_generic_root_homepage,
     validate_flight_option,
     validate_flight_pass_order,
     validate_flight_search_skill_file,
@@ -20,12 +21,12 @@ PKG_SKILLS_DIR = REPO_ROOT / "packages" / "travel-skills" / "skills"
 
 
 # ──────────────────────────────────────────────
-# 1. Skill file structural validation
+# 1. Skill file structural validation & 7 Points
 # ──────────────────────────────────────────────
 
 
 class TestFlightSearchSkillStructure:
-    """Validate the flight-search SKILL.md passes the generic skill validator."""
+    """Validate the flight-search SKILL.md passes generic and extended validator."""
 
     def test_flight_search_skill_exists(self):
         """The skill directory and SKILL.md must exist."""
@@ -39,7 +40,7 @@ class TestFlightSearchSkillStructure:
         assert passed, f"Generic validation failed: {issues}"
 
     def test_flight_search_skill_extended_validation(self):
-        """The skill must pass all flight-search-specific checks (4 passes, thresholds, etc.)."""
+        """The skill must pass all flight-search-specific checks (4 passes, thresholds, 7 points)."""
         skill_path = SKILLS_DIR / "flight-search" / "SKILL.md"
         passed, issues = validate_flight_search_skill_file(skill_path)
         assert passed, f"Flight-search extended validation failed: {issues}"
@@ -99,20 +100,59 @@ class TestPassOrdering:
 
 
 # ──────────────────────────────────────────────
-# 3. Flight option validation
+# 3. Flight option validation: URLs & Deep Links
 # ──────────────────────────────────────────────
 
 
-class TestFlightOptionValidation:
-    """Validate individual flight option records."""
+class TestFlightOptionUrls:
+    """Validate flight options for deep links, root URL rejection, and OTA protection."""
 
-    def test_valid_airline_direct_link(self):
+    def test_valid_deep_airline_url(self):
         option = {
-            "direct_url": "https://www.flytap.com/en/booking",
+            "direct_url": "https://www.flytap.com/en/booking/flights",
             "verification_date": "2026-09-17",
         }
         passed, issues = validate_flight_option(option)
         assert passed, f"Valid option rejected: {issues}"
+
+    @pytest.mark.parametrize(
+        "root_url",
+        [
+            "https://www.ryanair.com",
+            "https://www.ryanair.com/gb/en",
+            "https://www.easyjet.com/en",
+            "https://www.easyjet.com/fr/",
+            "https://www.airfrance.fr",
+            "https://www.transavia.com/en-EU",
+        ],
+    )
+    def test_root_and_locale_root_urls_rejected(self, root_url):
+        """Generic root homepages and bare language roots must be rejected as booking links."""
+        option = {
+            "direct_url": root_url,
+            "verification_date": "2026-09-17",
+        }
+        passed, issues = validate_flight_option(option)
+        assert not passed, f"Root URL {root_url} should be rejected"
+        assert any("generic root homepage" in i for i in issues)
+
+    @pytest.mark.parametrize(
+        "deep_url",
+        [
+            "https://www.easyjet.com/en/buy/flights",
+            "https://www.ryanair.com/gb/en/trip/flights/select",
+            "https://www.flytap.com/en/booking/flights",
+            "https://www.transavia.com/en-EU/book-a-flight/flights/search/",
+        ],
+    )
+    def test_deep_airline_urls_accepted(self, deep_url):
+        """Specific flight selection or booking portal paths must be accepted."""
+        option = {
+            "direct_url": deep_url,
+            "verification_date": "2026-09-17",
+        }
+        passed, issues = validate_flight_option(option)
+        assert passed, f"Deep URL {deep_url} should be accepted, got {issues}"
 
     def test_ota_link_rejected(self):
         option = {
@@ -137,32 +177,92 @@ class TestFlightOptionValidation:
         assert not passed
 
     def test_missing_verification_date_fails(self):
-        option = {"direct_url": "https://www.ryanair.com/gb/en"}
+        option = {"direct_url": "https://www.easyjet.com/en/buy/flights"}
         passed, _ = validate_flight_option(option)
         assert not passed
 
+
+# ──────────────────────────────────────────────
+# 4. Door-to-Door Cost: Decomposability & Arithmetic
+# ──────────────────────────────────────────────
+
+
+class TestDoorToDoorArithmeticAndDecomposition:
+    """Validate mandatory line-by-line decomposition and exact arithmetic."""
+
     def test_alternative_airport_without_door_to_door_fails(self):
         option = {
-            "direct_url": "https://www.ryanair.com/gb/en",
+            "direct_url": "https://www.easyjet.com/en/buy/flights",
             "verification_date": "2026-09-17",
         }
         passed, issues = validate_flight_option(option, is_alternative=True)
         assert not passed, "Alternative without door-to-door cost should fail"
         assert any("door-to-door" in i for i in issues)
 
-    def test_alternative_airport_with_door_to_door_passes(self):
+    def test_door_to_door_without_breakdown_fails(self):
+        """Alternative airport option with only an opaque total must fail."""
         option = {
-            "direct_url": "https://www.ryanair.com/gb/en",
+            "direct_url": "https://www.easyjet.com/en/buy/flights",
             "verification_date": "2026-09-17",
-            "door_to_door_total": "€230",
-            "transfer_cost": "€20",
+            "door_to_door_total": "€190",
+            "transfer_mode": "bus",
         }
         passed, issues = validate_flight_option(option, is_alternative=True)
-        assert passed, f"Valid alternative rejected: {issues}"
+        assert not passed, "Opaque door-to-door total without itemized breakdown should fail"
+        assert any("decomposed" in i.lower() or "breakdown" in i.lower() for i in issues)
+
+    def test_door_to_door_arithmetic_mismatch_fails(self):
+        """Breakdown where sum does not match declared total must fail (e.g. 150+40 != 230)."""
+        option = {
+            "direct_url": "https://www.easyjet.com/en/buy/flights",
+            "verification_date": "2026-09-17",
+            "door_to_door_total": "€230",
+            "cost_breakdown": {
+                "flight_total": "€150 (2x €75)",
+                "ground_transfer": "€40 (2x €20)",
+                "overnight_stay": "€0",
+            },
+            "transfer_mode": "bus",
+        }
+        passed, issues = validate_flight_option(option, is_alternative=True)
+        assert not passed, "Arithmetic mismatch (150+40 != 230) should fail"
+        assert any("arithmetic mismatch" in i.lower() for i in issues)
+
+    def test_door_to_door_with_valid_breakdown_passes(self):
+        """Properly itemized breakdown matching total (150 + 40 = 190) passes."""
+        option = {
+            "direct_url": "https://www.easyjet.com/en/buy/flights",
+            "verification_date": "2026-09-17",
+            "door_to_door_total": "€190",
+            "cost_breakdown": {
+                "flight_total": "€150 (2x €75)",
+                "ground_transfer": "€40 (2x €20)",
+                "overnight_stay": "€0",
+            },
+            "transfer_mode": "bus",
+        }
+        passed, issues = validate_flight_option(option, is_alternative=True)
+        assert passed, f"Valid breakdown rejected: {issues}"
+
+    def test_door_to_door_with_night_transit_overnight_stay(self):
+        """Alternative with night transfer requiring transit overnight stay (120+30+70 = 220)."""
+        option = {
+            "direct_url": "https://www.easyjet.com/en/buy/flights",
+            "verification_date": "2026-09-17",
+            "door_to_door_total": "€220",
+            "cost_breakdown": {
+                "flight_total": "€120 (2x €60)",
+                "ground_transfer": "€30 (2x €15)",
+                "overnight_stay": "€70 (transit hotel near airport)",
+            },
+            "transfer_mode": "bus",
+        }
+        passed, issues = validate_flight_option(option, is_alternative=True)
+        assert passed, f"Valid overnight breakdown rejected: {issues}"
 
 
 # ──────────────────────────────────────────────
-# 4. Fixed dates skip validation
+# 5. Fixed dates skip validation
 # ──────────────────────────────────────────────
 
 
@@ -187,26 +287,26 @@ class TestFixedDatesSkip:
 
 
 # ──────────────────────────────────────────────
-# 5. Synthesis table validation
+# 6. Synthesis table validation (Ref & Baggage)
 # ──────────────────────────────────────────────
 
 
 class TestSynthesisTable:
-    """The synthesis table must always show Pass 1 as reference."""
+    """The synthesis table must show Pass 1 as reference and include baggage info."""
 
-    def test_synthesis_with_ref_passes(self):
-        text = "| REF | CDG→LIS | 10-17 oct | ±0 | direct | €185 | — | €370 | — |"
+    def test_synthesis_with_ref_and_baggage_passes(self):
+        text = "| REF | CDG→LIS | 10-17 oct | ±0 | direct | Cabine incluse | €240 | — | €240 | — |"
         passed, _ = validate_synthesis_has_reference(text)
         assert passed
 
     def test_synthesis_without_ref_fails(self):
-        text = "| 1 | OPO | 12-17 oct | +2j | 1 stop | €89 | €25 | €228 | -38% |"
+        text = "| 1 | OPO | 12-17 oct | +2j | 1 stop | Sac seul | €89 | €25 | €114 | -38% |"
         passed, _ = validate_synthesis_has_reference(text)
         assert not passed
 
 
 # ──────────────────────────────────────────────
-# 6. OTA / meta-search detection
+# 7. OTA / meta-search detection
 # ──────────────────────────────────────────────
 
 
@@ -229,11 +329,11 @@ class TestOTADetection:
     @pytest.mark.parametrize(
         "url",
         [
-            "https://www.flytap.com/en/booking",
-            "https://www.ryanair.com/gb/en",
-            "https://www.easyjet.com/en",
-            "https://www.airfrance.fr",
-            "https://www.britishairways.com",
+            "https://www.flytap.com/en/booking/flights",
+            "https://www.ryanair.com/gb/en/trip/flights/select",
+            "https://www.easyjet.com/en/buy/flights",
+            "https://www.airfrance.fr/search",
+            "https://www.britishairways.com/travel/book/public/en_gb",
         ],
     )
     def test_airline_direct_not_flagged(self, url):
@@ -241,7 +341,7 @@ class TestOTADetection:
 
 
 # ──────────────────────────────────────────────
-# 7. Workflow integration checks
+# 8. Workflow integration checks
 # ──────────────────────────────────────────────
 
 
@@ -252,9 +352,7 @@ class TestWorkflowIntegration:
         workflow_path = REPO_ROOT / ".agents" / "workflows" / "plan-complete-trip.md"
         content = workflow_path.read_text(encoding="utf-8")
         assert "flight-search" in content, "plan-complete-trip.md missing flight-search reference"
-        # Must be in Wave 1, before accommodation-researcher's dependency note
         flight_idx = content.lower().index("flight-search")
-        # Find the accommodation-researcher line that depends on flight-search
         accom_lines = [i for i, line in enumerate(content.split("\n")) if "accommodation-researcher" in line.lower() and "depends" in line.lower()]
         assert len(accom_lines) > 0, "plan-complete-trip.md missing accommodation-researcher dependency on flight-search"
 

@@ -303,8 +303,12 @@ def is_generic_root_homepage(url: str, enforce_deep_path: bool = False) -> Tuple
             return True, f"Generic transit authority homepage '{url}'; specific service, line, or fare page required"
 
     # Enforce deep path when requested
-    if enforce_deep_path and (not clean_path or clean_path in ("", "/index.html", "/index.php")):
-        return True, f"Generic homepage '{url}'; specific service, line, or fare page required"
+    if enforce_deep_path:
+        if not clean_path or clean_path in ("", "/index.html", "/index.php"):
+            return True, f"Generic homepage '{url}'; specific service, line, search or booking page required"
+        # Detect bare language/locale root paths like /en, /fr, /gb/en, /en-gb, /en-eu
+        if re.match(r"^/(?:[a-z]{2}(?:-[a-z]{2,4})?|[a-z]{2}/[a-z]{2})/?$", clean_path):
+            return True, f"Generic language root homepage '{url}'; specific service, line, search or booking page required"
 
     return False, None
 
@@ -677,33 +681,115 @@ def validate_flight_pass_order(passes: List[str]) -> Tuple[bool, List[str]]:
     return (len(issues) == 0), issues
 
 
+def _extract_amount(val: Any) -> Optional[float]:
+    """Helper to extract a numeric float amount from a string like '€190', '190.50 €', or a number."""
+    if val is None:
+        return None
+    if isinstance(val, (int, float)):
+        return float(val)
+    if isinstance(val, str):
+        # Match first float/int found
+        match = re.search(r"[-+]?\d+(?:[.,]\d+)?", val.replace(" ", ""))
+        if match:
+            try:
+                return float(match.group(0).replace(",", "."))
+            except ValueError:
+                return None
+    return None
+
+
 def validate_flight_option(option: Dict[str, Any], is_alternative: bool = False) -> Tuple[bool, List[str]]:
-    """Validate a single flight option record."""
+    """Validate a single flight option record.
+
+    Checks:
+    - Direct airline link (Tier 2), not OTA or metasearch.
+    - Deep booking URL (not a generic root homepage or bare language root).
+    - Verification date.
+    - If is_alternative or door-to-door total present:
+      - Must have an itemized breakdown line-by-line (flight + ground transfer + potential overnight/fees).
+      - Arithmetic consistency: sum of components must match the declared door-to-door total.
+    """
     issues: List[str] = []
 
-    # Must have a direct airline URL
+    # 1. Direct airline URL
     url = option.get("direct_url") or option.get("official_url") or option.get("url") or option.get("airline_url")
     if not url:
         issues.append("Flight option missing direct booking link")
     else:
-        if not is_valid_url(str(url)):
-            issues.append(f"Invalid flight booking URL: {url}")
-        elif is_flight_ota_or_metasearch(str(url)):
-            issues.append(f"Flight booking link is an OTA/meta-search aggregator, not the airline direct: {url}")
+        url_str = str(url).strip()
+        if not is_valid_url(url_str):
+            issues.append(f"Invalid flight booking URL: {url_str}")
+        elif is_flight_ota_or_metasearch(url_str):
+            issues.append(f"Flight booking link is an OTA/meta-search aggregator, not the airline direct: {url_str}")
+        else:
+            # Enforce deep path (reject bare root domain or language root like ryanair.com or easyjet.com/en)
+            is_generic, reason = is_generic_root_homepage(url_str, enforce_deep_path=True)
+            if is_generic:
+                issues.append(f"Flight booking link is a generic root homepage without deep booking path: {url_str} ({reason})")
 
-    # Verification date
+    # 2. Verification date
     verif_date = option.get("verification_date")
     if not verif_date:
         issues.append("Flight option missing verification date")
 
-    # Alternative airports must have door-to-door cost
+    # 3. Door-to-door cost and decomposability for alternative airports
+    d2d_val = option.get("door_to_door_total") or option.get("door_to_door_total_2pax") or option.get("door_to_door_cost")
+
     if is_alternative:
-        d2d = option.get("door_to_door_total") or option.get("door_to_door_total_2pax") or option.get("door_to_door_cost")
-        if not d2d:
+        if not d2d_val:
             issues.append("Alternative airport option presented without door-to-door total cost")
         transfer = option.get("transfer_to_destination") or option.get("transfer_cost") or option.get("transfer_to_lisbon") or option.get("transfer_mode")
         if not transfer:
             issues.append("Alternative airport option missing transfer details to final destination")
+
+    # Check decomposability and arithmetic if door-to-door cost is present
+    if d2d_val:
+        d2d_amount = _extract_amount(d2d_val)
+        breakdown = option.get("cost_breakdown") or option.get("breakdown")
+
+        if breakdown and isinstance(breakdown, dict):
+            # Sum up breakdown components (excluding keys that represent the overall door-to-door total itself)
+            component_sum = 0.0
+            found_components = False
+            for k, v in breakdown.items():
+                k_lower = k.lower().strip()
+                if k_lower in ("total", "door_to_door_total", "total_door_to_door", "total_p2p", "door_to_door") or k_lower.endswith("_door_to_door"):
+                    continue
+                amt = _extract_amount(v)
+                if amt is not None:
+                    component_sum += amt
+                    found_components = True
+
+            if not found_components:
+                issues.append("Door-to-door cost breakdown contains no parseable line item amounts")
+            elif d2d_amount is not None and abs(component_sum - d2d_amount) > 0.5:
+                issues.append(
+                    f"Door-to-door arithmetic mismatch: breakdown components sum to €{component_sum:.2f}, "
+                    f"but total is declared as {d2d_val} (€{d2d_amount:.2f})"
+                )
+        else:
+            # Check if separate itemized fields exist
+            flight_amt = _extract_amount(option.get("flight_price_2pax") or option.get("flight_total_2pax") or option.get("flight_price"))
+            transfer_cost_field = option.get("transfer_cost") or (
+                option.get("transfer_to_lisbon", {}).get("cost_2pax") if isinstance(option.get("transfer_to_lisbon"), dict) else None
+            ) or (
+                option.get("transfer_to_destination", {}).get("cost") if isinstance(option.get("transfer_to_destination"), dict) else None
+            )
+            transfer_amt = _extract_amount(transfer_cost_field)
+
+            if flight_amt is None or transfer_amt is None:
+                issues.append(
+                    "Door-to-door total is not decomposed line-by-line (missing cost_breakdown dict or explicit flight/transfer amounts)"
+                )
+            elif d2d_amount is not None:
+                overnight_amt = _extract_amount(option.get("overnight_stay") or option.get("overnight_cost")) or 0.0
+                extra_amt = _extract_amount(option.get("additional_fees")) or 0.0
+                total_computed = flight_amt + transfer_amt + overnight_amt + extra_amt
+                if abs(total_computed - d2d_amount) > 0.5:
+                    issues.append(
+                        f"Door-to-door arithmetic mismatch: flight ({flight_amt}) + transfer ({transfer_amt}) + "
+                        f"extras ({overnight_amt + extra_amt}) = €{total_computed:.2f}, but total is declared as {d2d_val}"
+                    )
 
     return (len(issues) == 0), issues
 
@@ -760,22 +846,49 @@ def validate_flight_search_skill_file(skill_path: Path) -> Tuple[bool, List[str]
     if "pass 4" not in content_lower and "pass_4" not in content_lower:
         issues.append("flight-search skill missing Pass 4 (Combined) methodology")
 
-    # Door-to-door cost methodology
+    # Door-to-door cost methodology and decomposition rule
     if "door" not in content_lower and "porte" not in content_lower:
         issues.append("flight-search skill missing door-to-door cost computation methodology")
+    if "décomposition" not in content_lower and "breakdown" not in content_lower and "ligne par ligne" not in content_lower:
+        issues.append("flight-search skill missing requirement for line-by-line door-to-door cost breakdown")
+
+    # Defined transfer_time_value
+    if "transfer_time_value" not in content_lower and "15" not in content:
+        issues.append("flight-search skill missing explicit definition of transfer_time_value")
 
     # Fixed dates skip rule
     if "dates_fixed" not in content and "dates fixes" not in content_lower and "strictly fixed" not in content_lower:
         issues.append("flight-search skill missing dates_fixed skip rule for passes 3 and 4")
 
-    # Airline direct link rule (vs aggregators)
+    # One-way / multi-city handling
+    if "one_way" not in content_lower and "one-way" not in content_lower and "aller simple" not in content_lower:
+        issues.append("flight-search skill missing one-way flight search handling")
+    if "multi" not in content_lower:
+        issues.append("flight-search skill missing multi-city flight search handling")
+
+    # Combinatorial bounding (max 5 airports, ±2 days in Pass 4)
+    if not any(k in content_lower for k in ["max 5", "maximum de 5", "maximum 5", "5 aéroports", "5 alternative"]):
+        issues.append("flight-search skill missing upper bound on alternative airports (max 5)")
+
+    # Night transfer / overnight stay rule
+    if "nuit" not in content_lower and "overnight" not in content_lower and "nocturne" not in content_lower:
+        issues.append("flight-search skill missing night transfer / overnight transit stay rule")
+
+    # Airline direct link rule (vs aggregators and deep URLs)
     if "aggregat" not in content_lower and "ota" not in content_lower:
         issues.append("flight-search skill missing OTA/aggregator exclusion rule for primary booking links")
+    if "racine" not in content_lower and "deep" not in content_lower and "profonde" not in content_lower:
+        issues.append("flight-search skill missing deep URL / root homepage avoidance rule")
+
+    # Baggage column in synthesis table
+    if "bagages" not in content_lower and "baggage" not in content_lower:
+        issues.append("flight-search skill missing baggage column / policy in synthesis table")
 
     # Threshold rule (20% or €50)
     if "20%" not in content and "50" not in content:
         issues.append("flight-search skill missing retention threshold rule (≥ 20% or ≥ €50)")
 
     return (len(issues) == 0), issues
+
 
 
