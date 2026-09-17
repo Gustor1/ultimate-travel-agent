@@ -1,28 +1,31 @@
 # Modèle de Sécurité et de Confidentialité — `ultimate-travel-agent`
 
-Ce document formalise les principes directeurs, les garde-fous stricts, la gestion des permissions et le modèle de menace (*threat model*) régissant l'écosystème multi-agents `ultimate-travel-agent`.
+Ce document formalise les principes directeurs, les garde-fous stricts, le cloisonnement des permissions et le modèle de menace (*threat model*) régissant l'écosystème multi-agents et les compétences du **Travel Skills Pack**.
 
 ---
 
 ## 1. Principes Fondamentaux de Sécurité
 
 1. **Principe de Moindre Privilège (*Least Privilege*) :**
-   - Chaque sous-agent et composant d'outil n'a accès qu'au strict minimum requis pour son mandat.
-   - Les connecteurs et outils locaux opèrent par défaut en lecture seule sur des répertoires clos (`data/mock/`).
-   - Aucun agent ne dispose d'accès direct au shell système (`run_command`), ni de permissions d'écriture en dehors de l'export final du rapport de voyage (`reports/`).
+   - **Cloisonnement strict des sous-agents :**
+     - Les agents internes (`budget-analyst`, `itinerary-optimizer`, `quality-controller`, `travel-orchestrator`, `mcp-skill-auditor`) opèrent exclusivement avec des outils de lecture locale (`filesystem_read`). Ils ont l'interdiction formelle de disposer d'outils web (`web_search`, `browser`).
+     - Seuls les agents de recherche terrain (`destination-researcher`, `transport-planner`, `accommodation-researcher`, `activity-curator`, `local-discovery-agent`, `travel-preparation-agent`, `source-verification`) disposent des outils de recherche web et de navigation.
+   - **Zéro accès au shell système :** Aucun agent ne dispose d'accès direct au terminal système (`run_command`), ni de permissions d'écriture arbitraires sur la machine hôte.
 
-2. **Défense en Profondeur (*Defense in Depth*) :**
-   - Le système superpose plusieurs barrières : validation Pydantic à l'ingestion, contrôleur qualité (`quality-controller`), et sas d'audit de sécurité indépendant (`mcp-skill-auditor`).
-   - Tout contenu externe (données d'APIs, blogs, résultats de recherche, pages web, descriptions d'outils) est classé comme **non fiable (*untrusted*)** par défaut.
+2. **Défense en Profondeur (*Defense in Depth*) & Isolation des Données Web :**
+   - Tout contenu externe issu du web (pages d'opérateurs, guides, forums, résultats de moteurs de recherche) est classé comme **non fiable (*untrusted*)**.
+   - Les agents web appliquent une isolation systématique via des balises de cloisonnement `<untrusted_web_content>` pour neutraliser les injections de prompt indirectes.
+   - Interdiction formelle d'incorporer des données nominatives personnelles ou des PII (*Personally Identifiable Information*).
+   - Contrôle qualité indépendant opéré en Vague 4 par `quality-controller` et `source-verification`.
 
-3. **Zéro Action Matérielle Irréversible :**
-   - **Interdiction formelle de réservation automatisée :** Le système ne déclenche aucun achat, aucun paiement, aucun débit bancaire et aucune validation contractuelle autonome.
-   - **Délivrance de liens officiels certifiés :** L'agent fournit des liens de redirection vers les billetteries officielles vérifiées (`booking_url_official`), laissant le contrôle et la décision d'achat exclusivement à l'utilisateur humain (*Human-in-the-loop*).
-   - **Interdiction d'envoi d'e-mails ou de messages autonomes :** Aucun contact avec des tiers (hôtels, consulats, guides) sans approbation explicite.
+3. **Zéro Action Matérielle Irréversible (Zéro Réservation / Zéro Achat) :**
+   - **Interdiction absolue d'achat et de réservation automatique :** Le système ne déclenche aucun paiement, aucun débit bancaire, aucune signature contractuelle et aucune réservation autonome.
+   - **Délivrance exclusive de liens officiels certifiés :** L'agent fournit des liens profonds vers les plateformes officielles certifiées des transporteurs et billetteries (Tier 1 et Tier 2) accompagnés d'instructions de réservation pas-à-pas, laissant la décision et le contrôle exclusif à l'utilisateur humain (*Human-in-the-loop*).
+   - **Interdiction des OTA pour les vols :** Les plateformes intermédiaires (Expedia, Opodo, Kiwi) et les comparateurs (Google Flights, Skyscanner, Trip.com) sont strictement proscrits comme liens de réservation de vols.
 
-4. **Souveraineté des Données et Confidentialité :**
-   - Aucune donnée personnelle sensible (numéros de passeport, numéros de cartes d'identité, coordonnées bancaires) n'est demandée, traitée ou stockée.
-   - Fonctionnement local prioritaire : en V1, 100% de la génération d'itinéraires s'effectue hors-ligne, sans aucune télémétrie ni fuite réseau.
+4. **Souveraineté des Données et Repli Hors-Ligne :**
+   - Aucune donnée personnelle sensible (numéro de passeport, carte d'identité, coordonnées bancaires) n'est manipulée, transmise ou stockée.
+   - En l'absence d'outils de recherche web, toutes les skills basculent sur un protocole de repli déterministe avec mention explicite *« estimation, inventaire non ouvert »* ou *« données non confirmées »*, interdisant formellement l'invention de tarifs ou d'horaires en direct.
 
 ---
 
@@ -30,29 +33,30 @@ Ce document formalise les principes directeurs, les garde-fous stricts, la gesti
 
 | Vecteur de Risque | Scénario d'Attaque / Défaillance | Mesure de Protection Active |
 | :--- | :--- | :--- |
-| **Injection de Prompt Indirecte (*Indirect Prompt Injection*)** | Un contenu externe scrapé (description de lieu, avis TripAdvisor, page web touristique) contient des instructions masquées visant à détourner le LLM. | Détection de motifs d'injection dans `mcp-skill-auditor`, sanitisation HTML stricte, interdiction d'instructions impératives dans les champs de données. |
-| **Exfiltration de Données / Fuite de Secrets** | Une skill tierce tente d'extraire les variables d'environnement (`.env`), clés API ou chemins locaux de l'utilisateur. | Variables d'environnement cloisonnées, `.env` exclu de Git via `.gitignore`, audit statique régulier des dépendances, blocage des requêtes HTTP non sollicitées. |
-| **Hallucination Financière ou Escroquerie de Billetterie** | Le modèle invente un faux tarif, un faux site de billetterie ou renvoie vers une plateforme de revente non officielle / phishing. | Liste blanche stricte de domaines officiels vérifiés (`allowlist` maintenue dans `mcp-skill-auditor`), étiquetage explicite du niveau de confiance (`VÉRIFIÉ_OFFICIEL`, `ESTIMATION_MOCK`). |
-| **Exécution de Code Non Contrôlée** | Une compétence externe embarque des scripts d'installation (`npm`, `pip`, wrappers shell) exécutant des binaires arbitraires. | Isolation stricte : aucune exécution de script externe, interdiction de déplacer du code externe dans `.agents/` sans audit préalable, exécution déterministe en Python pur. |
-| **Atteinte à la Vie Privée (Calendrier, Contacts, E-mails)** | Des outils MCP demandent des permissions étendues d'accès à l'agenda Google, aux e-mails Gmail ou au système de fichiers local. | Refus de toute permission inutile, compartimentage des MCPs optionnels, interdiction d'accéder aux données personnelles de l'hôte. |
+| **Injection de Prompt Indirecte (*Indirect Prompt Injection*)** | Une page web touristique ou un avis communautaire contient des instructions textuelles masquées visant à détourner le comportement de l'agent. | Encapsulation systématique dans `<untrusted_web_content>`, interdiction d'exécuter des instructions issues des pages web, audit de sécurité par `mcp-skill-auditor`. |
+| **Fuite de PII ou de Secrets** | Un agent tente d'extraire des identifiants locaux, clés d'API ou chemins Windows/macOS. | Filtrage des mots-clés PII, exclusion des fichiers sensibles via `.gitignore`, tests automatisés vérifiant l'absence totale de clés d'API et de chemins personnels dans le dépôt. |
+| **Hallucination Financière ou Phishing de Billetterie** | L'IA invente un tarif fictif, un domaine trompeur ou renvoie vers un revendeur non officiel. | Pyramide stricte des sources en 6 tiers (Tier 1 ministères, Tier 2 transporteurs officiels), vérification des URLs profondes, double contrôle par `source-verification`. |
+| **Altération Accidentelle des Données Utilisateur** | L'installation ou la désinstallation du pack de compétences écrase ou supprime les compétences personnalisées de l'utilisateur. | Suivi d'empreintes cryptographiques SHA-256 via `.agents/.ultimate-travel-agent-install.json`, préservation absolue de tous les fichiers créés ou modifiés par l'utilisateur. |
+| **Exécution de Code Non Contrôlée** | Une skill tierce intègre des scripts exécutables non audités (`npm`, `pip`, binaires shell). | Architecture purement déclarative (Markdown + YAML), interdiction des scripts exécutables externes non audités. |
 
 ---
 
-## 3. Matrice des Niveaux de Risque des Composants Externes
+## 3. Matrice des Niveaux de Risque des Outils et Compétences
 
-Chaque compétence, workflow ou connecteur externe candidat fait l'objet d'une qualification rigoureuse avant intégration :
+Chaque compétence ou outil candidat fait l'objet d'une qualification rigoureuse avant intégration dans le catalogue :
 
 | Niveau de Risque | Critères d'Attribution | Politique d'Intégration |
 | :--- | :--- | :--- |
-| **FAIBLE (*Low Risk*)** | Pure logique d'orchestration, modèles de prompts déclaratifs, schémas de données Pydantic, documentation, zéro dépendance exécutable externe. | **Adoption / Adaptation encouragée.** |
-| **MOYEN (*Medium Risk*)** | Connecteurs d'APIs publiques en lecture seule (Open-Meteo, OSRM), scripts utilitaires documentés sans accès privilégié, API freemium avec token. | **Adaptation sous garde-fous** (validation des URLs, gestion stricte des quotas et secrets). |
-| **ÉLEVÉ (*High Risk*)** | Outils nécessitant un accès complet au système de fichiers, exécution de commandes terminal arbitraires, scraping web non filtré (Bright Data), connecteurs avec droits d'écriture (e-mails, agendas). | **Audit préalable impératif** ; rejet systématique des permissions d'écriture ; sandbox obligatoire. |
-| **CRITIQUE / INACCEPTABLE** | Composants manipulant des cartes bancaires, automatisant des achats, contournant des CAPTCHA, exécutant du code distant non audité. | **REJET IMMÉDIAT ET DÉFINITIF.** |
+| **FAIBLE (*Low Risk*)** | Pure logique d'orchestration, modèles de prompts déclaratifs, formats structurés YAML, documentation, outils en lecture seule sur le workspace (`filesystem_read`). | **Adoption immédiate dans le pack de skills.** |
+| **MOYEN (*Medium Risk*)** | Compétences utilisant `web_search` ou `browser` pour la consultation de portails officiels en lecture seule. | **Intégration sous garde-fous** (cloisonnement `<untrusted_web_content>`, conformité à la pyramide des sources Tier 1-6). |
+| **ÉLEVÉ (*High Risk*)** | Outils nécessitant un accès complet en écriture sur le système de fichiers hôte, connecteurs avec droits d'envoi d'e-mails ou modification d'agendas. | **Audit préalable impératif par `mcp-skill-auditor`** ; rejet systématique sans accord explicite de l'utilisateur. |
+| **CRITIQUE / INACCEPTABLE** | Composants manipulant des cartes bancaires, automatisant des achats, contournant des sécurités ou exécutant du code distant non audité. | **REJET IMMÉDIAT ET DÉFINITIF.** |
 
 ---
 
-## 4. Règles de Déploiement et d'Hygiène de Code
+## 4. Règles d'Hygiène de Code et Audit Continu
 
-1. **Aucune importation aveugle :** Ne jamais copier du code source externe directement dans `src/` sans une revue ligne par ligne et un test unitaire dédié.
-2. **Gestion des licences :** Tout composant externe dont la licence est absente, ambiguë ou incompatible (ex: licences non permissives limitant l'usage open-source) est marqué `research-needed` ou rejeté.
-3. **Audit continu :** Le sous-agent `mcp-skill-auditor` s'assure en permanence qu'aucune régression sécuritaire n'est introduite dans les contrats d'interface des agents.
+1. **Vérification automatique continue :** La suite de tests automatisés vérifie en permanence que les agents internes ne disposent d'aucun outil web, que les agents de recherche embarquent les garde-fous PII et prompt injection, et qu'aucun secret n'est présent.
+2. **Gestion des licences :** Les compétences du pack sont sous licence permissive MIT.
+3. **Audit continu :** Le sous-agent `mcp-skill-auditor` et la skill `mcp-skill-auditing` évaluent toute compétence ou serveur MCP externe avant son intégration.
+
