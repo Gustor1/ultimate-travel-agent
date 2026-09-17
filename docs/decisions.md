@@ -166,13 +166,15 @@ oad-trip-nature, amily-trip, ackpacking-budget, low-crowd-cultural-trip, usin
 3. Baggage requirements strictly integrated into evaluated flight totals (not merely listed in policy).
 4. Single best Pass 1 baseline rule: the cheapest option conforming to the brief's baggage and timing requirements serves as the unique reference baseline (`REF`) for comparison and in the synthesis matrix.
 5. Formally defined `transfer_time_penalty`: flat rate of 15 €/h extra ground transit time, **applied by default whenever additional transit time exceeds 4 hours (> 4h) vs Pass 1 baseline**, with explicit traveler opt-out (`transfer_time_penalty: false`).
-6. Active discovery step via meta-search: Google Flights or Skyscanner (Tier 4) are systematically used in Passes 2 & 3 for rapid mapping of nearby airports and flexible date grids, followed by direct Tier 2 carrier verification and mandatory discovery logging in `source_log`.
-7. Deep booking URLs and step-by-step search instructions mandatory on **every retained option** across Passes 1, 2, 3, and 4 (not only Pass 1).
-8. Distant horizons (> 11 months / > 330 days) and unopened airline inventories: output realistic price ranges (e.g. 850-950 €) systematically tagged `"estimation, inventaire non ouvert"`, prohibiting fictitious exact 2-decimal pricing.
-9. Chinese rail ticketing dual-structure in `transport-research`: Trip.com documented as the primary practical recommendation for foreign tourists (~15 RMB fee, English UI, passport e-ticket, no 12306 account/counter check), with China Railway 12306 as the direct official carrier alternative.
-10. Combinatorial limitation (max 5 alternative airports, ±2 days around top 3 options in Pass 4).
-11. Night transfer verification and mandatory transit overnight stay cost inclusion if late arrival prevents same-day connection.
-12. Mandatory `Bagages` column in the synthesis matrix.
-**Consequences:** Rigorous, mathematically verifiable air travel optimization capability. 14 skills in the pack (manifest v1.3.0). 105 automated tests.
+6. Active discovery step via systematic 3-engine cross-comparison: Google Flights, Skyscanner, and Trip.com are systematically queried in parallel across Passes 1, 2, and 3 to discover candidate routes, test flexible dates, and detect pricing spreads across engines, followed by direct Tier 2 airline carrier verification. All 3 comparison engines must be individually documented in `source_log`.
+7. Direct airline carrier booking only: Booking links displayed to the traveler are exclusively direct airline carrier websites (Tier 2). Google Flights, Skyscanner, and Trip.com are comparison engines only and must NEVER appear as flight booking links. (Trip.com is retained as a booking channel solely for Chinese rail in `transport-research`).
+8. Deep booking URLs and step-by-step search instructions mandatory on **every retained option** across Passes 1, 2, 3, and 4 (not only Pass 1).
+9. Distant horizons (> 11 months / > 330 days) and unopened airline inventories: output realistic price ranges (e.g. 850-950 €) systematically tagged `"estimation, inventaire non ouvert"`, prohibiting fictitious exact 2-decimal pricing.
+10. Chinese rail ticketing dual-structure in `transport-research`: Trip.com documented as the primary practical recommendation for foreign tourists (~15 RMB fee, English UI, passport e-ticket, no 12306 account/counter check), with China Railway 12306 as the direct official carrier alternative.
+11. Combinatorial limitation (max 5 alternative airports, ±2 days around top 3 options in Pass 4).
+12. Night transfer verification and mandatory transit overnight stay cost inclusion if late arrival prevents same-day connection.
+13. Mandatory `Bagages` column in the synthesis matrix.
+**Consequences:** Rigorous, mathematically verifiable air travel optimization capability. 14 skills in the pack (manifest v1.3.0). 115 automated tests.
+
 
 

@@ -59,14 +59,25 @@ All references must strictly adhere to the 6-tier sourcing hierarchy:
 
 ### Flight-Specific Source Rules & Deep Link Mandate
 - **Airline direct websites** (e.g., Air France, TAP Air Portugal, easyJet, Ryanair) are **Tier 2** and must always serve as the primary booking link.
-- **Active Discovery via Meta-Search (Tier 4)**:
-  - In Passes 2 and 3, systematically use **Google Flights** or **Skyscanner** as discovery engines:
-    - In Pass 2: use the "nearby airports" ("aéroports à proximité") feature to rapidly identify all viable alternative departure and arrival hubs.
-    - In Pass 3: use the flexible date matrix / calendar price grid ("grille de dates flexibles") to rapidly pinpoint the cheapest dates within the window.
-  - **Strict Verification Boundary**: Meta-search aggregators are used **exclusively for rapid discovery**. Every candidate flight, price, baggage condition, and timetable must then be verified directly on the official airline website (Tier 2).
-  - **Single Booking Link Rule**: The official airline direct portal remains the **sole booking link** displayed to the traveler. Aggregator or OTA links are never displayed as booking destinations.
-  - **Mandatory Source Logging**: The meta-search tool used for discovery (e.g. Google Flights or Skyscanner) **must be explicitly recorded in `source_log`** as a Tier 4 discovery aid.
-- **OTAs** (Expedia, eDreams, Kiwi, Opodo, Lastminute) are **Tier 5** and are strictly forbidden as primary booking links.
+- **Active Discovery via Systematic 3-Engine Cross-Comparison**:
+  - Before verifying on airline direct sites, each flight search pass (Passes 1, 2, and 3 minimum) must systematically pass through a cross-comparison across **THREE** engines:
+    1. **Google Flights**
+    2. **Skyscanner**
+    3. **Trip.com**
+  - **Details of Cross-Comparison per Pass**:
+    - **Pass 1 (Base)**: Launch exact-date searches simultaneously on all 3 engines. Cross-reference results to preselect the top 3-5 best offers (airline, price, schedules, stops). Flag and document any significant price discrepancies between engines (e.g. same flight showing €240 on Google Flights/Skyscanner vs €244 on Trip.com) in the dossier.
+    - **Pass 2 (Multi-Airport)**: Use Google Flights "nearby airports" ("aéroports à proximité") and Trip.com broad regional search to discover alternative departure/arrival gateways, cross-checking candidate routes on Skyscanner.
+    - **Pass 3 (Flexible Dates)**: Use the Google Flights date grid ("grille de dates flexibles"), the Skyscanner price calendar, and Trip.com flexible dates; cross-reference all 3 to identify the cheapest departure and return days.
+  - **Strict Verification & Direct Booking Boundary**:
+    - The cross-comparison is used **exclusively for rapid discovery, screening, and price spread detection**.
+    - Every preselected candidate flight, true door-to-door cost, baggage fee, and live schedule must then be verified directly on the official airline website (Tier 2).
+    - **Single Booking Link Rule**: The official airline direct portal remains the **SOLE booking link** displayed to the traveler. Trip.com, Skyscanner, and Google Flights are comparison tools only and are **NEVER** displayed as flight booking links.
+    - **Preserved Exception**: Trip.com remains the primary practical booking channel for Chinese rail ticketing in `transport-research`.
+  - **Taxonomy & Classification Note**:
+    - Google Flights, Skyscanner, and Trip.com are classified as **comparison engines** ("moteurs de comparaison") during the discovery phase, distinct from editorial Tier 4 guides (Michelin, Lonely Planet).
+    - **Trip.com Dual Status**: Trip.com functions strictly as a comparison tool for flights (never as a booking link), whereas it serves as the authorized primary practical booking channel for Chinese rail ticketing in `transport-research`.
+  - **OTA Ban Intact**: The prohibition of OTAs as flight booking links remains absolute (Expedia, eDreams, Kiwi, Opodo, Lastminute forbidden; Trip.com strictly confined to discovery/comparison, never as a flight booking link).
+  - **Mandatory 3-Engine Source Logging**: All 3 comparison engines used must appear individually in `source_log` with verification date (`YYYY-MM-DD`). The dossier must state for each pass which engines were used and note observed price deltas between them.
 - **Deep URLs Mandatory on EVERY Retained Option**:
   - Every retained flight option (`retained: true` or Pass 1 `REF`) across Passes 1, 2, 3, and 4 **must provide a deep booking link** to the airline's flight selection portal (e.g., `https://www.flytap.com/en/booking/flights`, `https://www.easyjet.com/en/buy/flights`, `https://www.ryanair.com/gb/en/trip/flights/select`). Generic root domain homepages (e.g., `ryanair.com`, `easyjet.com/en`, `airfrance.fr`) are strictly forbidden.
   - **Mandatory Step-by-Step Instructions**: On every retained option, provide explicit user search instructions:
@@ -84,13 +95,15 @@ All references must strictly adhere to the 6-tier sourcing hierarchy:
 
 ### Pass 1 — Base (Single Best Reference Price)
 Search flights to the **principal airport** of the destination city on the **exact dates** requested by the user, incorporating origin access from the traveler's city center (e.g. RER B to CDG or Metro 14 to Orly) and luggage requirements.
+- **Systematic 3-Engine Cross-Comparison**: Query **Google Flights**, **Skyscanner**, and **Trip.com** simultaneously on the exact dates requested. Cross-reference results to preselect the top 3-5 best candidate offers (airline, base fare, times, stops) and document any noticeable pricing spread between engines.
+- **Direct Carrier Verification**: Verify the preselected candidates directly on official airline portals (Tier 2) to confirm final base fare, baggage fees, and conditions.
 - When multiple airlines are found (e.g., TAP at €400, Transavia at €318, easyJet at €270 with checked bag), **the single best Pass 1 result** (the cheapest option strictly conforming to the brief's baggage and timing requirements) serves as the **unique reference baseline (REF)** for all subsequent comparisons.
-- Record: airline, flight numbers, flight duration, stops, baggage allowance, total price, deep direct URL, verification date.
+- Record: airline, flight numbers, flight duration, stops, baggage allowance, total price, deep direct URL, verification date, and comparison engine price deltas.
 
 ### Pass 2 — Multi-Airport (Fixed Dates)
 Keeping the exact travel dates from Pass 1, investigate alternative arrival gateways:
-- **Systematic Discovery Step**: Use Google Flights or Skyscanner (Tier 4) using the "nearby airports" ("aéroports à proximité") search feature to rapidly identify alternative departure and arrival hubs.
-- **Direct Carrier Verification**: Verify candidate flights, exact schedules, and live bag fees directly on official airline portals (Tier 2). Document the discovery engine in `source_log`.
+- **Systematic 3-Engine Cross-Comparison Step**: Use Google Flights "nearby airports" ("aéroports à proximité") and Trip.com broad regional search to discover alternative departure and arrival hubs, cross-checking available routes and fares on Skyscanner.
+- **Direct Carrier Verification**: Verify candidate flights, exact schedules, and live bag fees directly on official airline portals (Tier 2). Document all 3 comparison engines in `source_log`.
 - Other airports serving the same metropolitan area (e.g., London: LHR, LGW, STN, LTN, SEN).
 - Airports of adjacent cities connected by direct high-speed rail or express bus (e.g., Porto or Faro for Lisbon; Girona or Reus for Barcelona; Bologna or Florence for Rome).
 - Alternative departure airports in the traveler's origin region (e.g., Paris Beauvais BVA instead of CDG/Orly).
@@ -126,8 +139,8 @@ Retain an alternative airport option **only if** it yields a net saving $\ge 20\
 ### Pass 3 — Flexible Dates (Principal Airport)
 **Skip this pass entirely if the user specified `dates_fixed: true` or non-negotiable dates.**
 Using exclusively the principal airport from Pass 1:
-- **Systematic Discovery Step**: Use the flexible date matrix / calendar price grid ("grille de dates flexibles") on Google Flights or Skyscanner (Tier 4) to quickly identify the cheapest days in the target window.
-- **Direct Carrier Verification**: Verify prices, seats, and baggage policies directly on the airline website (Tier 2). Record the discovery engine in `source_log`.
+- **Systematic 3-Engine Cross-Comparison Step**: Use the Google Flights date grid ("grille de dates flexibles"), the Skyscanner price calendar, and the Trip.com flexible date matrix; cross-reference all 3 tools to spot the lowest fare dips in the $\pm 3$ days window. Note any pricing discrepancies across engines.
+- **Direct Carrier Verification**: Verify prices, seats, and baggage policies directly on the airline website (Tier 2). Record all 3 comparison engines in `source_log`.
 - For round-trip journeys: test date shifts of -3, -2, -1, +1, +2, +3 days on departure AND return **independently**.
 - For one-way journeys: test shifts of -3, -2, -1, +1, +2, +3 days on the departure date only.
 - Document the exact date shift (e.g., "Aller +2j, Retour identique") and price delta vs the single best Pass 1 baseline.
@@ -297,9 +310,17 @@ recommendations:
         verification_date: "2026-09-17"
   - synthesis_table: "Tableau comparatif trié par coût porte-à-porte croissant avec ligne REF unique"
 source_log:
-  - name: "Google Flights (Outil de découverte / grille tarifaire)"
+  - name: "Google Flights (Moteur de comparaison / découverte & grille tarifaire)"
     tier: 4
     url: "https://www.google.com/travel/flights"
+    verification_date: "2026-09-17"
+  - name: "Skyscanner (Moteur de comparaison / calendrier & aéroports)"
+    tier: 4
+    url: "https://www.skyscanner.net"
+    verification_date: "2026-09-17"
+  - name: "Trip.com (Moteur de comparaison de vols / recherche large)"
+    tier: 5
+    url: "https://www.trip.com/flights"
     verification_date: "2026-09-17"
   - name: "easyJet Official Flight Booking Engine"
     tier: 2
@@ -322,6 +343,7 @@ source_log:
     url: "https://www.rede-expressos.pt"
     verification_date: "2026-09-17"
 assumptions:
+  - "Comparatif croisé systématique réalisé sur 3 moteurs (Google Flights, Skyscanner, Trip.com) pour les passes 1, 2 et 3. Écart constaté en Passe 1 : easyJet affiché à €240 sur Google Flights/Skyscanner vs €244 sur Trip.com ; tarif vérifié et confirmé à €240 + €30 soute sur le site officiel easyJet."
   - "L'option Passe 1 de référence (REF) retenue est la meilleure offre directe easyJet conforme au brief (€317 tout compris avec soute et RER B)."
   - "Accès à l'aéroport d'origine inclus pour toutes les options afin de comparer à équipement égal (RER B €47 pour CDG, Métro 14 €41 pour Orly, navette €68 pour Beauvais)."
   - "Les frais de soute requis par le brief sont rigoureusement intégrés dans le coût des billets de chaque option."
@@ -339,7 +361,8 @@ risks:
 ## Direct Link Requirements & Flight Source Rules
 - Every flight option must include a **deep direct URL to the airline's official booking engine** (Tier 2). Generic root domain homepages are strictly prohibited.
 - **Deep link & Search Instructions Mandatory on ALL Retained Options**: Every retained option across Passes 1, 2, 3, and 4 must provide both the deep booking link (`direct_url`) and explicit step-by-step query instructions (`booking_instructions`) for the user.
-- **Active Discovery via Meta-Search**: Google Flights or Skyscanner (Tier 4) are systematically used for rapid gateway mapping ("aéroports à proximité") and date-grid screening ("grille de dates"), with the discovery tool systematically logged in `source_log`. Booking links are always airline direct (Tier 2).
+- **Systematic 3-Engine Cross-Comparison**: Google Flights, Skyscanner, and Trip.com are systematically queried in parallel across Passes 1, 2, and 3 to discover candidate routes, test flexible dates, and detect pricing spreads. All 3 comparison engines must be recorded in `source_log`.
+- **Direct Carrier Booking Only**: Booking links are exclusively direct carrier websites (Tier 2). Google Flights, Skyscanner, and Trip.com are comparison tools only and must NEVER appear as flight booking links. (Trip.com is retained as a booking channel solely for Chinese rail in transport-research).
 - **Unopened Inventories (> 11 months / > 330 days)**: Must output realistic price ranges (e.g. `850-950 €`), tagged `"estimation, inventaire non ouvert"`. Fictitious exact decimals are prohibited.
 - Ground transfer fares must cite the official operator URL (Tier 2, e.g. `cp.pt`, `rede-expressos.pt`, `aeroportparisbeauvais.com`).
 - Every price must carry an explicit `verification_date` in `YYYY-MM-DD` format.

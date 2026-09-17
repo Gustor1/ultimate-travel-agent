@@ -8,6 +8,25 @@ pass_1_base:
   search_dates:
     departure: "2026-10-10"
     return: "2026-10-17"
+  cross_engine_comparison:
+    engines_queried:
+      - "Google Flights"
+      - "Skyscanner"
+      - "Trip.com"
+    observed_prices:
+      easyjet_direct:
+        google_flights: "€240"
+        skyscanner: "€240"
+        trip_com: "€244"
+      transavia_direct:
+        google_flights: "€290"
+        skyscanner: "€288"
+        trip_com: "€293"
+      tap_direct:
+        google_flights: "€370"
+        skyscanner: "€372"
+        trip_com: "€375"
+    spread_notes: "easyJet est affiché à €240 sur Google Flights et Skyscanner, et à €244 sur Trip.com (+€4). Les 3 meilleures offres identifiées ont été vérifiées directement sur les sites des compagnies (Tier 2). Le tarif final retenu est le tarif officiel easyJet à €240 (+€30 soute)."
   options:
     - airline: "easyJet (Meilleur résultat Passe 1 conforme au brief)"
       route: "CDG → LIS (direct)"
@@ -59,6 +78,8 @@ pass_1_base:
 ```
 
 ## Pass 2 — Multi-Airport (Fixed Dates 10-17 Oct)
+
+*Comparatif croisé systématique sur 3 moteurs (Google Flights « aéroports à proximité », Skyscanner recherche régionale, Trip.com recherche large) : identification conjointe de Paris-Beauvais (BVA) et Paris-Orly (ORY) au départ, et Porto (OPO) et Faro (FAO) à l'arrivée. Écarts relevés : Ryanair BVA-OPO à €130 (2p) sur Google Flights et Trip.com, €132 sur Skyscanner ; easyJet ORY-FAO à €150 sur Skyscanner/Google Flights, €153 sur Trip.com. Vérification directe effectuée sur les sites officiels des compagnies.*
 
 ```yaml
 pass_2_multi_airport:
@@ -114,6 +135,8 @@ pass_2_multi_airport:
 ```
 
 ## Pass 3 — Flexible Dates (Principal Airport LIS)
+
+*Comparatif croisé systématique sur 3 moteurs (Google Flights grille tarifaire, Skyscanner calendrier des prix, Trip.com dates flexibles) : identification conjointe du créneau mardi 12 octobre comme point bas tarifaire (-€90 vs 10 oct). Écarts entre moteurs minimes (€1-3). Vérification directe effectuée sur le site officiel easyJet.*
 
 ```yaml
 pass_3_flexible_dates:
@@ -227,9 +250,17 @@ pass_4_combined:
 
 ```yaml
 source_log:
-  - name: "Google Flights (Outil de découverte / grille tarifaire)"
+  - name: "Google Flights (Moteur de comparaison / découverte & grille tarifaire)"
     tier: 4
     url: "https://www.google.com/travel/flights"
+    verification_date: "2026-09-17"
+  - name: "Skyscanner (Moteur de comparaison / calendrier & aéroports)"
+    tier: 4
+    url: "https://www.skyscanner.net"
+    verification_date: "2026-09-17"
+  - name: "Trip.com (Moteur de comparaison de vols / recherche large)"
+    tier: 5
+    url: "https://www.trip.com/flights"
     verification_date: "2026-09-17"
   - name: "easyJet Official Flight Booking Engine"
     tier: 2
@@ -261,6 +292,7 @@ source_log:
 
 ```yaml
 assumptions:
+  - "Comparatif croisé systématique réalisé sur 3 moteurs (Google Flights, Skyscanner, Trip.com) pour les passes 1, 2 et 3. Écart constaté en Passe 1 : easyJet affiché à €240 sur Google Flights/Skyscanner vs €244 sur Trip.com ; tarif vérifié et confirmé à €240 + €30 soute sur le site officiel easyJet."
   - "L'option Passe 1 de référence (REF) retenue est la meilleure offre directe easyJet conforme au brief (€317 tout compris avec soute et RER B)."
   - "Accès à l'aéroport d'origine inclus pour toutes les options afin de comparer à équipement égal (RER B €47 pour CDG, Métro 14 €41 pour Orly, navette €68 pour Beauvais)."
   - "Frais de soute demandés par le brief intégrés pour chaque option (+€30 easyJet, +€35 Ryanair, +€28 Transavia)."

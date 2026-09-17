@@ -7,6 +7,7 @@ import pytest
 from ultimate_travel_agent.validator import (
     is_flight_ota_or_metasearch,
     is_generic_root_homepage,
+    validate_flight_comparison_sources,
     validate_flight_option,
     validate_flight_pass_order,
     validate_flight_search_skill_file,
@@ -386,6 +387,10 @@ class TestOTADetection:
             "https://www.kayak.com/flights",
             "https://www.edreams.com/",
             "https://www.kiwi.com/en/search",
+            "https://www.trip.com/flights",
+            "https://trip.com/flights/search",
+            "https://flights.google.com",
+            "https://www.google.com/travel/flights",
         ],
     )
     def test_ota_metasearch_detected(self, url):
@@ -577,3 +582,150 @@ class TestUnopenedInventoriesPriceRanges:
         }
         passed, issues = validate_flight_option(option)
         assert passed, f"Properly tagged range should pass: {issues}"
+
+
+# ──────────────────────────────────────────────
+# 11. 3-Engine Cross-Comparison (Google Flights, Skyscanner, Trip.com)
+# ──────────────────────────────────────────────
+
+
+class TestFlightComparisonEngines:
+    """Validate 3-engine cross-comparison logging and carrier direct booking enforcement."""
+
+    def test_dossier_with_single_comparison_engine_fails(self):
+        """A source_log containing only Google Flights fails due to missing Skyscanner and Trip.com."""
+        dossier = {
+            "source_log": [
+                {
+                    "name": "Google Flights (Outil de découverte)",
+                    "url": "https://www.google.com/travel/flights",
+                    "verification_date": "2026-09-17",
+                },
+                {
+                    "name": "easyJet Official Booking Engine",
+                    "url": "https://www.easyjet.com/en/buy/flights",
+                    "verification_date": "2026-09-17",
+                },
+            ],
+            "options": [
+                {
+                    "airline": "easyJet",
+                    "direct_url": "https://www.easyjet.com/en/buy/flights",
+                }
+            ],
+        }
+        passed, issues = validate_flight_comparison_sources(dossier)
+        assert not passed, "Single comparison engine should fail"
+        assert any("Skyscanner" in i for i in issues)
+        assert any("Trip.com" in i for i in issues)
+
+    def test_dossier_with_two_comparison_engines_fails(self):
+        """A source_log with Google Flights and Skyscanner (missing Trip.com) fails."""
+        dossier = {
+            "source_log": [
+                {
+                    "name": "Google Flights",
+                    "url": "https://www.google.com/travel/flights",
+                    "verification_date": "2026-09-17",
+                },
+                {
+                    "name": "Skyscanner",
+                    "url": "https://www.skyscanner.net",
+                    "verification_date": "2026-09-17",
+                },
+            ],
+        }
+        passed, issues = validate_flight_comparison_sources(dossier)
+        assert not passed, "Missing Trip.com should fail"
+        assert any("Trip.com" in i for i in issues)
+
+    def test_flight_booking_link_to_trip_com_fails(self):
+        """A flight dossier where a flight booking link points to Trip.com fails."""
+        dossier = {
+            "source_log": [
+                {"name": "Google Flights", "url": "https://www.google.com/travel/flights"},
+                {"name": "Skyscanner", "url": "https://www.skyscanner.net"},
+                {"name": "Trip.com", "url": "https://www.trip.com/flights"},
+            ],
+            "options": [
+                {
+                    "airline": "Air China",
+                    "direct_url": "https://www.trip.com/flights/booking",
+                }
+            ],
+        }
+        passed, issues = validate_flight_comparison_sources(dossier)
+        assert not passed, "Booking link pointing to Trip.com should fail"
+        assert any("Trip.com" in i or "comparison engine/OTA" in i for i in issues)
+
+        # Also verify validate_flight_option fails
+        opt_passed, opt_issues = validate_flight_option(
+            {
+                "direct_url": "https://www.trip.com/flights/booking",
+                "verification_date": "2026-09-17",
+            }
+        )
+        assert not opt_passed
+        assert any("OTA" in i or "aggregator" in i for i in opt_issues)
+
+    def test_flight_booking_link_to_skyscanner_or_google_fails(self):
+        """A flight dossier where a booking link points to Skyscanner or Google Flights fails."""
+        for bad_url in [
+            "https://www.skyscanner.net/transport/flights/cdg/lis",
+            "https://www.google.com/travel/flights/search",
+            "https://flights.google.com",
+        ]:
+            dossier = {
+                "source_log": [
+                    {"name": "Google Flights", "url": "https://www.google.com/travel/flights"},
+                    {"name": "Skyscanner", "url": "https://www.skyscanner.net"},
+                    {"name": "Trip.com", "url": "https://www.trip.com/flights"},
+                ],
+                "options": [{"airline": "Test", "direct_url": bad_url}],
+            }
+            passed, issues = validate_flight_comparison_sources(dossier)
+            assert not passed, f"Booking link {bad_url} should fail"
+            assert any("comparison engine/OTA" in i for i in issues)
+
+    def test_dossier_with_all_three_engines_and_airline_booking_passes(self):
+        """A flight dossier with Google Flights, Skyscanner, and Trip.com in source_log and airline links passes."""
+        dossier = {
+            "source_log": [
+                {
+                    "name": "Google Flights (Moteur de comparaison)",
+                    "url": "https://www.google.com/travel/flights",
+                    "verification_date": "2026-09-17",
+                },
+                {
+                    "name": "Skyscanner (Moteur de comparaison)",
+                    "url": "https://www.skyscanner.net",
+                    "verification_date": "2026-09-17",
+                },
+                {
+                    "name": "Trip.com (Moteur de comparaison)",
+                    "url": "https://www.trip.com/flights",
+                    "verification_date": "2026-09-17",
+                },
+                {
+                    "name": "easyJet Official Booking Engine",
+                    "url": "https://www.easyjet.com/en/buy/flights",
+                    "verification_date": "2026-09-17",
+                },
+            ],
+            "options": [
+                {
+                    "airline": "easyJet",
+                    "direct_url": "https://www.easyjet.com/en/buy/flights",
+                }
+            ],
+        }
+        passed, issues = validate_flight_comparison_sources(dossier)
+        assert passed, f"Should pass: {issues}"
+
+    def test_paris_lisbon_expected_output_passes_comparison_sources(self):
+        """paris-lisbon-flights-output.md must satisfy all 3 comparison engines."""
+        output_file = REPO_ROOT / "examples" / "expected-outputs" / "paris-lisbon-flights-output.md"
+        content = output_file.read_text(encoding="utf-8")
+        passed, issues = validate_flight_comparison_sources(content)
+        assert passed, f"Expected output failed comparison sources: {issues}"
+

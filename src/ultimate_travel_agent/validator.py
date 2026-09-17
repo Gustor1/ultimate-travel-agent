@@ -620,13 +620,14 @@ FLIGHT_OTA_DOMAINS = {
     "opodo.com", "www.opodo.com",
     "cheapoair.com", "www.cheapoair.com",
     "orbitz.com", "www.orbitz.com",
+    "trip.com", "www.trip.com",
 }
 
 FLIGHT_METASEARCH_DOMAINS = {
     "skyscanner.net", "www.skyscanner.net",
     "skyscanner.com", "www.skyscanner.com",
     "kayak.com", "www.kayak.com",
-    "google.com/travel", "flights.google.com",
+    "flights.google.com", "www.flights.google.com",
     "momondo.com", "www.momondo.com",
 }
 
@@ -642,6 +643,11 @@ def is_flight_ota_or_metasearch(url: str) -> bool:
         bare_domain = domain[4:] if domain.startswith("www.") else domain
         if bare == bare_domain:
             return True
+    # Catch Google Flights URLs (flights.google.com, google.com/travel/flights, etc.)
+    if (bare == "google.com" or bare.endswith(".google.com")) and (
+        "flights" in parsed.path or "travel/flights" in parsed.path or "flight" in bare
+    ):
+        return True
     return False
 
 
@@ -972,9 +978,10 @@ def validate_flight_search_skill_file(skill_path: Path) -> Tuple[bool, List[str]
     if "pass 4" not in content_lower and "pass_4" not in content_lower:
         issues.append("flight-search skill missing Pass 4 (Combined) methodology")
 
-    # Active discovery via metasearch (Google Flights / Skyscanner)
-    if "google flights" not in content_lower and "skyscanner" not in content_lower:
-        issues.append("flight-search skill missing active discovery step via Google Flights or Skyscanner")
+    # Active discovery via 3 comparison engines (Google Flights, Skyscanner, Trip.com)
+    for engine in ["google flights", "skyscanner", "trip.com"]:
+        if engine not in content_lower:
+            issues.append(f"flight-search skill missing mandatory comparison engine '{engine}' in discovery methodology")
     if "source_log" not in content_lower:
         issues.append("flight-search skill missing source_log requirement for discovery tools")
 
@@ -1037,6 +1044,101 @@ def validate_flight_search_skill_file(skill_path: Path) -> Tuple[bool, List[str]
         issues.append("flight-search skill missing price range rule for unopened inventories (> 11 months / > 330 days)")
 
     return (len(issues) == 0), issues
+
+
+def validate_flight_comparison_sources(source_log_or_dossier: Any) -> Tuple[bool, List[str]]:
+    """Validate that the flight search records queries on all 3 comparison engines
+    (Google Flights, Skyscanner, Trip.com) in source_log and that none of them
+    appear as flight booking links.
+    """
+    issues: List[str] = []
+
+    source_items: List[Dict[str, Any]] = []
+    dossier_text = ""
+    options_to_check: List[Dict[str, Any]] = []
+
+    if isinstance(source_log_or_dossier, str):
+        dossier_text = source_log_or_dossier.lower()
+    elif isinstance(source_log_or_dossier, list):
+        for item in source_log_or_dossier:
+            if isinstance(item, dict):
+                if "name" in item and ("tier" in item or "url" in item):
+                    source_items.append(item)
+                else:
+                    options_to_check.append(item)
+    elif isinstance(source_log_or_dossier, dict):
+        raw_sources = source_log_or_dossier.get("source_log", [])
+        if isinstance(raw_sources, list):
+            source_items = [s for s in raw_sources if isinstance(s, dict)]
+
+        for k in [
+            "passes",
+            "recommendations",
+            "options",
+            "pass_1_base",
+            "pass_2_multi_airport",
+            "pass_3_flexible_dates",
+            "pass_4_combined",
+        ]:
+            val = source_log_or_dossier.get(k)
+            if isinstance(val, list):
+                for item in val:
+                    if isinstance(item, dict):
+                        options_to_check.append(item)
+            elif isinstance(val, dict):
+                options_to_check.append(val)
+                for sub_k, sub_v in val.items():
+                    if isinstance(sub_v, list):
+                        for sub_item in sub_v:
+                            if isinstance(sub_item, dict):
+                                options_to_check.append(sub_item)
+                    elif isinstance(sub_v, dict):
+                        options_to_check.append(sub_v)
+
+        if "direct_url" in source_log_or_dossier or "airline" in source_log_or_dossier:
+            options_to_check.append(source_log_or_dossier)
+
+    # Detect the 3 comparison engines in sources
+    has_google_flights = False
+    has_skyscanner = False
+    has_trip_com = False
+
+    if dossier_text:
+        has_google_flights = "google flights" in dossier_text or "flights.google.com" in dossier_text
+        has_skyscanner = "skyscanner" in dossier_text
+        has_trip_com = "trip.com" in dossier_text
+    else:
+        for item in source_items:
+            combined = " ".join([
+                str(item.get("name") or ""),
+                str(item.get("url") or ""),
+                str(item.get("role") or ""),
+                str(item.get("notes") or ""),
+            ]).lower()
+            if "google flights" in combined or "flights.google.com" in combined:
+                has_google_flights = True
+            if "skyscanner" in combined:
+                has_skyscanner = True
+            if "trip.com" in combined:
+                has_trip_com = True
+
+    if not has_google_flights:
+        issues.append("Missing mandatory comparison engine 'Google Flights' in source_log")
+    if not has_skyscanner:
+        issues.append("Missing mandatory comparison engine 'Skyscanner' in source_log")
+    if not has_trip_com:
+        issues.append("Missing mandatory flight comparison engine 'Trip.com' in source_log")
+
+    # Verify that comparison engines/OTAs are not used as flight booking links
+    for opt in options_to_check:
+        url = opt.get("direct_url") or opt.get("official_url") or opt.get("url") or opt.get("airline_url")
+        if url:
+            url_str = str(url).strip()
+            if is_flight_ota_or_metasearch(url_str):
+                issues.append(f"Flight booking link points to comparison engine/OTA instead of direct airline carrier: {url_str}")
+
+    return (len(issues) == 0), issues
+
 
 
 
