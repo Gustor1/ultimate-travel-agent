@@ -7,7 +7,7 @@ conditions: Use when travel planning requires flight-search capabilities or air 
 # flight-search
 
 ## 1. Role & Identity
-Air travel search specialist executing a systematic 4-pass scan to identify optimal flight options, comparing base fares against alternative airports, flexible dates, and combined permutations, always computing total door-to-door cost including ground transfers, luggage policies, and potential overnight stays.
+Air travel search specialist executing a systematic 4-pass scan to identify optimal flight options, comparing base fares against alternative airports, flexible dates, and combined permutations, always computing total door-to-door cost including ground access to departure airports, ground transfers at destination, luggage policies, and potential overnight stays.
 
 ## 2. Expected Inputs
 - **Origin & Destination**: City/airport of departure and arrival.
@@ -17,15 +17,15 @@ Air travel search specialist executing a systematic 4-pass scan to identify opti
   - `multi_city` (multi-villes): List of ordered route segments. Each segment is evaluated as an independent 4-pass search before chronological consolidation.
 - **Flexibility**: Whether dates are strictly fixed (`dates_fixed: true`) or flexible ($\pm 1, \pm 2, \pm 3$ days).
 - **Party Composition**: Number of adult/child travelers and cabin class preference.
-- **Luggage Policy Requirements**: Cabin bag only (under-seat or trolley) vs checked luggage (number of bags and weight).
-- **Budget & Constraints**: Maximum budget (if any), preferred departure airports, traveler nationality (for transit visa prerequisites).
+- **Luggage Policy Requirements**: Cabin bag only (under-seat or trolley) vs checked luggage (number of bags and weight). When checked bags are required by the brief, checked baggage fees **must be included in the evaluated cost**.
+- **Budget & Constraints**: Maximum budget (if any), traveler origin location in departure city (to compute origin access cost), traveler nationality (for transit visa prerequisites).
 
 ## 3. Expected Outputs
 - 4-pass progressive flight search results with clear separation between passes.
 - Comprehensive synthesis table ranked by ascending total door-to-door cost, including dedicated `Bagages` column.
 - Direct booking links (Tier 1-2) using deep booking URLs with pre-filled parameters or explicit user search instructions.
-- Mandatory line-by-line door-to-door cost breakdown (`cost_breakdown`) leaving zero unexplained amounts.
-- Pass 1 reference price always visible as baseline `REF`.
+- Mandatory line-by-line door-to-door cost breakdown (`cost_breakdown`) itemizing flight, departure airport access, destination transfer, and transit overnight stay (leaving zero unexplained amounts).
+- Single best Pass 1 reference baseline price always visible as baseline `REF`.
 - Identification of night transfer constraints and transit accommodation costs when same-day ground connection is impossible.
 
 ## 4. Necessary Tools & Capabilities
@@ -44,7 +44,7 @@ Mark all prices as "indicatif, à confirmer" with explicit verification dates.
 ## 6. Sourcing Policy
 All references must strictly adhere to the 6-tier sourcing hierarchy:
 - **Tier 1**: Official government portals, tourism ministries, embassies, municipal administrations.
-- **Tier 2**: Official direct operators (rail networks, airlines, ferry lines, museum box offices).
+- **Tier 2**: Official direct operators (rail networks, airlines, ferry lines, airport express shuttles).
 - **Tier 3**: Recognized tourism institutions (regional tourism boards, national park services, UNESCO).
 - **Tier 4**: Recognized editorial sources (Michelin Guide, Lonely Planet, established travel journalists).
 - **Tier 5**: Community reviews (TripAdvisor, Google Maps reviews, travel forums) for qualitative feedback only.
@@ -69,52 +69,55 @@ All references must strictly adhere to the 6-tier sourcing hierarchy:
 
 ## 8. Methodology: 4-Pass Progressive Search
 
-### Pass 1 — Base (Reference Price)
-Search the **principal airport** of the destination city on the **exact dates** requested by the user.
-- This result establishes the **reference baseline price** against which all subsequent options are benchmarked.
+### Pass 1 — Base (Single Best Reference Price)
+Search flights to the **principal airport** of the destination city on the **exact dates** requested by the user, incorporating origin access from the traveler's city center (e.g. RER B to CDG or Metro 14 to Orly) and luggage requirements.
+- When multiple airlines are found (e.g., TAP at €400, Transavia at €318, easyJet at €270 with checked bag), **the single best Pass 1 result** (the cheapest option strictly conforming to the brief's baggage and timing requirements) serves as the **unique reference baseline (REF)** for all subsequent comparisons.
 - Record: airline, flight numbers, flight duration, stops, baggage allowance, total price, deep direct URL, verification date.
 
 ### Pass 2 — Multi-Airport (Fixed Dates)
 Keeping the exact travel dates from Pass 1, investigate alternative arrival gateways:
 - Other airports serving the same metropolitan area (e.g., London: LHR, LGW, STN, LTN, SEN).
 - Airports of adjacent cities connected by direct high-speed rail or express bus (e.g., Porto or Faro for Lisbon; Girona or Reus for Barcelona; Bologna or Florence for Rome).
+- Alternative departure airports in the traveler's origin region (e.g., Paris Beauvais BVA instead of CDG/Orly).
 - **Combinatorial Bound**: Evaluate a **maximum of 5 alternative airports**.
 
-#### Total Door-to-Door Cost Calculation
-For each alternative airport, compute the exact door-to-door cost using the following formula:
+#### Complete Door-to-Door Cost Formula
+For every alternative airport option, compute the comprehensive door-to-door cost:
 ```
-door_to_door_cost = flight_price + ground_transfer_cost + overnight_stay_cost + transfer_time_penalty
+door_to_door_cost = flight_price + origin_access_cost + ground_transfer_cost + overnight_stay_cost + transfer_time_penalty
 ```
 Where:
-- `flight_price`: Total flight cost for all travelers including mandatory taxes and fees.
-- `ground_transfer_cost`: Total cost of round-trip ground transport (rail, express bus, shuttle) connecting the alternative airport to the final destination city center for all travelers (citing Tier 2 operators like CP, SNCF, Renfe, Rede Expressos).
+- `flight_price`: Total flight cost for all travelers, **including checked baggage fees if demanded by the brief**, mandatory taxes, and fees.
+- `origin_access_cost`: Total cost of round-trip ground transit from the traveler's city center to the departure airport for all travelers (e.g., Beauvais official shuttle €16.90/pers each way = €67.60 round-trip for 2 pax; or RER B to CDG €11.80/pers each way = €47.20 round-trip for 2 pax). **To ensure a fair comparison, origin access must be computed for both the baseline and alternatives at equal equipment.**
+- `ground_transfer_cost`: Total round-trip ground transport (rail, express bus, shuttle) connecting the alternative arrival airport to the final destination city center for all travelers (citing Tier 2 operators like CP, SNCF, Renfe, Rede Expressos).
 - `overnight_stay_cost`: Cost of a transit overnight stay (standard rate: 60 € to 90 € / room) if flight arrival occurs too late to catch the last onward ground connection on the same day.
 - `transfer_time_penalty` (or `transfer_time_value`): Optional economic valuation of extra travel fatigue and lost vacation time. Defined as a flat rate of **15 € per hour of additional ground transit time** compared to the Pass 1 baseline journey, documented explicitly in `assumptions`. If time penalty is not requested by the user, this term is set to 0 €, but the extra travel time must remain clearly visible in hours.
 
 #### Mandatory Arithmetic & Line-by-Line Decomposition
 Every door-to-door total MUST display its complete line-by-line itemization (`cost_breakdown`):
-- Flight total (e.g. 2 travelers × 75 € = 150 €)
-- Ground transfer total (e.g. 2 travelers × 20 € = 40 €)
-- Transit overnight accommodation if applicable (e.g. 0 € if same-day transfer confirmed)
-- Additional luggage / airport shuttle fees
+- Flight total with luggage (e.g. 2 travelers × €65 base + 1 checked bag €35 = €165)
+- Origin airport access total (e.g. 2 travelers × €33.80 A/R navette BVA = €68)
+- Ground transfer total at destination (e.g. 2 travelers × €25 train CP = €50)
+- Transit overnight accommodation if applicable (e.g. €0 if same-day transfer confirmed)
+- Additional fees
 **Zero unexplained or opaque amounts**: The mathematical sum of the individual line items must equal the declared door-to-door total.
 
 #### Retention Threshold
-Retain an alternative airport option **only if** it yields a net saving $\ge 20\%$ OR $\ge 50\,€$ compared to the best Pass 1 reference baseline.
+Retain an alternative airport option **only if** it yields a net saving $\ge 20\%$ OR $\ge 50\,€$ compared to the single best Pass 1 reference baseline (`REF`). If an alternative departure airport adds substantial shuttle costs and extra hours without meeting this saving threshold, it must be **explicitly rejected (`retained: false`)** with documented reasons.
 
 ### Pass 3 — Flexible Dates (Principal Airport)
 **Skip this pass entirely if the user specified `dates_fixed: true` or non-negotiable dates.**
 Using exclusively the principal airport from Pass 1:
 - For round-trip journeys: test date shifts of -3, -2, -1, +1, +2, +3 days on departure AND return **independently**.
 - For one-way journeys: test shifts of -3, -2, -1, +1, +2, +3 days on the departure date only.
-- Document the exact date shift (e.g., "Aller +2j, Retour identique") and price delta vs Pass 1.
+- Document the exact date shift (e.g., "Aller +2j, Retour identique") and price delta vs the single best Pass 1 baseline.
 
 ### Pass 4 — Combined (Flexible Dates × Multi-Airport)
 **Skip this pass entirely if the user specified `dates_fixed: true`.**
 Combine date flexibility with alternative airports:
-- **Combinatorial Limitation**: To avoid combinatorial explosion, test date shifts limited to **$\pm 2$ days** (rather than $\pm 3$) centered around the **top 3 most promising alternative candidates** identified across Pass 2 and Pass 3.
+- **Combinatorial Limitation**: Limit date shifts to **$\pm 2$ days** (rather than $\pm 3$) centered around the **top 3 most promising alternative candidates** identified across Pass 2 and Pass 3.
 - The agent prioritizes high-saving combinations (e.g. low-cost midweek fare drops paired with high-speed rail connections).
-- Apply the same retention threshold ($\ge 20\%$ or $\ge 50\,€$ saving on total door-to-door cost) and verify night transfer feasibility.
+- Apply the complete door-to-door formula (including origin access and checked luggage) and the retention threshold ($\ge 20\%$ or $\ge 50\,€$ saving vs Pass 1 REF).
 
 ### Night Transfers & Same-Day Connection Rule
 When evaluating alternative airports:
@@ -125,13 +128,13 @@ When evaluating alternative airports:
 ### Final Synthesis Table
 Produce a comparative matrix sorted strictly by **ascending total door-to-door cost**:
 
-| Rang | Aéroport | Dates effectives | Décalage | Escales | Bagages | Prix vol | Transfert | Coût total P2P | Économie vs P1 | Lien direct & Instructions | Date vérif. |
-|------|----------|------------------|----------|---------|---------|----------|-----------|-----------------|----------------|-----------------------------|-------------|
-| REF  | Principal | Dates demandées | ±0 | ... | Cabine incluse | ... | — | ... | — | [Compagnie](URL_profonde) | YYYY-MM-DD |
-| 1    | Alternatif | ... | Aller +2j | ... | +€35 soute | ... | €X (train) | ... | -€X (-Y%) | [Compagnie](URL_profonde) | YYYY-MM-DD |
+| Rang | Aéroport | Dates effectives | Décalage | Escales | Bagages | Prix vol | Accès origine | Transfert dest. | Coût total P2P | Économie vs P1 | Lien direct & Instructions | Date vérif. |
+|------|----------|------------------|----------|---------|---------|----------|---------------|-----------------|-----------------|----------------|-----------------------------|-------------|
+| REF  | Principal | Dates demandées | ±0 | ... | Soute incluse | ... | €X (RER) | — | ... | — | [Compagnie](URL_profonde) | YYYY-MM-DD |
+| 1    | Alternatif | ... | Aller +2j | ... | Soute incluse | ... | €Y (navette) | €Z (train) | ... | -€X (-Y%) | [Compagnie](URL_profonde) | YYYY-MM-DD |
 
-- The Pass 1 reference baseline **must always appear as the REF row**, regardless of cost rank.
-- The `Bagages` column is mandatory: specifies whether checked luggage, trolley, or personal item only is covered.
+- The Pass 1 single best reference baseline **must always appear as the REF row**, regardless of cost rank.
+- The `Bagages` column is mandatory: specifies whether checked luggage, trolley, or personal item only is covered. All compared fares must satisfy the brief's baggage requirements.
 - Passes must be executed and displayed in strict chronological sequence: 1 $\rightarrow$ 2 $\rightarrow$ 3 $\rightarrow$ 4.
 
 ## 9. Output Format
@@ -145,9 +148,11 @@ recommendations:
       route: ""
       baggage_policy: ""
       cost_breakdown:
-        flight_per_person: ""
-        flight_total: ""
-        transfer_total: "€0"
+        flight_base: ""
+        checked_bag_fee: ""
+        flight_total_with_luggage: ""
+        origin_access_cost: ""
+        ground_transfer_destination: "€0"
         overnight_stay: "€0"
         door_to_door_total: ""
       direct_url: ""
@@ -170,27 +175,30 @@ risks: []
 
 **Expected Output:**
 ```yaml
-summary: "Recherche de vols Paris → Lisbonne en 4 passes réalisée. Passe 1 référence : CDG→LIS direct TAP à €185/pers (total €370, easyJet à €240 sans soute). Passe 2 : Porto (OPO) et Faro (FAO) identifiés avec transferts ferroviaire/routier le jour même. Passe 3 : économie de €50 en décalant l'aller au 12 octobre. Passe 4 : combinaison OPO + départ 12 octobre offrant -38% d'économie porte-à-porte."
+summary: "Recherche de vols Paris → Lisbonne en 4 passes réalisée pour 2 adultes avec 1 valise en soute. Référence Passe 1 (REF) : easyJet CDG→LIS direct à €270 (€240 vol + €30 soute) + €47 RER = €317 porte-à-porte. Passe 2 : Porto via Beauvais revient à €283 tout compris (€165 vol+soute + €68 navette BVA + €50 train CP) soit seulement €34 d'économie (11%) pour +4h de trajet, donc REJETÉE sous le seuil de 20%/€50; Faro via Orly retenue à €261 (-€56). Passe 3 : easyJet CDG décalé au 12 octobre à €227 (-€90). Passe 4 : Faro décalé au 12 octobre offrant le meilleur tarif combiné à €211 (-€106, -33%)."
 recommendations:
   - pass_1_base:
       airport: "LIS (Lisbonne Humberto Delgado)"
-      airline: "TAP Air Portugal"
+      airline: "easyJet (Meilleur résultat Passe 1 conforme au brief)"
       route: "CDG → LIS direct"
-      baggage_policy: "1 accessoire + 1 bagage cabine 10kg inclus (soute +€30)"
+      baggage_policy: "1 bagage cabine par personne inclus + 1 valise en soute 15kg (+€30)"
       cost_breakdown:
-        flight_per_person: "€185"
-        flight_total_2pax: "€370"
-        ground_transfer_2pax: "€0"
+        flight_base_2pax: "€240 (2x €120)"
+        checked_bag_2pax: "€30 (1 valise partagée)"
+        flight_total_with_luggage: "€270"
+        origin_access_cost: "€47 (RER B Paris Châtelet → CDG A/R 2p)"
+        ground_transfer_destination: "€0"
         overnight_stay: "€0"
-        door_to_door_total: "€370"
-      direct_url: "https://www.flytap.com/en/booking/flights"
-      booking_instructions: "Sélectionner Paris (CDG) → Lisbonne (LIS), 10 au 17 octobre 2026, 2 adultes."
+        door_to_door_total: "€317"
+      is_baseline_reference: true
+      direct_url: "https://www.easyjet.com/en/buy/flights"
+      booking_instructions: "Sélectionner Paris (CDG) → Lisbonne (LIS), 10 au 17 octobre 2026, 2 adultes, ajouter 1 bagage en soute 15kg."
       verification_date: "2026-09-17"
   - pass_2_multi_airport:
-      - airport: "OPO (Porto Francisco Sá Carneiro)"
+      - airport: "OPO (Porto Francisco Sá Carneiro via Paris-Beauvais)"
         airline: "Ryanair"
         route: "BVA → OPO direct"
-        baggage_policy: "Petit sac inclus; option Regular cabine + soute 20kg (+€35/pers)"
+        baggage_policy: "Petit sac inclus + 1 valise en soute 20kg (+€35)"
         transfer_to_lisbon:
           mode: "Train CP Alfa Pendular (Campanhã → Santa Apolónia)"
           duration: "2h45"
@@ -198,19 +206,21 @@ recommendations:
           last_departure: "20h32 (vol atterrit à 17h15, battement de 3h17 suffisant)"
         cost_breakdown:
           flight_base_2pax: "€130 (2x €65)"
-          ground_transfer_2pax: "€50 (2x €25 train CP promo)"
+          checked_bag_fee: "€35 (1 valise soute 20kg)"
+          origin_access_cost: "€68 (Navette officielle Paris Porte Maillot → BVA A/R 2p: 4x €16.90)"
+          ground_transfer_destination: "€50 (Train CP promo A/R 2p)"
           overnight_stay: "€0 (correspondance le jour même confirmée)"
-          door_to_door_total: "€180"
-        saving_vs_pass1: "-€60 vs best P1 easyJet €240 (-25%)"
-        retained: true
-        reason: "Économie de 25% (≥ 20% requis) avec transfert fluide le jour même"
+          door_to_door_total: "€283"
+        saving_vs_pass1: "-€34 vs REF easyJet €317 (-11%)"
+        retained: false
+        reason: "Économie de €34 (11%) inférieure au seuil minimal requis de ≥ 20% ou ≥ €50, avec pénalité de +4h de transport terrestre cumulé (BVA navette + CP train)."
         direct_url: "https://www.ryanair.com/gb/en/trip/flights/select"
-        booking_instructions: "Sélectionner Paris Beauvais (BVA) → Porto (OPO), 10 au 17 octobre 2026."
+        booking_instructions: "Sélectionner Paris Beauvais (BVA) → Porto (OPO), 10 au 17 octobre 2026, ajouter 1 bagage en soute 20kg."
         verification_date: "2026-09-17"
-      - airport: "FAO (Faro)"
+      - airport: "FAO (Faro via Paris-Orly)"
         airline: "easyJet"
         route: "ORY → FAO direct"
-        baggage_policy: "Petit sac sous siège inclus"
+        baggage_policy: "Petit sac inclus + 1 valise en soute 15kg (+€30)"
         transfer_to_lisbon:
           mode: "Autocar Rede Expressos (Faro Terminal → Lisboa Sete Rios)"
           duration: "3h15"
@@ -218,49 +228,54 @@ recommendations:
           last_departure: "20h00 (vol atterrit à 16h40, battement suffisant)"
         cost_breakdown:
           flight_base_2pax: "€150 (2x €75)"
-          ground_transfer_2pax: "€40 (2x €20 autocar)"
+          checked_bag_fee: "€30 (1 valise soute 15kg)"
+          origin_access_cost: "€41 (Métro ligne 14 Châtelet → Orly A/R 2p)"
+          ground_transfer_destination: "€40 (Autocar A/R 2p)"
           overnight_stay: "€0 (correspondance le jour même confirmée)"
-          door_to_door_total: "€190"
-        saving_vs_pass1: "-€50 vs best P1 easyJet €240 (-21%)"
+          door_to_door_total: "€261"
+        saving_vs_pass1: "-€56 vs REF easyJet €317 (-18%)"
         retained: true
-        reason: "Économie de 21% (≥ 20% requis, soit 50 €)"
+        reason: "Économie nette de €56 (≥ €50 requis) avec correspondance terrestre directe le jour même."
         direct_url: "https://www.easyjet.com/en/buy/flights"
-        booking_instructions: "Sélectionner Paris Orly (ORY) → Faro (FAO), 10 au 17 octobre 2026."
+        booking_instructions: "Sélectionner Paris Orly (ORY) → Faro (FAO), 10 au 17 octobre 2026, ajouter 1 valise soute 15kg."
         verification_date: "2026-09-17"
   - pass_3_flexible_dates:
       - shift: "Aller +2j (12 oct), Retour identique (17 oct)"
         airline: "easyJet"
-        baggage_policy: "Petit sac inclus"
+        route: "CDG → LIS direct"
+        baggage_policy: "1 valise en soute 15kg incluse (+€30)"
         cost_breakdown:
-          flight_total_2pax: "€190 (2x €95)"
-          transfer_total: "€0"
+          flight_base_2pax: "€150 (2x €75)"
+          checked_bag_fee: "€30 (1 valise soute)"
+          origin_access_cost: "€47 (RER B A/R 2p)"
+          ground_transfer_destination: "€0"
           overnight_stay: "€0"
-          door_to_door_total: "€190"
-        saving_vs_pass1: "-€50 vs best P1 (€190 vs €240)"
+          door_to_door_total: "€227"
+        saving_vs_pass1: "-€90 vs REF easyJet €317 (-28%)"
+        retained: true
         direct_url: "https://www.easyjet.com/en/buy/flights"
-        booking_instructions: "Sélectionner Paris CDG → LIS, 12 au 17 octobre 2026."
+        booking_instructions: "Sélectionner Paris CDG → LIS, 12 au 17 octobre 2026, ajouter 1 valise soute."
         verification_date: "2026-09-17"
   - pass_4_combined:
-      - airport: "OPO (Porto)"
-        shift: "Aller +2j (12 oct), Retour identique (17 oct)"
-        airline: "Ryanair"
+      - airport: "FAO (Faro via Paris-Orly)"
+        shift: "Aller +2j (12 oct), Retour -1j (16 oct)"
+        airline: "easyJet"
+        baggage_policy: "1 valise en soute 15kg incluse (+€30)"
         cost_breakdown:
-          flight_total_2pax: "€100 (2x €50)"
-          ground_transfer_2pax: "€50 (2x €25 train CP)"
+          flight_base_2pax: "€100 (2x €50)"
+          checked_bag_fee: "€30 (1 valise soute)"
+          origin_access_cost: "€41 (Métro 14 A/R 2p)"
+          ground_transfer_destination: "€40 (Autocar A/R 2p)"
           overnight_stay: "€0"
-          door_to_door_total: "€150"
-        saving_vs_pass1: "-€90 vs best P1 (-38%)"
+          door_to_door_total: "€211"
+        saving_vs_pass1: "-€106 vs REF easyJet €317 (-33%)"
         retained: true
-        direct_url: "https://www.ryanair.com/gb/en/trip/flights/select"
-        booking_instructions: "Sélectionner BVA → OPO, 12 au 17 octobre 2026."
+        direct_url: "https://www.easyjet.com/en/buy/flights"
+        booking_instructions: "Sélectionner ORY → FAO, 12 au 16 octobre 2026, ajouter 1 valise soute."
         verification_date: "2026-09-17"
-  - synthesis_table: "Tableau comparatif trié par coût porte-à-porte croissant"
+  - synthesis_table: "Tableau comparatif trié par coût porte-à-porte croissant avec ligne REF unique"
 source_log:
-  - name: "TAP Air Portugal Official Booking Engine"
-    tier: 2
-    url: "https://www.flytap.com/en/booking/flights"
-    verification_date: "2026-09-17"
-  - name: "easyJet Official Flight Search"
+  - name: "easyJet Official Flight Booking Engine"
     tier: 2
     url: "https://www.easyjet.com/en/buy/flights"
     verification_date: "2026-09-17"
@@ -268,31 +283,34 @@ source_log:
     tier: 2
     url: "https://www.ryanair.com/gb/en/trip/flights/select"
     verification_date: "2026-09-17"
-  - name: "CP Comboios de Portugal"
+  - name: "Aéroport Paris-Beauvais Navette Officielle"
+    tier: 2
+    url: "https://www.aeroportparisbeauvais.com/acces-et-parking/navette-aeroport-paris-porte-maillot"
+    verification_date: "2026-09-17"
+  - name: "CP Comboios de Portugal (Liaison Porto-Lisbonne)"
     tier: 2
     url: "https://www.cp.pt/passageiros/en"
     verification_date: "2026-09-17"
-  - name: "Rede Expressos Portugal"
+  - name: "Rede Expressos Portugal (Liaison Faro-Lisbonne)"
     tier: 2
     url: "https://www.rede-expressos.pt"
     verification_date: "2026-09-17"
 assumptions:
-  - "Prix indicatifs constatés à la date de vérification; les tarifs des compagnies low-cost sont hautement volatils."
-  - "Valorisation du temps de transfert (transfer_time_value) fixée par défaut à 0 € dans le calcul financier, mais le surplus de durée (+2h45 pour Porto, +3h15 pour Faro) est systématiquement reporté."
-  - "Correspondances le jour même vérifiées : vol Porto atterrit à 17h15, laissant 3h17 avant le train de 20h32."
+  - "L'option Passe 1 de référence (REF) retenue est la meilleure offre directe easyJet conforme au brief (€317 tout compris avec soute et RER B)."
+  - "Accès à l'aéroport d'origine inclus pour toutes les options afin de comparer à équipement égal (RER B €47 pour CDG, Métro 14 €41 pour Orly, navette €68 pour Beauvais)."
+  - "Les frais de soute requis par le brief sont rigoureusement intégrés dans le coût des billets de chaque option."
 missing_information:
-  - "Préférence de gare/aéroport de départ en Île-de-France (BVA nécessite une navette dédiée à €16.90/pers depuis Porte Maillot)."
-  - "Poids exact et dimension des valises en soute souhaitées."
+  - "Adresse exacte de départ en Île-de-France (pour affiner le temps de trajet vers Porte Maillot vs Châtelet)."
 verification_required:
-  - "Vérifier le tarif en direct sur les sites officiels des compagnies aériennes avant toute décision."
-  - "Réserver les billets Promo Trains CP dès l'ouverture de la fenêtre de réservation (60 jours avant)."
+  - "Confirmer le prix final des billets et des options bagages directement sur les sites des transporteurs."
+  - "Réserver la navette Beauvais et le train CP en ligne à l'avance pour bénéficier des tarifs préférentiels."
 risks:
-  - "Beauvais (BVA) est situé à 85 km de Paris : prévoir 1h15 de navette et 34 € A/R par personne."
-  - "Une arrivée tardive à Faro après 19h30 imposerait une nuit d'hôtel de transit (€70) car le dernier autocar part à 20h00."
+  - "L'option Beauvais impose 1h15 de navette et un éloignement de 85 km, rendant l'économie insuffisante en Passe 2."
+  - "Correspondances à Faro : veiller à atterrir avant 19h00 pour garantir l'autocar de 20h00 vers Lisbonne."
 ```
 
 ## Direct Link Requirements & Flight Source Rules
 - Every flight option must include a **deep direct URL to the airline's official booking engine** (Tier 2). Generic root domain homepages are strictly prohibited.
 - If pre-filled query parameters are unsupported by the carrier, provide the deep search page URL and specify step-by-step user input instructions.
-- Ground transfer fares must cite the official operator URL (Tier 2, e.g. `cp.pt` or `rede-expressos.pt`).
+- Ground transfer fares must cite the official operator URL (Tier 2, e.g. `cp.pt`, `rede-expressos.pt`, `aeroportparisbeauvais.com`).
 - Every price must carry an explicit `verification_date` in `YYYY-MM-DD` format.

@@ -260,6 +260,70 @@ class TestDoorToDoorArithmeticAndDecomposition:
         passed, issues = validate_flight_option(option, is_alternative=True)
         assert passed, f"Valid overnight breakdown rejected: {issues}"
 
+    def test_alternative_departure_airport_without_origin_access_fails(self):
+        """Option using a secondary departure airport (e.g. Beauvais BVA) without origin access cost must fail."""
+        option = {
+            "route": "BVA → OPO (direct)",
+            "direct_url": "https://www.ryanair.com/gb/en/trip/flights/select",
+            "verification_date": "2026-09-17",
+            "door_to_door_total": "€180",
+            "cost_breakdown": {
+                "flight_total": "€130",
+                "ground_transfer": "€50",
+            },
+            "transfer_mode": "train",
+        }
+        passed, issues = validate_flight_option(option, is_alternative=True, is_alternative_origin=True)
+        assert not passed, "Alternative departure airport without origin access cost should fail"
+        assert any("origin access" in i.lower() for i in issues)
+
+    def test_alternative_departure_airport_with_origin_access_passes(self):
+        """Option using Beauvais (BVA) with origin shuttle access (€68) properly accounted for passes."""
+        option = {
+            "route": "BVA → OPO (direct)",
+            "direct_url": "https://www.ryanair.com/gb/en/trip/flights/select",
+            "verification_date": "2026-09-17",
+            "door_to_door_total": "€248",
+            "cost_breakdown": {
+                "flight_total": "€130",
+                "origin_access_cost": "€68 (Navette BVA A/R 2p)",
+                "ground_transfer": "€50 (Train CP)",
+            },
+            "transfer_mode": "train",
+        }
+        passed, issues = validate_flight_option(option, is_alternative=True, is_alternative_origin=True)
+        assert passed, f"Alternative departure airport with origin access rejected: {issues}"
+
+    def test_checked_bag_omitted_when_brief_requires_it_fails(self):
+        """When brief requires checked luggage, an option that omits checked bag fees must fail."""
+        option = {
+            "direct_url": "https://www.ryanair.com/gb/en/trip/flights/select",
+            "verification_date": "2026-09-17",
+            "baggage_policy": "Petit sac inclus sous siège (soute +€35)",
+            "door_to_door_total": "€130",
+            "cost_breakdown": {
+                "flight_base": "€130 (2x €65)",
+            },
+        }
+        passed, issues = validate_flight_option(option, requires_checked_bag=True)
+        assert not passed, "Option excluding checked bag fee when brief requires it should fail"
+        assert any("checked luggage" in i.lower() or "checked bag" in i.lower() for i in issues)
+
+    def test_checked_bag_included_when_brief_requires_it_passes(self):
+        """When brief requires checked luggage, an option that includes checked bag fee passes."""
+        option = {
+            "direct_url": "https://www.ryanair.com/gb/en/trip/flights/select",
+            "verification_date": "2026-09-17",
+            "baggage_policy": "Petit sac inclus + 1 valise en soute 20kg",
+            "door_to_door_total": "€165",
+            "cost_breakdown": {
+                "flight_base": "€130 (2x €65)",
+                "checked_bag_fee": "€35",
+            },
+        }
+        passed, issues = validate_flight_option(option, requires_checked_bag=True)
+        assert passed, f"Option with checked bag included rejected: {issues}"
+
 
 # ──────────────────────────────────────────────
 # 5. Fixed dates skip validation

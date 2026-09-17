@@ -698,7 +698,12 @@ def _extract_amount(val: Any) -> Optional[float]:
     return None
 
 
-def validate_flight_option(option: Dict[str, Any], is_alternative: bool = False) -> Tuple[bool, List[str]]:
+def validate_flight_option(
+    option: Dict[str, Any],
+    is_alternative: bool = False,
+    is_alternative_origin: bool = False,
+    requires_checked_bag: bool = False,
+) -> Tuple[bool, List[str]]:
     """Validate a single flight option record.
 
     Checks:
@@ -708,6 +713,10 @@ def validate_flight_option(option: Dict[str, Any], is_alternative: bool = False)
     - If is_alternative or door-to-door total present:
       - Must have an itemized breakdown line-by-line (flight + ground transfer + potential overnight/fees).
       - Arithmetic consistency: sum of components must match the declared door-to-door total.
+    - If is_alternative_origin (or alternative origin airport like BVA):
+      - Must include origin_access_cost (e.g. airport shuttle or train to secondary departure airport).
+    - If requires_checked_bag:
+      - Must account for checked luggage fee in flight price / breakdown.
     """
     issues: List[str] = []
 
@@ -732,7 +741,36 @@ def validate_flight_option(option: Dict[str, Any], is_alternative: bool = False)
     if not verif_date:
         issues.append("Flight option missing verification date")
 
-    # 3. Door-to-door cost and decomposability for alternative airports
+    # 3. Alternative departure airport access cost check
+    route_str = str(option.get("route") or "").upper()
+    airport_str = str(option.get("airport") or "").upper()
+    detected_alt_origin = is_alternative_origin or any(alt in route_str for alt in ["BVA", "BEAUVAIS", "LTN", "LUTN", "STN", "STANSTED", "SEN", "GRO", "REU"])
+
+    if detected_alt_origin:
+        breakdown = option.get("cost_breakdown") or option.get("breakdown") or {}
+        has_origin_access = (
+            option.get("origin_access_cost") is not None
+            or option.get("origin_access") is not None
+            or any("origin" in k.lower() or "navette" in k.lower() or "shuttle" in k.lower() for k in breakdown.keys())
+        )
+        if not has_origin_access:
+            issues.append("Alternative departure airport option presented without origin access cost (e.g. shuttle or regional train)")
+
+    # 4. Checked bag requirement check
+    if requires_checked_bag:
+        breakdown = option.get("cost_breakdown") or option.get("breakdown") or {}
+        baggage_policy = str(option.get("baggage_policy") or "").lower()
+        checked_bag_included = option.get("checked_bag_included")
+        has_bag_fee = (
+            any("soute" in k.lower() or "bag" in k.lower() or "luggage" in k.lower() for k in breakdown.keys())
+            or "soute incluse" in baggage_policy
+            or "checked bag included" in baggage_policy
+            or checked_bag_included is True
+        )
+        if not has_bag_fee and ("sans soute" in baggage_policy or "soute +" in baggage_policy or "petit sac" in baggage_policy or checked_bag_included is False):
+            issues.append("Trip brief requires checked luggage but flight option cost excludes checked bag fees")
+
+    # 5. Door-to-door cost and decomposability for alternative airports
     d2d_val = option.get("door_to_door_total") or option.get("door_to_door_total_2pax") or option.get("door_to_door_cost")
 
     if is_alternative:
@@ -782,13 +820,15 @@ def validate_flight_option(option: Dict[str, Any], is_alternative: bool = False)
                     "Door-to-door total is not decomposed line-by-line (missing cost_breakdown dict or explicit flight/transfer amounts)"
                 )
             elif d2d_amount is not None:
+                origin_amt = _extract_amount(option.get("origin_access_cost") or option.get("origin_access")) or 0.0
                 overnight_amt = _extract_amount(option.get("overnight_stay") or option.get("overnight_cost")) or 0.0
                 extra_amt = _extract_amount(option.get("additional_fees")) or 0.0
-                total_computed = flight_amt + transfer_amt + overnight_amt + extra_amt
+                total_computed = flight_amt + origin_amt + transfer_amt + overnight_amt + extra_amt
                 if abs(total_computed - d2d_amount) > 0.5:
                     issues.append(
-                        f"Door-to-door arithmetic mismatch: flight ({flight_amt}) + transfer ({transfer_amt}) + "
-                        f"extras ({overnight_amt + extra_amt}) = €{total_computed:.2f}, but total is declared as {d2d_val}"
+                        f"Door-to-door arithmetic mismatch: flight ({flight_amt}) + origin access ({origin_amt}) + "
+                        f"transfer ({transfer_amt}) + extras ({overnight_amt + extra_amt}) = €{total_computed:.2f}, "
+                        f"but total is declared as {d2d_val}"
                     )
 
     return (len(issues) == 0), issues
@@ -852,6 +892,10 @@ def validate_flight_search_skill_file(skill_path: Path) -> Tuple[bool, List[str]
     if "décomposition" not in content_lower and "breakdown" not in content_lower and "ligne par ligne" not in content_lower:
         issues.append("flight-search skill missing requirement for line-by-line door-to-door cost breakdown")
 
+    # Origin access cost
+    if "origin_access_cost" not in content and "accès" not in content_lower and "origin_access" not in content_lower:
+        issues.append("flight-search skill missing origin_access_cost in door-to-door formula")
+
     # Defined transfer_time_value
     if "transfer_time_value" not in content_lower and "15" not in content:
         issues.append("flight-search skill missing explicit definition of transfer_time_value")
@@ -880,13 +924,17 @@ def validate_flight_search_skill_file(skill_path: Path) -> Tuple[bool, List[str]
     if "racine" not in content_lower and "deep" not in content_lower and "profonde" not in content_lower:
         issues.append("flight-search skill missing deep URL / root homepage avoidance rule")
 
-    # Baggage column in synthesis table
+    # Baggage column in synthesis table and baggage inclusion in costs
     if "bagages" not in content_lower and "baggage" not in content_lower:
         issues.append("flight-search skill missing baggage column / policy in synthesis table")
 
     # Threshold rule (20% or €50)
     if "20%" not in content and "50" not in content:
         issues.append("flight-search skill missing retention threshold rule (≥ 20% or ≥ €50)")
+
+    # Single best Pass 1 baseline rule
+    if "meilleur" not in content_lower and "best" not in content_lower and "unique" not in content_lower:
+        issues.append("flight-search skill missing rule establishing the single best Pass 1 result as the baseline")
 
     return (len(issues) == 0), issues
 

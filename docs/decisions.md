@@ -160,13 +160,17 @@ oad-trip-nature, amily-trip, ackpacking-budget, low-crowd-cultural-trip, usin
 **Date:** 2026-09-17
 **Status:** Accepted
 **Context:** Air travel comparison required a dedicated skill with systematic multi-pass optimization: base price reference, alternative airport door-to-door cost, flexible date exploration, and combined permutations. Aggregators and OTAs must never appear as primary booking links.
-**Decision:** Created `flight-search` as the 14th skill using a 4-pass progressive methodology. Wired into existing `transport-planner` agent (v2.1.0) without creating a new agent. Integrated in Wave 1 of `plan-complete-trip` workflow (before accommodation) and in `compare-transport` workflow. Hardened with 7 precise rules:
+**Decision:** Created `flight-search` as the 14th skill using a 4-pass progressive methodology. Wired into existing `transport-planner` agent (v2.1.0) without creating a new agent. Integrated in Wave 1 of `plan-complete-trip` workflow (before accommodation) and in `compare-transport` workflow. Hardened with comprehensive rules:
 1. Exact arithmetic and mandatory line-by-line itemization (`cost_breakdown`) without opaque amounts.
-2. Formally defined `transfer_time_value` (15 €/h extra ground transit time or 0 €).
-3. Deep booking URLs only (generic root/locale homepages forbidden) with search instructions fallback.
-4. Input support for one-way and multi-city flights.
-5. Combinatorial limitation (max 5 alternative airports, ±2 days around top 3 options in Pass 4).
-6. Night transfer verification and mandatory transit overnight stay cost inclusion if late arrival prevents same-day connection.
-7. Mandatory `Bagages` column in the synthesis matrix.
-**Consequences:** Rigorous, mathematically verifiable air travel optimization capability. 14 skills in the pack (manifest v1.3.0). 94 automated tests.
+2. Complete door-to-door cost formula: `door_to_door_cost = flight_price + origin_access_cost + ground_transfer_cost + overnight_stay_cost + transfer_time_penalty`. Origin access cost (e.g. Beauvais shuttle €68 A/R for 2p vs RER B to CDG €47 A/R for 2p) is mandatory and evaluated fairly at equal equipment.
+3. Baggage requirements strictly integrated into evaluated flight totals (not merely listed in policy).
+4. Single best Pass 1 baseline rule: the cheapest option conforming to the brief's baggage and timing requirements serves as the unique reference baseline (`REF`) for comparison and in the synthesis matrix.
+5. Formally defined `transfer_time_value` (15 €/h extra ground transit time or 0 €).
+6. Deep booking URLs only (generic root/locale homepages forbidden) with search instructions fallback.
+7. Input support for one-way and multi-city flights.
+8. Combinatorial limitation (max 5 alternative airports, ±2 days around top 3 options in Pass 4).
+9. Night transfer verification and mandatory transit overnight stay cost inclusion if late arrival prevents same-day connection.
+10. Mandatory `Bagages` column in the synthesis matrix.
+**Consequences:** Rigorous, mathematically verifiable air travel optimization capability. 14 skills in the pack (manifest v1.3.0). 98 automated tests.
+
 
