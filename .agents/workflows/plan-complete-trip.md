@@ -32,7 +32,9 @@ Coordinates 11 specialized sub-agents across 5 sequential execution waves, ensur
 Dispatch tasks concurrently to specialized research agents:
 1. `destination-researcher`: Regional climate, seasonal crowd indicators, cultural customs.
 2. `transport-planner`: Inter-city and long-distance transport comparison door-to-door.
-3. `accommodation-researcher`: Neighborhood scouting and 3-5 vetted lodging candidates.
+   - **Flight search** (using `flight-search` skill): Execute the 4-pass progressive flight scan (base → multi-airport → flexible dates → combined). The flight search fixes effective travel dates and must complete **before** accommodation research begins.
+   - **Ground transport** (using `transport-research` skill): Rail, bus, ferry, and car rental options.
+3. `accommodation-researcher`: Neighborhood scouting and 3-5 vetted lodging candidates. **Depends on flight-search output** for confirmed arrival/departure dates.
 4. `activity-curator`: Cultural, recreational, and dining experiences with rain backups.
 5. `local-discovery-agent`: Community gems and authentic culinary spots (marked discovery-only).
 6. `travel-preparation-agent`: Visa prerequisites, entry rules, passport validity, emergency templates.

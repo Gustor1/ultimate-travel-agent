@@ -1,6 +1,6 @@
 {
   "name": "travel-skills",
-  "version": "1.2.0",
+  "version": "1.3.0",
   "description": "Comprehensive open-source travel planning skills pack for Antigravity and compatible AI agents.",
   "author": "Ultimate Travel Agent Contributors",
   "license": "MIT",
@@ -20,6 +20,11 @@
       "name": "budget-and-booking-checker",
       "description": "Consolidates all estimated trip expenditures, validates totals against user budget with safety reserves, and compiles a chronological pre-departure booking requirement checklist.",
       "path": "skills/budget-and-booking-checker/SKILL.md"
+    },
+    {
+      "name": "flight-search",
+      "description": "Searches for flight options using a structured 4-pass methodology (base, multi-airport, flexible dates, combined) to find optimal door-to-door air travel with verified direct booking links.",
+      "path": "skills/flight-search/SKILL.md"
     },
     {
       "name": "itinerary-builder",

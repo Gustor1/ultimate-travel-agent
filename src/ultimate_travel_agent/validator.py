@@ -602,3 +602,180 @@ def validate_portugal_scenario(dossier_text: str) -> Tuple[bool, List[str]]:
 
     return (len(issues) == 0), issues
 
+
+# ---------------------------------------------------------------------------
+# Flight Search (4-Pass) Validators
+# ---------------------------------------------------------------------------
+
+# OTA / aggregator domains that must NOT appear as primary booking links
+FLIGHT_OTA_DOMAINS = {
+    "expedia.com", "www.expedia.com",
+    "edreams.com", "www.edreams.com",
+    "kiwi.com", "www.kiwi.com",
+    "lastminute.com", "www.lastminute.com",
+    "opodo.com", "www.opodo.com",
+    "cheapoair.com", "www.cheapoair.com",
+    "orbitz.com", "www.orbitz.com",
+}
+
+FLIGHT_METASEARCH_DOMAINS = {
+    "skyscanner.net", "www.skyscanner.net",
+    "skyscanner.com", "www.skyscanner.com",
+    "kayak.com", "www.kayak.com",
+    "google.com/travel", "flights.google.com",
+    "momondo.com", "www.momondo.com",
+}
+
+
+def is_flight_ota_or_metasearch(url: str) -> bool:
+    """Check whether a URL points to an OTA or meta-search aggregator (forbidden as primary booking link)."""
+    if not is_valid_url(url):
+        return False
+    parsed = urlparse(url.strip().lower())
+    netloc = parsed.netloc
+    bare = netloc[4:] if netloc.startswith("www.") else netloc
+    for domain in FLIGHT_OTA_DOMAINS | FLIGHT_METASEARCH_DOMAINS:
+        bare_domain = domain[4:] if domain.startswith("www.") else domain
+        if bare == bare_domain:
+            return True
+    return False
+
+
+def validate_flight_pass_order(passes: List[str]) -> Tuple[bool, List[str]]:
+    """Validate that flight search passes are presented in strict order 1 → 2 → 3 → 4.
+
+    Args:
+        passes: List of pass identifiers in order of appearance, e.g. ["pass_1", "pass_2", "pass_3", "pass_4"]
+    """
+    issues: List[str] = []
+    expected_order = ["pass_1", "pass_2", "pass_3", "pass_4"]
+
+    # Normalize pass names
+    normalized = []
+    for p in passes:
+        p_clean = p.lower().strip().replace(" ", "_").replace("-", "_")
+        for expected in expected_order:
+            if expected in p_clean or p_clean.startswith(expected.replace("pass_", "")):
+                normalized.append(expected)
+                break
+
+    # Check strict ordering (no duplicates, ascending)
+    seen_indices = []
+    for p in normalized:
+        if p in expected_order:
+            idx = expected_order.index(p)
+            if seen_indices and idx <= seen_indices[-1]:
+                issues.append(f"Pass '{p}' executed out of order (after pass at index {seen_indices[-1]})")
+            seen_indices.append(idx)
+
+    if not normalized:
+        issues.append("No recognizable passes found in the output")
+
+    if "pass_1" not in normalized:
+        issues.append("Pass 1 (base reference) is missing from the output")
+
+    return (len(issues) == 0), issues
+
+
+def validate_flight_option(option: Dict[str, Any], is_alternative: bool = False) -> Tuple[bool, List[str]]:
+    """Validate a single flight option record."""
+    issues: List[str] = []
+
+    # Must have a direct airline URL
+    url = option.get("direct_url") or option.get("official_url") or option.get("url") or option.get("airline_url")
+    if not url:
+        issues.append("Flight option missing direct booking link")
+    else:
+        if not is_valid_url(str(url)):
+            issues.append(f"Invalid flight booking URL: {url}")
+        elif is_flight_ota_or_metasearch(str(url)):
+            issues.append(f"Flight booking link is an OTA/meta-search aggregator, not the airline direct: {url}")
+
+    # Verification date
+    verif_date = option.get("verification_date")
+    if not verif_date:
+        issues.append("Flight option missing verification date")
+
+    # Alternative airports must have door-to-door cost
+    if is_alternative:
+        d2d = option.get("door_to_door_total") or option.get("door_to_door_total_2pax") or option.get("door_to_door_cost")
+        if not d2d:
+            issues.append("Alternative airport option presented without door-to-door total cost")
+        transfer = option.get("transfer_to_destination") or option.get("transfer_cost") or option.get("transfer_to_lisbon") or option.get("transfer_mode")
+        if not transfer:
+            issues.append("Alternative airport option missing transfer details to final destination")
+
+    return (len(issues) == 0), issues
+
+
+def validate_fixed_dates_skip(dates_fixed: bool, passes_present: List[str]) -> Tuple[bool, List[str]]:
+    """Validate that passes 3 and 4 are skipped when dates are strictly fixed."""
+    issues: List[str] = []
+    normalized = set()
+    for p in passes_present:
+        p_clean = p.lower().strip().replace(" ", "_").replace("-", "_")
+        if "pass_3" in p_clean or "pass3" in p_clean:
+            normalized.add("pass_3")
+        if "pass_4" in p_clean or "pass4" in p_clean:
+            normalized.add("pass_4")
+
+    if dates_fixed:
+        if "pass_3" in normalized:
+            issues.append("Pass 3 (flexible dates) was executed despite dates being strictly fixed")
+        if "pass_4" in normalized:
+            issues.append("Pass 4 (combined) was executed despite dates being strictly fixed")
+
+    return (len(issues) == 0), issues
+
+
+def validate_synthesis_has_reference(synthesis_text: str) -> Tuple[bool, List[str]]:
+    """Validate that the synthesis table includes Pass 1 as the reference row."""
+    issues: List[str] = []
+    text_lower = synthesis_text.lower()
+
+    if "ref" not in text_lower and "pass 1" not in text_lower and "pass_1" not in text_lower and "référence" not in text_lower and "reference" not in text_lower:
+        issues.append("Synthesis table does not show Pass 1 as the reference baseline")
+
+    return (len(issues) == 0), issues
+
+
+def validate_flight_search_skill_file(skill_path: Path) -> Tuple[bool, List[str]]:
+    """Extended validation specific to the flight-search SKILL.md."""
+    # First run the generic skill validator
+    passed, issues = validate_skill_file(skill_path)
+
+    if not skill_path.exists():
+        return passed, issues
+
+    content = skill_path.read_text(encoding="utf-8")
+    content_lower = content.lower()
+
+    # Flight-search specific checks
+    if "pass 1" not in content_lower and "pass_1" not in content_lower:
+        issues.append("flight-search skill missing Pass 1 (Base) methodology")
+    if "pass 2" not in content_lower and "pass_2" not in content_lower:
+        issues.append("flight-search skill missing Pass 2 (Multi-Airport) methodology")
+    if "pass 3" not in content_lower and "pass_3" not in content_lower:
+        issues.append("flight-search skill missing Pass 3 (Flexible Dates) methodology")
+    if "pass 4" not in content_lower and "pass_4" not in content_lower:
+        issues.append("flight-search skill missing Pass 4 (Combined) methodology")
+
+    # Door-to-door cost methodology
+    if "door" not in content_lower and "porte" not in content_lower:
+        issues.append("flight-search skill missing door-to-door cost computation methodology")
+
+    # Fixed dates skip rule
+    if "dates_fixed" not in content and "dates fixes" not in content_lower and "strictly fixed" not in content_lower:
+        issues.append("flight-search skill missing dates_fixed skip rule for passes 3 and 4")
+
+    # Airline direct link rule (vs aggregators)
+    if "aggregat" not in content_lower and "ota" not in content_lower:
+        issues.append("flight-search skill missing OTA/aggregator exclusion rule for primary booking links")
+
+    # Threshold rule (20% or €50)
+    if "20%" not in content and "50" not in content:
+        issues.append("flight-search skill missing retention threshold rule (≥ 20% or ≥ €50)")
+
+    return (len(issues) == 0), issues
+
+

@@ -155,3 +155,10 @@ oad-trip-nature, amily-trip, ackpacking-budget, low-crowd-cultural-trip, usin
 **Context:** Need to ensure regional accuracy for China, Portugal, and London, and harden agent security (least privilege, untrusted web content handling).
 **Decision:** Added specific rules to skills for these regions, created source-verification agent, and restricted internal agents from using web tools.
 **Consequences:** Safer and more accurate AI travel research.
+
+## ADR 014: Phase 14 - Flight Search Skill (4-Pass Methodology)
+**Date:** 2026-09-17
+**Status:** Accepted
+**Context:** Air travel comparison required a dedicated skill with systematic multi-pass optimization: base price reference, alternative airport door-to-door cost, flexible date exploration, and combined permutations. Aggregators and OTAs must never appear as primary booking links.
+**Decision:** Created `flight-search` as the 14th skill using a 4-pass progressive methodology. Wired into existing `transport-planner` agent (v2.1.0) without creating a new agent. Integrated in Wave 1 of `plan-complete-trip` workflow (before accommodation) and in `compare-transport` workflow. Added retention threshold (≥20% or ≥€50 saving) for alternative airports, fixed-dates skip rule for passes 3-4, and airline-direct-link-only enforcement with OTA/meta-search blacklist.
+**Consequences:** Complete air travel optimization capability. 14 skills in the pack (manifest v1.3.0). 81 automated tests.

@@ -1,28 +1,29 @@
 # Travel Skills Pack
 
-A standalone, installable package of 13 battle-tested travel planning, source verification, financial budgeting, safety, and orchestration skills for Antigravity-compatible AI agents.
+A standalone, installable package of 14 battle-tested travel planning, source verification, financial budgeting, safety, and orchestration skills for Antigravity-compatible AI agents.
 
 ---
 
 ## 1. What is in the Pack?
 
-The pack bundles 13 specialized skills located in `skills/`:
+The pack bundles 14 specialized skills located in `skills/`:
 
 | Skill | Purpose |
 | :--- | :--- |
-| **ccommodation-research** | Investigates strategic neighborhoods and vets lodging options. |
-| **ctivity-curator** | Curates cultural, historical, outdoor, and culinary activities. |
-| **udget-and-booking-checker** | Consolidates trip expenditures and validates against budget. |
+| **accommodation-research** | Investigates strategic neighborhoods and vets lodging options. |
+| **activity-curator** | Curates cultural, historical, outdoor, and culinary activities. |
+| **budget-and-booking-checker** | Consolidates trip expenditures and validates against budget. |
+| **flight-search** | 4-pass progressive air travel search with door-to-door cost comparison. |
 | **itinerary-builder** | Synthesizes destinations into chronological day-by-day itinerary. |
 | **local-discovery** | Discovers off-the-beaten-path neighborhood spots. |
 | **mcp-skill-auditing** | Security audit guidelines, URL allowlisting, prompt injection defenses. |
 | **multi-agent-orchestration** | Coordinates multi-agent execution topologies. |
 | **source-verification** | Rigorous verification hierarchy and provenance metadata. |
-| **	ransport-research** | Researches multi-modal door-to-door transit options. |
-| **	ravel-orchestrator** | Orchestrates end-to-end travel planning across 5 sequential waves. |
-| **	ravel-quality-control** | Performs comprehensive quality assurance on travel dossiers. |
-| **	ravel-safety** | Passport/visa validity checks, health prerequisites, emergency protocols. |
-| **	ravel-web-research** | Broad destination research across official tourism portals. |
+| **transport-research** | Researches multi-modal door-to-door transit options. |
+| **travel-orchestrator** | Orchestrates end-to-end travel planning across 5 sequential waves. |
+| **travel-quality-control** | Performs comprehensive quality assurance on travel dossiers. |
+| **travel-safety** | Passport/visa validity checks, health prerequisites, emergency protocols. |
+| **travel-web-research** | Broad destination research across official tourism portals. |
 
 ---
 

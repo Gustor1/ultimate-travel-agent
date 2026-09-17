@@ -19,7 +19,7 @@ def test_isolated_project_lifecycle():
     Verifies all 11 requirements:
     1. Installation of skills alone.
     2. Installation of skills + agents + workflows.
-    3. Presence of all 13 skills.
+    3. Presence of all 14 skills.
     4. Presence of all 12 agents.
     5. Presence of all 9 workflows.
     6. Creation and schema validity of .agents/.ultimate-travel-agent-install.json.
@@ -36,11 +36,11 @@ def test_isolated_project_lifecycle():
         # Step 1: Install skills alone
         # ---------------------------------------------------------
         res1 = install_pack_skills(target_dir=target_project, include_agents=False, include_workflows=False)
-        assert len(res1["installed"]) >= 13
+        assert len(res1["installed"]) >= 14
         manifest1 = load_install_manifest(target_project)
         assert manifest1 is not None
         assert manifest1["pack_name"] == "ultimate-travel-agent"
-        assert len(manifest1["installed_skills"]) == 13
+        assert len(manifest1["installed_skills"]) == 14
         assert len(manifest1["installed_agents"]) == 0
         assert len(manifest1["installed_workflows"]) == 0
 
@@ -67,7 +67,7 @@ def test_isolated_project_lifecycle():
             "accommodation-research", "activity-curator", "local-discovery",
             "itinerary-builder", "budget-and-booking-checker", "travel-safety",
             "source-verification", "travel-quality-control", "multi-agent-orchestration",
-            "mcp-skill-auditing"
+            "mcp-skill-auditing", "flight-search"
         ]
         for s in expected_skills:
             skill_md = target_project / ".agents" / "skills" / s / "SKILL.md"
