@@ -1,124 +1,194 @@
 # Ultimate Travel Agent
 
-An open-source **Travel Skills Pack** for AI agents.
+A portable, runtime-agnostic **Travel Skills Pack** for AI coding agents and agentic development environments.
 
 [![CI](https://github.com/Gustor1/ultimate-travel-agent/actions/workflows/ci.yml/badge.svg)](https://github.com/Gustor1/ultimate-travel-agent/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Skills-First](https://img.shields.io/badge/Architecture-Skills--First-blue.svg)](#skills-first-approach)
+[![Skills-First](https://img.shields.io/badge/Architecture-Skills--First-blue.svg)](#platform-approach)
 [![Python: 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/)
 
-[Documentation en Français](docs/install-in-any-project.fr.md) | [Catalogue des Skills (FR)](docs/skills-catalog.fr.md) | [Utilisation Antigravity (FR)](docs/use-with-antigravity.fr.md)
+[Documentation en Français](docs/install-in-any-project.fr.md) | [Catalogue des Skills (FR)](docs/skills-catalog.fr.md) | [Intégration Antigravity (FR)](docs/use-with-antigravity.fr.md)
 
 ---
 
-## ⚡ Quick Start (< 2 Minutes)
+> [!WARNING]
+> **Status: Beta / Experimental.**  
+> This project provides travel research and planning assistance only.  
+> It **never** purchases, books, pays for, or executes transactions on behalf of a user.  
+> Always verify prices, availability, visa rules, safety guidance, and booking conditions with official sources before taking action.
 
-Install the 14 travel skills, 12 sub-agents, and 9 workflows directly into your Antigravity project:
+---
 
+## Overview
+
+**Ultimate Travel Agent** is a portable, skills-first travel research and planning pack for AI coding agents and agentic development environments.
+
+The project is designed to be runtime-agnostic. The core product is a file-based skills pack rather than an application tied to one AI platform. Each skill is defined in structured Markdown with YAML frontmatter, providing clear instructions, role boundaries, input/output contracts, and strict safety rules that any compatible agentic environment can load and execute.
+
+---
+
+## Main Capabilities
+
+The toolkit organizes travel expertise into four core functional areas:
+
+### 1. Research
+- **Flight Search**: Structured 4-pass flight optimization (base, multi-airport, flexible dates, combined) with systematic cross-comparison across search engines (Google Flights, Skyscanner, Trip.com) and direct airline verification.
+- **Accommodation Research**: Strategic neighborhood scouting, safety and noise vetting, transit accessibility, and cancellation policy checks.
+- **Ground Transport Research**: Multi-modal transit planning (high-speed rail, regional trains, buses, ferries, car rental) with official operator schedules and fares.
+- **Local Discovery**: Authentic neighborhood eateries, cultural venues, and community spots, with strict tagging of unconfirmed social sources.
+- **Activity Curation**: Cultural, outdoor, and culinary experiences with anti-crowd tactics, booking requirements, and bad-weather contingencies.
+
+### 2. Planning
+- **Itinerary Construction**: Logical day-by-day sequencing with geographic clustering to eliminate backtracking and avoid traveler fatigue.
+- **Budget & Booking Readiness**: Itemized expense consolidation, 10–15% safety reserves, and chronological pre-departure booking checklists.
+- **Travel Safety & Preparation**: Country entry rules, visa exemptions, passport validity requirements, health advisories, and emergency protocols.
+
+### 3. Verification
+- **Source Verification**: Enforcement of a strict 6-tier sourcing hierarchy (prioritizing official government portals and carrier websites over community blogs or social media).
+- **Travel Quality Control**: Comprehensive pre-delivery audits verifying transit connection feasibility, pacing realism, arithmetic accuracy, and contingency coverage.
+
+### 4. Coordination
+- **Workflow Orchestration**: Multi-agent wave execution topologies, inter-agent data passing, and fallback states for autonomous planning teams.
+- **Tool & Skill Auditing**: Independent security audits of external tools, skills, and model context protocol configurations to prevent permission overreach and prompt injection.
+
+---
+
+## Platform Approach
+
+Ultimate Travel Agent is built on a portable, file-based architecture. Instead of embedding logic in a proprietary runtime or server application, the skills and workflows are expressed in open, declarative formats (Markdown and YAML).
+
+The platform integration strategy distinguishes three tiers:
+- **Designed for**: Runtime-agnostic, file-based skills usage across modern AI development environments that can consume local prompt instructions.
+- **Tested integrations**: Environments with an end-to-end documented installation workflow and validation in the repository.
+- **Planned integrations**: Target environments where native integration guides and end-to-end testing are planned for future releases.
+
+### Current Validation & Compatibility Status
+
+| Environment | Status | Notes |
+|---|---|---|
+| **Core skills pack** | Automated validation | Validated by 115 automated tests covering YAML schemas, sourcing tiers, and safety invariants |
+| **Antigravity** | Documented / experimental | Documented installation and workflow integration via CLI installer (`.agents/`) |
+| **Claude Code** | Planned | Integration guide to be added after end-to-end testing |
+| **OpenAI Codex** | Planned | Integration guide to be added after end-to-end testing |
+| **Cursor** | Planned | Integration guide to be added after end-to-end testing |
+| **Qwen Code** | Planned | Integration guide to be added after end-to-end testing |
+
+> [!NOTE]
+> Integrations are validated progressively. Do not assume out-of-the-box native support for planned platforms until formal integration documentation and test coverage are released.
+
+---
+
+## Quick Start
+
+The repository provides a Python CLI utility (`ultimate_travel_agent.cli`) to inspect, install, and validate skills into target projects.
+
+### 1. Inspect Available Skills
 ```bash
-# 1. Clone ultimate-travel-agent:
+# Clone the repository
 git clone https://github.com/Gustor1/ultimate-travel-agent.git
 cd ultimate-travel-agent
 
-# 2. Install everything into your target project:
+# List all 14 travel skills
+python -m ultimate_travel_agent.cli list-skills
+```
+
+### 2. Install into a Target Project
+You can install the skills pack, agent definitions, and workflows into any project directory:
+```bash
 python -m ultimate_travel_agent.cli install-skills \
   --target /path/to/my-project \
   --include-agents \
   --include-workflows
 ```
 
-Then, open your project in Antigravity, copy a brief from [`examples/trip-brief-template.md`](examples/trip-brief-template.md) (or [`examples/trip-brief-template.fr.md`](examples/trip-brief-template.fr.md)), and prompt:
+The installer records cryptographic SHA-256 hashes in `<target>/.agents/.ultimate-travel-agent-install.json`, ensuring user-created skills and custom modifications are never overwritten or deleted.
 
-```text
-Follow the workflow .agents/workflows/plan-complete-trip.md using this brief:
-[Paste your brief here]
+### 3. Validate Skill Compliance
+Verify that installed skills comply with YAML frontmatter rules, 6-tier sourcing standards, and safety invariants:
+```bash
+python -m ultimate_travel_agent.cli validate-skills
 ```
 
----
+### 4. Non-Destructive Uninstallation
+To cleanly remove installed files while preserving custom modifications and user-added skills:
+```bash
+python -m ultimate_travel_agent.cli uninstall-skills --target /path/to/my-project
+```
 
-## What is Ultimate Travel Agent?
-
-`ultimate-travel-agent` is an open-source, local-first toolkit that gives your AI assistant the capability to plan realistic, sourced, and well-budgeted trips without relying on expensive proprietary travel APIs or third-party cloud services.
-
-### Skills-First Approach
-- **No API keys or developer accounts required**: No Amadeus, Trip.com, TripAdvisor, Google Maps, or Viator subscriptions.
-- **Tool-Adaptive**: The AI leverages the web search and browser tools already active in your environment (Antigravity, Claude Code, Cursor) to find real schedules and operator booking links.
-- **Safe Offline Fallback**: If web search tools are unavailable, the skills execute a safe estimation protocol without inventing fares or hours.
-- **Strict Safety Invariants**: The system **never** makes automatic purchases, **never** books rooms or flights, **never** asks for credit cards or passports, and **never** bypasses paywalls.
-- **Manifest-Based Safe Uninstallation**: Only files installed by the toolkit are removed. Your custom skills, agents, and user-modified files are safely preserved.
-
-> [!NOTE]
-> The previous experimental remote MCP server, Docker virtualization, and commercial provider adapters are safely preserved on the archive branch:
-> [`archive/mcp-api-prototype-v1.2`](https://github.com/Gustor1/ultimate-travel-agent/tree/archive/mcp-api-prototype-v1.2).
+For platform-specific setup details, see:
+- [General Installation Guide](docs/install-in-any-project.md) (or [en français](docs/install-in-any-project.fr.md))
+- [Using with Antigravity](docs/use-with-antigravity.md) (or [en français](docs/use-with-antigravity.fr.md))
 
 ---
 
-## The 14 Core Travel Skills
+## Skills Overview
 
-| Skill | Role |
-|---|---|
-| [`travel-orchestrator`](.agents/skills/travel-orchestrator/SKILL.md) | Coordinates the 5-wave planning lifecycle and consolidates the final travel dossier. |
-| [`travel-web-research`](.agents/skills/travel-web-research/SKILL.md) | 12-step research protocol for climate, crowd calendars, and official operator data. |
-| [`flight-search`](.agents/skills/flight-search/SKILL.md) | Structured 4-pass flight optimization (base, multi-airport, flexible dates, combined) with 3-engine cross-comparison and direct airline booking. |
-| [`transport-research`](.agents/skills/transport-research/SKILL.md) | Door-to-door multi-modal transit comparison (air, rail, road, ferry) with official links. |
-| [`accommodation-research`](.agents/skills/accommodation-research/SKILL.md) | Vets strategic neighborhoods and curates 3-5 accommodations with cancellation terms. |
-| [`activity-curator`](.agents/skills/activity-curator/SKILL.md) | Curates cultural, culinary, and outdoor experiences with anti-crowd tactics and rain backups. |
-| [`local-discovery`](.agents/skills/local-discovery/SKILL.md) | Scouts authentic neighborhood eateries and hidden gems, tagging community sources. |
-| [`itinerary-builder`](.agents/skills/itinerary-builder/SKILL.md) | Assembles daily schedules with geographic clustering to eliminate backtracking. |
-| [`budget-and-booking-checker`](.agents/skills/budget-and-booking-checker/SKILL.md) | Audits line items, adds a 10-15% safety reserve, and generates booking timelines. |
-| [`travel-safety`](.agents/skills/travel-safety/SKILL.md) | Reviews entry visas, passport validity, health prerequisites, and emergency plans. |
-| [`source-verification`](.agents/skills/source-verification/SKILL.md) | Cross-checks claims against our strict 6-tier sourcing hierarchy. |
-| [`travel-quality-control`](.agents/skills/travel-quality-control/SKILL.md) | Audits transit feasibility, pacing realism, and budget arithmetic before delivery. |
-| [`multi-agent-orchestration`](.agents/skills/multi-agent-orchestration/SKILL.md) | Provides execution topologies and dependency graphs for multi-agent teams. |
-| [`mcp-skill-auditing`](.agents/skills/mcp-skill-auditing/SKILL.md) | Audits external tools and MCP servers for security and credential safety. |
+The pack contains **14 core travel skills** located under [`.agents/skills/`](.agents/skills/) and mirrored in [`packages/travel-skills/skills/`](packages/travel-skills/skills/):
+
+| Skill | Category | Role |
+|---|---|---|
+| [`travel-orchestrator`](.agents/skills/travel-orchestrator/SKILL.md) | Coordination | Coordinates the 5-wave planning lifecycle and consolidates the final sourced travel dossier. |
+| [`travel-web-research`](.agents/skills/travel-web-research/SKILL.md) | Research | 12-step research protocol for climate, regional norms, crowd calendars, and official data. |
+| [`flight-search`](.agents/skills/flight-search/SKILL.md) | Research | Structured 4-pass flight optimization with 3-engine cross-comparison and direct carrier booking links. |
+| [`transport-research`](.agents/skills/transport-research/SKILL.md) | Research | Door-to-door multi-modal transit comparison (rail, road, ferry) with official operator channels. |
+| [`accommodation-research`](.agents/skills/accommodation-research/SKILL.md) | Research | Vets strategic neighborhoods and curates lodging options with safety, transit, and cancellation terms. |
+| [`activity-curator`](.agents/skills/activity-curator/SKILL.md) | Research | Curates cultural, outdoor, and culinary activities with anti-crowd tactics and rain backups. |
+| [`local-discovery`](.agents/skills/local-discovery/SKILL.md) | Research | Scouts authentic neighborhood eateries and hidden gems, tagging community sources strictly for verification. |
+| [`itinerary-builder`](.agents/skills/itinerary-builder/SKILL.md) | Planning | Assembles daily schedules with geographic clustering to eliminate backtracking. |
+| [`budget-and-booking-checker`](.agents/skills/budget-and-booking-checker/SKILL.md) | Planning | Audits line items, adds a 10–15% safety reserve, and compiles pre-departure booking requirements. |
+| [`travel-safety`](.agents/skills/travel-safety/SKILL.md) | Planning | Evaluates entry visas, passport validity, health prerequisites, and emergency preparedness. |
+| [`source-verification`](.agents/skills/source-verification/SKILL.md) | Verification | Cross-checks claims, timetables, and fares against our strict 6-tier sourcing hierarchy. |
+| [`travel-quality-control`](.agents/skills/travel-quality-control/SKILL.md) | Verification | Audits transit feasibility, pacing realism, budget arithmetic, and contingency coverage. |
+| [`multi-agent-orchestration`](.agents/skills/multi-agent-orchestration/SKILL.md) | Coordination | Coordinates execution topologies, wave dependencies, and fallback states for agent teams. |
+| [`mcp-skill-auditing`](.agents/skills/mcp-skill-auditing/SKILL.md) | Coordination | Audits external tools and MCP servers for security integrity, permission scope, and injection risks. |
 
 See the complete [Skills Catalog (EN)](docs/skills-catalog.md) or [Catalogue des Skills (FR)](docs/skills-catalog.fr.md).
 
 ---
 
-## 6 Realistic Demonstration Scenarios
+## Demonstration Scenarios
 
-Explore full scenario briefs and their corresponding expected outputs in [`examples/scenarios/`](examples/scenarios/):
+Representative scenario briefs and validated output dossiers are available in [`examples/scenarios/`](examples/scenarios/):
 
-1. [Barcelona 4-Day Cultural City Break](examples/scenarios/city-break-europe.md) → [Expected Output](examples/expected-outputs/city-break-europe-output.md)
-2. [Iceland 7-Day Ring Road Nature Expedition](examples/scenarios/road-trip-nature.md) → [Expected Output](examples/expected-outputs/road-trip-nature-output.md)
-3. [Brittany & Normandy 6-Day Family Vacation](examples/scenarios/family-trip.md) → [Expected Output](examples/expected-outputs/family-trip-output.md)
-4. [Vietnam 10-Day Central Backpacking Adventure](examples/scenarios/backpacking-budget.md) → [Expected Output](examples/expected-outputs/backpacking-budget-output.md)
-5. [Umbria 5-Day Low-Crowd Hill Town Exploration](examples/scenarios/low-crowd-cultural-trip.md) → [Expected Output](examples/expected-outputs/low-crowd-cultural-trip-output.md)
-6. [London 3-Day Corporate Trip + West End Evening](examples/scenarios/business-trip.md) → [Expected Output](examples/expected-outputs/business-trip-output.md)
+1. **Barcelona Cultural City Break (4 Days)**: [Brief](examples/scenarios/city-break-europe.md) → [Expected Output](examples/expected-outputs/city-break-europe-output.md)
+2. **Iceland Ring Road Nature Expedition (7 Days)**: [Brief](examples/scenarios/road-trip-nature.md) → [Expected Output](examples/expected-outputs/road-trip-nature-output.md)
+3. **Brittany & Normandy Family Vacation (6 Days)**: [Brief](examples/scenarios/family-trip.md) → [Expected Output](examples/expected-outputs/family-trip-output.md)
+4. **Vietnam Central Backpacking Adventure (10 Days)**: [Brief](examples/scenarios/backpacking-budget.md) → [Expected Output](examples/expected-outputs/backpacking-budget-output.md)
+5. **Umbria Low-Crowd Cultural Exploration (5 Days)**: [Brief](examples/scenarios/low-crowd-cultural-trip.md) → [Expected Output](examples/expected-outputs/low-crowd-cultural-trip-output.md)
+6. **London Corporate Trip & West End Evening (3 Days)**: [Brief](examples/scenarios/business-trip.md) → [Expected Output](examples/expected-outputs/business-trip-output.md)
 
----
-
-## Safe, Non-Destructive Uninstallation
-
-Unlike naive installers, `ultimate-travel-agent` records every file it creates in `<target>/.agents/.ultimate-travel-agent-install.json` with SHA-256 hashes.
-
-To uninstall:
-```bash
-python -m ultimate_travel_agent.cli uninstall-skills --target /path/to/my-project
-```
-
-- **User-Created Skills Protected**: Any skill you added yourself (e.g. `.agents/skills/my-ski-skill/`) is never touched.
-- **User Modifications Protected**: If you edited an installed skill, it will **not** be deleted automatically.
-- **Clean Empty Directories**: Folders are only removed if they become completely empty.
+Template briefs are provided in [`examples/trip-brief-template.md`](examples/trip-brief-template.md) and [`examples/trip-brief-template.fr.md`](examples/trip-brief-template.fr.md).
 
 ---
 
-## Sourcing Hierarchy & Disclaimers
+## Documentation
 
-All agents follow our [6-Tier Sourcing Policy](docs/source-verification.md):
-- **Tier 1**: Official government portals, tourism ministries, embassies.
-- **Tier 2**: Direct transport operators (rail, airlines) and official museum box offices.
-- **Tier 3**: Recognized regional tourism institutions and public park authorities.
-- **Tier 4**: Authoritative editorial guides (Michelin, Lonely Planet).
-- **Tier 5**: Community reviews (TripAdvisor, Google Reviews) for qualitative feedback only.
-- **Tier 6**: Social media (TikTok, RedNote) tagged strictly as `social_discovery_only`.
-
-> [!IMPORTANT]
-> **No Guaranteed Fares or Availability**: The AI does not have real-time access to live airline seat inventory or hotel reservation databases. All prices and timetables must be verified by the user on the provided official operator links prior to travel.
+- **[Getting Started](docs/getting-started.md)**: Overview of CLI commands and workflow execution.
+- **[Architecture](docs/architecture.md)**: Architectural design, multi-wave orchestration, and skills-first methodology.
+- **[Skills Catalog](docs/skills-catalog.md)** ([Version FR](docs/skills-catalog.fr.md)): Detailed inventory of the 14 travel skills, tools, and outputs.
+- **[Travel Workflow](docs/travel-workflow.md)**: The 5-wave lifecycle and multi-agent coordination pipeline.
+- **[Security & Privacy Model](docs/security-model.md)**: Least-privilege agent permissions, untrusted web content isolation, and zero-PII policies.
+- **[Source Verification Policy](docs/source-verification.md)**: The 6-tier sourcing hierarchy and official domain validation rules.
+- **[Known Limitations](docs/known-limitations.md)**: Current system boundaries, offline behavior, and manual verification requirements.
+- **[Installation Guide](docs/install-in-any-project.md)** ([Version FR](docs/install-in-any-project.fr.md)): Step-by-step installation and uninstallation in any project.
+- **[Antigravity Integration](docs/use-with-antigravity.md)** ([Version FR](docs/use-with-antigravity.fr.md)): Documentation for running within the Antigravity agentic environment.
+- **[Historical Archives](docs/history/README.md)**: Preserved research and design documents from earlier pre-pivot phases.
 
 ---
 
-## License & Contributing
+## Scope & Limitations
 
-Distributed under the [MIT License](LICENSE). Open to contributions! See [CONTRIBUTING.md](CONTRIBUTING.md).
+- **Active Development**: This project is in beta. Formats, workflows, and skills may evolve as new agent platforms are tested.
+- **Host Runtime Dependency**: The output quality depends on the host agent's reasoning capabilities and its access to web search or browser tools.
+- **Volatile Travel Data**: Schedules, fares, entry requirements, and opening hours fluctuate frequently. AI-generated data must be treated as indicative.
+- **Mandatory Human Review**: Generated travel plans and booking links must always be reviewed by a human before making reservations or non-refundable commitments.
+- **Progressive Platform Validation**: Integrations with specific agent environments are validated incrementally; no universal compatibility is claimed.
+
+---
+
+## Contributing & License
+
+Contributions are welcome! Please read [CONTRIBUTING.md](CONTRIBUTING.md) for development setup and pull request guidelines.
+
+Distributed under the [MIT License](LICENSE).
+
