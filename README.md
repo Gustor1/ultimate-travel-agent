@@ -13,7 +13,7 @@ An open-source **Travel Skills Pack** for AI agents.
 
 ## ⚡ Quick Start (< 2 Minutes)
 
-Install the 13 travel skills, 11 sub-agents, and 9 workflows directly into your Antigravity project:
+Install the 14 travel skills, 12 sub-agents, and 9 workflows directly into your Antigravity project:
 
 ```bash
 # 1. Clone ultimate-travel-agent:
@@ -53,12 +53,13 @@ Follow the workflow .agents/workflows/plan-complete-trip.md using this brief:
 
 ---
 
-## The 13 Core Travel Skills
+## The 14 Core Travel Skills
 
 | Skill | Role |
 |---|---|
 | [`travel-orchestrator`](.agents/skills/travel-orchestrator/SKILL.md) | Coordinates the 5-wave planning lifecycle and consolidates the final travel dossier. |
 | [`travel-web-research`](.agents/skills/travel-web-research/SKILL.md) | 12-step research protocol for climate, crowd calendars, and official operator data. |
+| [`flight-search`](.agents/skills/flight-search/SKILL.md) | Structured 4-pass flight optimization (base, multi-airport, flexible dates, combined) with 3-engine cross-comparison and direct airline booking. |
 | [`transport-research`](.agents/skills/transport-research/SKILL.md) | Door-to-door multi-modal transit comparison (air, rail, road, ferry) with official links. |
 | [`accommodation-research`](.agents/skills/accommodation-research/SKILL.md) | Vets strategic neighborhoods and curates 3-5 accommodations with cancellation terms. |
 | [`activity-curator`](.agents/skills/activity-curator/SKILL.md) | Curates cultural, culinary, and outdoor experiences with anti-crowd tactics and rain backups. |

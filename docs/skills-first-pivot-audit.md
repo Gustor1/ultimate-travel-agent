@@ -34,7 +34,7 @@ All heavy cloud infrastructure, remote MCP servers, Docker files, and commercial
 - **`src/ultimate_travel_agent/cli.py`**: Lightweight CLI supporting `install-skills`, `uninstall-skills`, and `list-skills`.
 - **`docs/`**: Comprehensive guides covering cross-project installation, Antigravity integration, browser tool adaptation, sourcing hierarchy, and skills catalog.
 - **`tests/`**: Fast, robust test suite verifying installation integrity, overwrite safety, frontmatter validity, safety policies, and zero-secret invariants.
-- **`research/`**: All historical foundational research from Phase 0 preserved for historical reference.
+- **`docs/history/research/`**: All historical foundational research from Phase 0 preserved for historical reference.
 
 ### B. Elements Archived to `archive/mcp-api-prototype-v1.2`
 The following components were safely branched and removed from the active `main` branch to eliminate clutter and false promises:

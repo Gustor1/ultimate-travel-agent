@@ -176,5 +176,27 @@ oad-trip-nature, amily-trip, ackpacking-budget, low-crowd-cultural-trip, usin
 13. Mandatory `Bagages` column in the synthesis matrix.
 **Consequences:** Rigorous, mathematically verifiable air travel optimization capability. 14 skills in the pack (manifest v1.3.0). 115 automated tests.
 
+---
+
+## ADR 015: Phase 15 - Repository Cleanup & Refocus on Travel Skills Pack
+**Date:** 2026-09-17
+**Status:** Accepted
+**Context:** The public repository must present a clean, standalone Travel Skills Pack without clutter from historical design phases, abandoned provider configurations, or legacy scripts.
+**Decision:**
+1. Direct deletion of obsolete artifacts:
+   - `archive/` (legacy scripts `demo_run.py`, `reporter.py`)
+   - `PROMPT_ANTIGRAVITY_PHASE_11_SKILLS_FIRST_PIVOT.md` (internal work prompt)
+   - `ULTIMATE_TRAVEL_AGENT_MASTER_PLAN.md` (internal master plan)
+   - `config/` (`providers.example.yaml` from abandoned API phase)
+   - `examples/city-trip/` and `examples/road-trip/` (legacy `trip.json` examples superseded by `examples/scenarios/`)
+2. Creation of `docs/history/` with a dedicated README to preserve foundational design work:
+   - `research/` (13 Phase 0 scoping and audit files moved to `docs/history/research/`)
+   - `data/` (JSON schemas v7 and mock data moved to `docs/history/data/`, verified to have zero active references in `src/` or `tests/`)
+   - 24 pre-pivot documentation and configuration files from `docs/` moved into `docs/history/`.
+3. Updated CLI documentation in `docs/getting-started.md` and skills count (14 skills) in `README.md`.
+4. Hardened test suite with assertions ensuring deleted/moved directories do not exist at root and `docs/history/README.md` exists.
+**Consequences:** Streamlined repository focused purely on delivery of the 14 skills, 12 agents, and 9 workflows. Historical architecture preserved in `docs/history/`. 115 tests passing.
+
+
 
 

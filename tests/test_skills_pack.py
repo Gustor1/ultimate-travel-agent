@@ -307,6 +307,24 @@ def test_no_mcp_api_components_in_main():
     assert not (base_dir / "railway.json").exists()
     assert not (base_dir / "pivot.py").exists()
 
+    # Phase 15 cleanup: retired legacy directories & files
+    assert not (base_dir / "archive").exists()
+    assert not (base_dir / "config").exists()
+    assert not (base_dir / "PROMPT_ANTIGRAVITY_PHASE_11_SKILLS_FIRST_PIVOT.md").exists()
+    assert not (base_dir / "ULTIMATE_TRAVEL_AGENT_MASTER_PLAN.md").exists()
+    assert not (base_dir / "research").exists()
+    assert not (base_dir / "data").exists()
+    assert not (base_dir / "examples" / "city-trip").exists()
+    assert not (base_dir / "examples" / "road-trip").exists()
+
+    # Historical archives preserved in docs/history
+    history_dir = base_dir / "docs" / "history"
+    assert history_dir.exists() and history_dir.is_dir()
+    assert (history_dir / "README.md").exists()
+    assert (history_dir / "research").exists()
+    assert (history_dir / "data").exists()
+
+
 
 def test_no_secrets_and_personal_paths():
     """Verify zero sensitive API keys and zero personal Windows filepaths in repository."""
