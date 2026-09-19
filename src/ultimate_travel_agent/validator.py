@@ -1,9 +1,12 @@
 """Skill quality validator ensuring compliance with project standards and safety invariants."""
 
-from pathlib import Path
-from typing import Any, Dict, List, Optional, Set, Tuple
-from urllib.parse import urlparse
 import re
+from datetime import date
+from decimal import Decimal, InvalidOperation
+from pathlib import Path
+from typing import Any, Dict, List, Optional, Tuple
+from urllib.parse import urlparse
+
 import yaml
 
 
@@ -70,7 +73,10 @@ def validate_skill_file(skill_path: Path) -> Tuple[bool, List[str]]:
     # 3. Fallback behavior without web search / browser
     if "fallback" not in content_lower:
         issues.append("Missing 'Fallback' section")
-    if "live research cannot be completed" not in content and "cannot be completed" not in content_lower:
+    if (
+        "live research cannot be completed" not in content
+        and "cannot be completed" not in content_lower
+    ):
         issues.append("Missing clear fallback statement when web research is unavailable")
     if "never invent live prices" not in content_lower and "never invent" not in content_lower:
         issues.append("Missing invariant: never invent live prices/availability")
@@ -158,8 +164,22 @@ def validate_agent_file(agent_path: Path) -> Tuple[bool, List[str]]:
         issues.append("Malformed YAML frontmatter")
 
     agent_name = agent_path.parent.name
-    internal_agents = ['budget-analyst', 'itinerary-optimizer', 'quality-controller', 'travel-orchestrator', 'mcp-skill-auditor']
-    web_agents = ['destination-researcher', 'transport-planner', 'accommodation-researcher', 'activity-curator', 'local-discovery-agent', 'travel-preparation-agent', 'source-verification']
+    internal_agents = [
+        "budget-analyst",
+        "itinerary-optimizer",
+        "quality-controller",
+        "travel-orchestrator",
+        "mcp-skill-auditor",
+    ]
+    web_agents = [
+        "destination-researcher",
+        "transport-planner",
+        "accommodation-researcher",
+        "activity-curator",
+        "local-discovery-agent",
+        "travel-preparation-agent",
+        "source-verification",
+    ]
 
     tools = fm.get("tools", [])
     if isinstance(tools, str):
@@ -188,13 +208,22 @@ def validate_all_agents(agents_dir: Optional[Path] = None) -> Tuple[bool, Dict[s
 
     reports: Dict[str, List[str]] = {}
     all_passed = True
-    
+
     expected_agents = [
-        'budget-analyst', 'itinerary-optimizer', 'quality-controller', 'travel-orchestrator', 'mcp-skill-auditor',
-        'destination-researcher', 'transport-planner', 'accommodation-researcher', 'activity-curator',
-        'local-discovery-agent', 'travel-preparation-agent', 'source-verification'
+        "budget-analyst",
+        "itinerary-optimizer",
+        "quality-controller",
+        "travel-orchestrator",
+        "mcp-skill-auditor",
+        "destination-researcher",
+        "transport-planner",
+        "accommodation-researcher",
+        "activity-curator",
+        "local-discovery-agent",
+        "travel-preparation-agent",
+        "source-verification",
     ]
-    
+
     for expected in expected_agents:
         agent_dir = agents_dir / expected
         if not agent_dir.exists():
@@ -218,31 +247,54 @@ def validate_all_agents(agents_dir: Optional[Path] = None) -> Tuple[bool, Dict[s
 # ---------------------------------------------------------------------------
 
 GENERIC_SEARCH_DOMAINS = {
-    "google.com", "www.google.com", "google.fr", "www.google.fr",
-    "bing.com", "www.bing.com",
-    "yahoo.com", "www.yahoo.com",
-    "duckduckgo.com", "www.duckduckgo.com",
-    "baidu.com", "www.baidu.com",
-    "yandex.com", "www.yandex.com",
+    "google.com",
+    "www.google.com",
+    "google.fr",
+    "www.google.fr",
+    "bing.com",
+    "www.bing.com",
+    "yahoo.com",
+    "www.yahoo.com",
+    "duckduckgo.com",
+    "www.duckduckgo.com",
+    "baidu.com",
+    "www.baidu.com",
+    "yandex.com",
+    "www.yandex.com",
 }
 
 GENERIC_AGGREGATOR_DOMAINS = {
-    "booking.com", "www.booking.com",
-    "tripadvisor.com", "www.tripadvisor.com", "tripadvisor.fr", "www.tripadvisor.fr",
-    "expedia.com", "www.expedia.com",
-    "hotels.com", "www.hotels.com",
-    "kayak.com", "www.kayak.com",
-    "skyscanner.net", "www.skyscanner.net",
-    "airbnb.com", "www.airbnb.com",
-    "viator.com", "www.viator.com",
-    "getyourguide.com", "www.getyourguide.com",
-    "tiqets.com", "www.tiqets.com",
-    "klook.com", "www.klook.com",
-    "trip.com", "www.trip.com",
+    "booking.com",
+    "www.booking.com",
+    "tripadvisor.com",
+    "www.tripadvisor.com",
+    "tripadvisor.fr",
+    "www.tripadvisor.fr",
+    "expedia.com",
+    "www.expedia.com",
+    "hotels.com",
+    "www.hotels.com",
+    "kayak.com",
+    "www.kayak.com",
+    "skyscanner.net",
+    "www.skyscanner.net",
+    "airbnb.com",
+    "www.airbnb.com",
+    "viator.com",
+    "www.viator.com",
+    "getyourguide.com",
+    "www.getyourguide.com",
+    "tiqets.com",
+    "www.tiqets.com",
+    "klook.com",
+    "www.klook.com",
+    "trip.com",
+    "www.trip.com",
 }
 
 GENERIC_TRANSIT_ROOTS = {
-    "tfl.gov.uk", "www.tfl.gov.uk",
+    "tfl.gov.uk",
+    "www.tfl.gov.uk",
 }
 
 
@@ -254,7 +306,24 @@ def is_valid_url(url: str) -> bool:
     if any(c in url_clean for c in [" ", "<", ">", '"', "'", "\n", "\r", "\t"]):
         return False
     parsed = urlparse(url_clean)
-    return parsed.scheme in ("http", "https") and bool(parsed.netloc) and "." in parsed.netloc
+    return (
+        parsed.scheme in ("http", "https")
+        and parsed.username is None
+        and parsed.password is None
+        and bool(parsed.hostname)
+        and "." in str(parsed.hostname)
+    )
+
+
+def is_iso_date(value: Any) -> bool:
+    """Accept a real ISO-8601 calendar date instead of a decade-specific regex."""
+    if not isinstance(value, str):
+        return False
+    try:
+        date.fromisoformat(value)
+        return True
+    except ValueError:
+        return False
 
 
 def is_generic_search_url(url: str) -> bool:
@@ -262,7 +331,7 @@ def is_generic_search_url(url: str) -> bool:
     if not is_valid_url(url):
         return False
     parsed = urlparse(url.strip().lower())
-    netloc = parsed.netloc
+    netloc = parsed.hostname or ""
     if netloc.startswith("www."):
         netloc = netloc[4:]
     for search_domain in GENERIC_SEARCH_DOMAINS:
@@ -272,7 +341,9 @@ def is_generic_search_url(url: str) -> bool:
     return False
 
 
-def is_generic_root_homepage(url: str, enforce_deep_path: bool = False) -> Tuple[bool, Optional[str]]:
+def is_generic_root_homepage(
+    url: str, enforce_deep_path: bool = False
+) -> Tuple[bool, Optional[str]]:
     """Detect if a URL is a generic root homepage without specific content path.
 
     - If URL points to a generic search engine, returns True.
@@ -286,7 +357,7 @@ def is_generic_root_homepage(url: str, enforce_deep_path: bool = False) -> Tuple
         return True, "URL is a search engine link, not a direct destination or operator link"
 
     parsed = urlparse(url.strip().lower())
-    netloc = parsed.netloc
+    netloc = parsed.hostname or ""
     bare_netloc = netloc[4:] if netloc.startswith("www.") else netloc
     clean_path = parsed.path.rstrip("/")
 
@@ -294,26 +365,40 @@ def is_generic_root_homepage(url: str, enforce_deep_path: bool = False) -> Tuple
     aggregator_bare_domains = {d.replace("www.", "") for d in GENERIC_AGGREGATOR_DOMAINS}
     if bare_netloc in aggregator_bare_domains:
         if not clean_path or clean_path in ("", "/"):
-            return True, f"Generic root portal for {bare_netloc}; requires a direct property or booking path"
+            return (
+                True,
+                f"Generic root portal for {bare_netloc}; requires a direct property or booking path",
+            )
 
     # Check transit roots requiring deep path
     transit_bare_domains = {d.replace("www.", "") for d in GENERIC_TRANSIT_ROOTS}
     if bare_netloc in transit_bare_domains:
         if not clean_path or clean_path in ("", "/"):
-            return True, f"Generic transit authority homepage '{url}'; specific service, line, or fare page required"
+            return (
+                True,
+                f"Generic transit authority homepage '{url}'; specific service, line, or fare page required",
+            )
 
     # Enforce deep path when requested
     if enforce_deep_path:
         if not clean_path or clean_path in ("", "/index.html", "/index.php"):
-            return True, f"Generic homepage '{url}'; specific service, line, search or booking page required"
+            return (
+                True,
+                f"Generic homepage '{url}'; specific service, line, search or booking page required",
+            )
         # Detect bare language/locale root paths like /en, /fr, /gb/en, /en-gb, /en-eu
         if re.match(r"^/(?:[a-z]{2}(?:-[a-z]{2,4})?|[a-z]{2}/[a-z]{2})/?$", clean_path):
-            return True, f"Generic language root homepage '{url}'; specific service, line, search or booking page required"
+            return (
+                True,
+                f"Generic language root homepage '{url}'; specific service, line, search or booking page required",
+            )
 
     return False, None
 
 
-def validate_hotel_record(hotel: Dict[str, Any], destination_country: Optional[str] = None) -> Tuple[bool, List[str]]:
+def validate_hotel_record(
+    hotel: Dict[str, Any], destination_country: Optional[str] = None
+) -> Tuple[bool, List[str]]:
     """Validate a hotel recommendation record against project direct linking standards."""
     issues: List[str] = []
 
@@ -336,10 +421,16 @@ def validate_hotel_record(hotel: Dict[str, Any], destination_country: Optional[s
     verif_date = hotel.get("verification_date")
     if not verif_date or not str(verif_date).strip():
         issues.append("Missing verification date for hotel")
+    elif not is_iso_date(str(verif_date)):
+        issues.append(f"Invalid verification date for hotel: {verif_date}")
 
     # Source tier check (must be 1-6)
-    raw_tier = hotel.get("tier") if hotel.get("tier") is not None else (
-        hotel.get("source", {}).get("tier") if isinstance(hotel.get("source"), dict) else None
+    raw_tier = (
+        hotel.get("tier")
+        if hotel.get("tier") is not None
+        else (
+            hotel.get("source", {}).get("tier") if isinstance(hotel.get("source"), dict) else None
+        )
     )
     if raw_tier is None:
         issues.append("Missing source confidence tier for hotel (Tier 1-6)")
@@ -363,14 +454,32 @@ def validate_hotel_record(hotel: Dict[str, Any], destination_country: Optional[s
 
     if any(k in combined_country for k in ["china", "chine", "beijing", "shanghai"]):
         acceptance = str(hotel.get("foreign_guest_acceptance", "")).lower().strip()
-        valid_statuses = ["confirmed", "confirmée", "unconfirmed", "non confirmée", "unknown", "inconnue", "to verify", "à vérifier"]
+        valid_statuses = [
+            "confirmed",
+            "confirmée",
+            "unconfirmed",
+            "non confirmée",
+            "unknown",
+            "inconnue",
+            "to verify",
+            "à vérifier",
+        ]
         if not any(v in acceptance for v in valid_statuses) or not acceptance:
-            issues.append("China hotel missing explicit foreign guest acceptance status (PSB/涉外 foreign guest registration)")
+            issues.append(
+                "China hotel missing explicit foreign guest acceptance status (PSB/涉外 foreign guest registration)"
+            )
 
     if any(k in combined_country for k in ["portugal", "lisbon", "lisboa", "porto", "sintra"]):
-        license_status = hotel.get("rnet_license") or hotel.get("rnal_license") or hotel.get("license_status") or hotel.get("alojamento_local")
+        license_status = (
+            hotel.get("rnet_license")
+            or hotel.get("rnal_license")
+            or hotel.get("license_status")
+            or hotel.get("alojamento_local")
+        )
         if not license_status:
-            issues.append("Portugal hotel missing RNET / Alojamento Local license verification or status")
+            issues.append(
+                "Portugal hotel missing RNET / Alojamento Local license verification or status"
+            )
 
     return (len(issues) == 0), issues
 
@@ -383,7 +492,12 @@ def validate_activity_record(activity: Dict[str, Any]) -> Tuple[bool, List[str]]
     if not name:
         issues.append("Missing activity name")
 
-    url = activity.get("official_url") or activity.get("booking_url") or activity.get("direct_url") or activity.get("url")
+    url = (
+        activity.get("official_url")
+        or activity.get("booking_url")
+        or activity.get("direct_url")
+        or activity.get("url")
+    )
     if not url:
         issues.append("Missing direct official URL for activity")
     else:
@@ -395,8 +509,14 @@ def validate_activity_record(activity: Dict[str, Any]) -> Tuple[bool, List[str]]
                 issues.append(f"Activity URL is generic: {reason}")
 
     # Official source vs blog check: Tier 5 is blog / community, Tier 1 is official gov/monument, Tier 2 is operator
-    raw_tier = activity.get("tier") if activity.get("tier") is not None else (
-        activity.get("source", {}).get("tier") if isinstance(activity.get("source"), dict) else None
+    raw_tier = (
+        activity.get("tier")
+        if activity.get("tier") is not None
+        else (
+            activity.get("source", {}).get("tier")
+            if isinstance(activity.get("source"), dict)
+            else None
+        )
     )
     if raw_tier is not None:
         try:
@@ -405,7 +525,9 @@ def validate_activity_record(activity: Dict[str, Any]) -> Tuple[bool, List[str]]
                 issues.append(f"Invalid source tier for activity (must be 1-6): {raw_tier}")
             elif tier_val in [5, 6] and not activity.get("is_off_beaten_path"):
                 if not activity.get("official_alternative_checked"):
-                    issues.append("Activity relies exclusively on third-party blog/social media (Tier 5/6) without primary official source")
+                    issues.append(
+                        "Activity relies exclusively on third-party blog/social media (Tier 5/6) without primary official source"
+                    )
         except (ValueError, TypeError):
             issues.append(f"Invalid non-numeric source tier for activity: {raw_tier}")
 
@@ -413,6 +535,8 @@ def validate_activity_record(activity: Dict[str, Any]) -> Tuple[bool, List[str]]
     verif_date = activity.get("verification_date")
     if not verif_date:
         issues.append("Missing verification date for activity")
+    elif not is_iso_date(str(verif_date)):
+        issues.append(f"Invalid verification date for activity: {verif_date}")
 
     return (len(issues) == 0), issues
 
@@ -440,8 +564,14 @@ def validate_transport_record(transport: Dict[str, Any]) -> Tuple[bool, List[str
             if is_generic:
                 issues.append(f"Transport URL is generic: {reason}")
 
-    raw_tier = transport.get("tier") if transport.get("tier") is not None else (
-        transport.get("source", {}).get("tier") if isinstance(transport.get("source"), dict) else None
+    raw_tier = (
+        transport.get("tier")
+        if transport.get("tier") is not None
+        else (
+            transport.get("source", {}).get("tier")
+            if isinstance(transport.get("source"), dict)
+            else None
+        )
     )
     if raw_tier is not None:
         try:
@@ -454,6 +584,8 @@ def validate_transport_record(transport: Dict[str, Any]) -> Tuple[bool, List[str
     verif_date = transport.get("verification_date")
     if not verif_date:
         issues.append("Missing verification date for transport")
+    elif not is_iso_date(str(verif_date)):
+        issues.append(f"Invalid verification date for transport: {verif_date}")
 
     return (len(issues) == 0), issues
 
@@ -483,11 +615,15 @@ def validate_source_record(source: Dict[str, Any]) -> Tuple[bool, List[str]]:
     verif_date = source.get("verification_date")
     if not verif_date:
         issues.append("Missing verification date for source")
+    elif not is_iso_date(str(verif_date)):
+        issues.append(f"Invalid verification date for source: {verif_date}")
 
     return (len(issues) == 0), issues
 
 
-def validate_url_retention(subagent_urls: List[str], final_dossier_text: str) -> Tuple[bool, List[str]]:
+def validate_url_retention(
+    subagent_urls: List[str], final_dossier_text: str
+) -> Tuple[bool, List[str]]:
     """Ensure all URLs provided by specialist subagents are preserved in the final master dossier."""
     missing: List[str] = []
     for url in subagent_urls:
@@ -503,10 +639,23 @@ def validate_china_scenario(dossier_text: str) -> Tuple[bool, List[str]]:
     text_lower = dossier_text.lower()
 
     # 1. Entry formalities: must not blindly mandate visa without checking exemption (15/30-day)
-    if "en.nia.gov.cn" not in dossier_text and "nia.gov.cn" not in dossier_text and "visaforchina" not in dossier_text:
-        issues.append("China scenario missing official immigration portal link (en.nia.gov.cn or visaforchina)")
-    if "exemption" not in text_lower and "exempt" not in text_lower and "sans visa" not in text_lower and "dispense" not in text_lower:
-        issues.append("China scenario recommends visa blindly without evaluating nationality/duration visa-free exemption")
+    if (
+        "en.nia.gov.cn" not in dossier_text
+        and "nia.gov.cn" not in dossier_text
+        and "visaforchina" not in dossier_text
+    ):
+        issues.append(
+            "China scenario missing official immigration portal link (en.nia.gov.cn or visaforchina)"
+        )
+    if (
+        "exemption" not in text_lower
+        and "exempt" not in text_lower
+        and "sans visa" not in text_lower
+        and "dispense" not in text_lower
+    ):
+        issues.append(
+            "China scenario recommends visa blindly without evaluating nationality/duration visa-free exemption"
+        )
 
     # 2. Rail transport: China Railway 12306 English portal / app guidance
     if "12306.cn" not in dossier_text:
@@ -514,18 +663,24 @@ def validate_china_scenario(dossier_text: str) -> Tuple[bool, List[str]]:
 
     # 3. Accommodation: foreign guest acceptance (涉外 / PSB)
     if not any(k in text_lower for k in ["foreign guest", "étrangers", "shewai", "涉外", "psb"]):
-        issues.append("China scenario accommodation missing explicit foreign traveler acceptance status (PSB/涉外)")
+        issues.append(
+            "China scenario accommodation missing explicit foreign traveler acceptance status (PSB/涉外)"
+        )
 
     # 4. Activity: Forbidden City official ticketing
     if "dpm.org.cn" not in dossier_text:
-        issues.append("China scenario missing Palace Museum / Forbidden City official portal (dpm.org.cn)")
+        issues.append(
+            "China scenario missing Palace Museum / Forbidden City official portal (dpm.org.cn)"
+        )
 
     # 5. Security / Safety: Zero-PII, payment methods
     if not any(k in text_lower for k in ["alipay", "wechat", "paiement"]):
-        issues.append("China scenario missing digital payment logistics guidance (Alipay/WeChat Pay)")
+        issues.append(
+            "China scenario missing digital payment logistics guidance (Alipay/WeChat Pay)"
+        )
 
     # 6. Verification dates present
-    if not re.search(r"202\d-\d{2}-\d{2}", dossier_text):
+    if not any(is_iso_date(match) for match in re.findall(r"\d{4}-\d{2}-\d{2}", dossier_text)):
         issues.append("China scenario missing explicit verification dates for fares or conditions")
 
     return (len(issues) == 0), issues
@@ -537,32 +692,54 @@ def validate_london_scenario(dossier_text: str) -> Tuple[bool, List[str]]:
     text_lower = dossier_text.lower()
 
     # 1. Airport transport: Elizabeth Line / Heathrow / Gatwick
-    if "elizabeth" not in text_lower and "heathrow" not in text_lower and "gatwick" not in text_lower:
+    if (
+        "elizabeth" not in text_lower
+        and "heathrow" not in text_lower
+        and "gatwick" not in text_lower
+    ):
         issues.append("London scenario missing airport transit connection options")
 
     # 2. TfL Fares & Contactless vs Oyster comparison with detailed trade-offs
     if "contactless" not in text_lower or "oyster" not in text_lower:
         issues.append("London scenario missing Contactless vs Oyster comparative analysis")
     if "tfl.gov.uk/fares" not in dossier_text and "tfl.gov.uk/modes" not in dossier_text:
-        issues.append("London scenario missing specific TfL fares or modes portal link (tfl.gov.uk/fares or tfl.gov.uk/modes)")
-    elif re.search(r"https?://(?:www\.)?tfl\.gov\.uk/?[\s\)\"']", dossier_text) and "tfl.gov.uk/fares" not in dossier_text:
-        issues.append("London scenario uses generic TfL root homepage instead of specific fares page")
+        issues.append(
+            "London scenario missing specific TfL fares or modes portal link (tfl.gov.uk/fares or tfl.gov.uk/modes)"
+        )
+    elif (
+        re.search(r"https?://(?:www\.)?tfl\.gov\.uk/?[\s\)\"']", dossier_text)
+        and "tfl.gov.uk/fares" not in dossier_text
+    ):
+        issues.append(
+            "London scenario uses generic TfL root homepage instead of specific fares page"
+        )
 
     # Contactless/Oyster evaluation depth: card fee, cap, foreign transaction fees or child discounts
-    if not any(k in text_lower for k in ["fee", "frais", "cap", "plafond", "discount", "child", "enfant", "jeune"]):
-        issues.append("London scenario Contactless vs Oyster comparison lacks economic or concession justification")
+    if not any(
+        k in text_lower
+        for k in ["fee", "frais", "cap", "plafond", "discount", "child", "enfant", "jeune"]
+    ):
+        issues.append(
+            "London scenario Contactless vs Oyster comparison lacks economic or concession justification"
+        )
 
     # 3. Free museums vs paid exhibitions
-    if not any(k in text_lower for k in ["free", "gratuit", "permanent"]) or not any(k in text_lower for k in ["temporary", "temporaire", "paid", "payant"]):
-        issues.append("London scenario does not distinguish free permanent collections from paid temporary exhibitions")
+    if not any(k in text_lower for k in ["free", "gratuit", "permanent"]) or not any(
+        k in text_lower for k in ["temporary", "temporaire", "paid", "payant"]
+    ):
+        issues.append(
+            "London scenario does not distinguish free permanent collections from paid temporary exhibitions"
+        )
 
     # 4. Tower of London ticket via Historic Royal Palaces
     if "tower of london" in text_lower or "tour de londres" in text_lower:
         if "hrp.org.uk" not in dossier_text:
-            issues.append("Tower of London tickets must link to Historic Royal Palaces official ticketing (hrp.org.uk)")
+            issues.append(
+                "Tower of London tickets must link to Historic Royal Palaces official ticketing (hrp.org.uk)"
+            )
 
     # 5. Verification dates present
-    if not re.search(r"202\d-\d{2}-\d{2}", dossier_text):
+    if not any(is_iso_date(match) for match in re.findall(r"\d{4}-\d{2}-\d{2}", dossier_text)):
         issues.append("London scenario missing explicit verification dates for fares or tickets")
 
     return (len(issues) == 0), issues
@@ -576,10 +753,26 @@ def validate_portugal_scenario(dossier_text: str) -> Tuple[bool, List[str]]:
     # 1. Entry: AIMA replacing SEF
     if "sef" in text_lower:
         # If SEF is mentioned, it MUST be clarified as replaced/dissolved/extinct, not current active authority
-        if not any(k in text_lower for k in ["replaced", "remplacé", "extinct", "dissous", "dissolved", "ancien", "former", "extinction"]):
-            issues.append("Portugal scenario presents defunct SEF as active authority instead of AIMA")
+        if not any(
+            k in text_lower
+            for k in [
+                "replaced",
+                "remplacé",
+                "extinct",
+                "dissous",
+                "dissolved",
+                "ancien",
+                "former",
+                "extinction",
+            ]
+        ):
+            issues.append(
+                "Portugal scenario presents defunct SEF as active authority instead of AIMA"
+            )
     if "aima.gov.pt" not in dossier_text and "vistos.mne.gov.pt" not in dossier_text:
-        issues.append("Portugal scenario missing official entry portals (aima.gov.pt or vistos.mne.gov.pt)")
+        issues.append(
+            "Portugal scenario missing official entry portals (aima.gov.pt or vistos.mne.gov.pt)"
+        )
 
     # 2. Trains: CP (Comboios de Portugal) with promo fares
     if "cp.pt" not in dossier_text:
@@ -588,21 +781,36 @@ def validate_portugal_scenario(dossier_text: str) -> Tuple[bool, List[str]]:
         issues.append("Portugal scenario missing CP advance promo fare guidance")
 
     # 3. Tolls: Electronic tolls / Easytoll / Via Verde
-    if "portugaltolls.com" not in dossier_text and "easytoll" not in text_lower and "via verde" not in text_lower:
-        issues.append("Portugal scenario missing electronic tolling guidance (portugaltolls.com / Easytoll / Via Verde)")
+    if (
+        "portugaltolls.com" not in dossier_text
+        and "easytoll" not in text_lower
+        and "via verde" not in text_lower
+    ):
+        issues.append(
+            "Portugal scenario missing electronic tolling guidance (portugaltolls.com / Easytoll / Via Verde)"
+        )
 
     # 4. Sintra: Pena Palace via Parques de Sintra
     if "pena" in text_lower or "sintra" in text_lower:
         if "parquesdesintra.pt" not in dossier_text:
-            issues.append("Sintra attractions must link to Parques de Sintra official ticketing (bilheteira.parquesdesintra.pt)")
+            issues.append(
+                "Sintra attractions must link to Parques de Sintra official ticketing (bilheteira.parquesdesintra.pt)"
+            )
 
     # 5. Hotel license / RNET
-    if not any(k in text_lower for k in ["rnet", "rnal", "alojamento local", "licence", "license", "turismo de portugal"]):
-        issues.append("Portugal scenario missing hotel tourism registry/license verification (RNET/Alojamento Local)")
+    if not any(
+        k in text_lower
+        for k in ["rnet", "rnal", "alojamento local", "licence", "license", "turismo de portugal"]
+    ):
+        issues.append(
+            "Portugal scenario missing hotel tourism registry/license verification (RNET/Alojamento Local)"
+        )
 
     # 6. Verification dates present
-    if not re.search(r"202\d-\d{2}-\d{2}", dossier_text):
-        issues.append("Portugal scenario missing explicit verification dates for fares or conditions")
+    if not any(is_iso_date(match) for match in re.findall(r"\d{4}-\d{2}-\d{2}", dossier_text)):
+        issues.append(
+            "Portugal scenario missing explicit verification dates for fares or conditions"
+        )
 
     return (len(issues) == 0), issues
 
@@ -613,22 +821,35 @@ def validate_portugal_scenario(dossier_text: str) -> Tuple[bool, List[str]]:
 
 # OTA / aggregator domains that must NOT appear as primary booking links
 FLIGHT_OTA_DOMAINS = {
-    "expedia.com", "www.expedia.com",
-    "edreams.com", "www.edreams.com",
-    "kiwi.com", "www.kiwi.com",
-    "lastminute.com", "www.lastminute.com",
-    "opodo.com", "www.opodo.com",
-    "cheapoair.com", "www.cheapoair.com",
-    "orbitz.com", "www.orbitz.com",
-    "trip.com", "www.trip.com",
+    "expedia.com",
+    "www.expedia.com",
+    "edreams.com",
+    "www.edreams.com",
+    "kiwi.com",
+    "www.kiwi.com",
+    "lastminute.com",
+    "www.lastminute.com",
+    "opodo.com",
+    "www.opodo.com",
+    "cheapoair.com",
+    "www.cheapoair.com",
+    "orbitz.com",
+    "www.orbitz.com",
+    "trip.com",
+    "www.trip.com",
 }
 
 FLIGHT_METASEARCH_DOMAINS = {
-    "skyscanner.net", "www.skyscanner.net",
-    "skyscanner.com", "www.skyscanner.com",
-    "kayak.com", "www.kayak.com",
-    "flights.google.com", "www.flights.google.com",
-    "momondo.com", "www.momondo.com",
+    "skyscanner.net",
+    "www.skyscanner.net",
+    "skyscanner.com",
+    "www.skyscanner.com",
+    "kayak.com",
+    "www.kayak.com",
+    "flights.google.com",
+    "www.flights.google.com",
+    "momondo.com",
+    "www.momondo.com",
 }
 
 
@@ -637,11 +858,11 @@ def is_flight_ota_or_metasearch(url: str) -> bool:
     if not is_valid_url(url):
         return False
     parsed = urlparse(url.strip().lower())
-    netloc = parsed.netloc
+    netloc = parsed.hostname or ""
     bare = netloc[4:] if netloc.startswith("www.") else netloc
     for domain in FLIGHT_OTA_DOMAINS | FLIGHT_METASEARCH_DOMAINS:
         bare_domain = domain[4:] if domain.startswith("www.") else domain
-        if bare == bare_domain:
+        if bare == bare_domain or bare.endswith("." + bare_domain):
             return True
     # Catch Google Flights URLs (flights.google.com, google.com/travel/flights, etc.)
     if (bare == "google.com" or bare.endswith(".google.com")) and (
@@ -670,12 +891,14 @@ def validate_flight_pass_order(passes: List[str]) -> Tuple[bool, List[str]]:
                 break
 
     # Check strict ordering (no duplicates, ascending)
-    seen_indices = []
+    seen_indices: List[int] = []
     for p in normalized:
         if p in expected_order:
             idx = expected_order.index(p)
             if seen_indices and idx <= seen_indices[-1]:
-                issues.append(f"Pass '{p}' executed out of order (after pass at index {seen_indices[-1]})")
+                issues.append(
+                    f"Pass '{p}' executed out of order (after pass at index {seen_indices[-1]})"
+                )
             seen_indices.append(idx)
 
     if not normalized:
@@ -688,18 +911,35 @@ def validate_flight_pass_order(passes: List[str]) -> Tuple[bool, List[str]]:
 
 
 def _extract_amount(val: Any) -> Optional[float]:
-    """Helper to extract a numeric float amount from a string like '€190', '190.50 €', or a number."""
+    """Extract one monetary amount while avoiding quantities and price ranges."""
     if val is None:
         return None
+    if isinstance(val, Decimal):
+        return float(val)
     if isinstance(val, (int, float)):
         return float(val)
+    if isinstance(val, dict):
+        return _extract_amount(
+            val.get("total") if val.get("total") is not None else val.get("amount")
+        )
     if isinstance(val, str):
-        # Match first float/int found
-        match = re.search(r"[-+]?\d+(?:[.,]\d+)?", val.replace(" ", ""))
+        compact = val.replace("\u00a0", " ").strip()
+        if re.search(r"\d+\s*[-–]\s*\d+", compact):
+            return None
+        if "=" in compact:
+            compact = compact.rsplit("=", 1)[1]
+        currency_match = re.search(
+            r"(?:€|£|\$|USD|EUR|GBP)\s*([-+]?\d+(?:[.,]\d+)?)|"
+            r"([-+]?\d+(?:[.,]\d+)?)\s*(?:€|£|\$|USD|EUR|GBP)",
+            compact,
+            flags=re.IGNORECASE,
+        )
+        match = currency_match or re.search(r"[-+]?\d+(?:[.,]\d+)?", compact)
         if match:
+            raw = next((group for group in match.groups() if group is not None), match.group(0))
             try:
-                return float(match.group(0).replace(",", "."))
-            except ValueError:
+                return float(Decimal(raw.replace(",", ".")))
+            except (InvalidOperation, ValueError):
                 return None
     return None
 
@@ -727,7 +967,12 @@ def validate_flight_option(
     issues: List[str] = []
 
     # 1. Direct airline URL
-    url = option.get("direct_url") or option.get("official_url") or option.get("url") or option.get("airline_url")
+    url = (
+        option.get("direct_url")
+        or option.get("official_url")
+        or option.get("url")
+        or option.get("airline_url")
+    )
     is_retained = option.get("retained") is True or option.get("is_baseline_reference") is True
     if not url:
         if is_retained:
@@ -739,12 +984,16 @@ def validate_flight_option(
         if not is_valid_url(url_str):
             issues.append(f"Invalid flight booking URL: {url_str}")
         elif is_flight_ota_or_metasearch(url_str):
-            issues.append(f"Flight booking link is an OTA/meta-search aggregator, not the airline direct: {url_str}")
+            issues.append(
+                f"Flight booking link is an OTA/meta-search aggregator, not the airline direct: {url_str}"
+            )
         else:
             # Enforce deep path (reject bare root domain or language root like ryanair.com or easyjet.com/en)
             is_generic, reason = is_generic_root_homepage(url_str, enforce_deep_path=True)
             if is_generic:
-                issues.append(f"Flight booking link is a generic root homepage without deep booking path: {url_str} ({reason})")
+                issues.append(
+                    f"Flight booking link is a generic root homepage without deep booking path: {url_str} ({reason})"
+                )
 
     # Retained options must have step-by-step instructions
     if is_retained and not option.get("booking_instructions"):
@@ -754,6 +1003,8 @@ def validate_flight_option(
     verif_date = option.get("verification_date")
     if not verif_date:
         issues.append("Flight option missing verification date")
+    elif not is_iso_date(str(verif_date)):
+        issues.append(f"Flight option has invalid verification date: {verif_date}")
 
     # 3. Unopened inventory / price range check (> 11 months / > 330 days)
     is_unopened = (
@@ -763,35 +1014,51 @@ def validate_flight_option(
         or "unopened inventory" in str(option).lower()
     )
     if is_unopened:
-        combined_price_text = " ".join([
-            str(option.get("door_to_door_total") or ""),
-            str(option.get("flight_price") or ""),
-            str(option.get("flight_total_with_luggage") or ""),
-            str(option.get("flight_base") or ""),
-        ])
+        combined_price_text = " ".join(
+            [
+                str(option.get("door_to_door_total") or ""),
+                str(option.get("flight_price") or ""),
+                str(option.get("flight_total_with_luggage") or ""),
+                str(option.get("flight_base") or ""),
+            ]
+        )
         has_range = bool(re.search(r"\d+\s*[-–]\s*\d+", combined_price_text))
         has_exact_decimal = bool(re.search(r"\b\d+\.\d{2}\b", combined_price_text))
         if has_exact_decimal and not has_range:
-            issues.append("Unopened inventory option must provide a price range (e.g. 850-950 €) rather than a fictitious exact price")
+            issues.append(
+                "Unopened inventory option must provide a price range (e.g. 850-950 €) rather than a fictitious exact price"
+            )
 
         opt_text_lower = str(option).lower()
-        if "estimation, inventaire non ouvert" not in opt_text_lower and "inventaire non ouvert" not in opt_text_lower:
-            issues.append("Unopened inventory option missing mandatory tag 'estimation, inventaire non ouvert'")
+        if (
+            "estimation, inventaire non ouvert" not in opt_text_lower
+            and "inventaire non ouvert" not in opt_text_lower
+        ):
+            issues.append(
+                "Unopened inventory option missing mandatory tag 'estimation, inventaire non ouvert'"
+            )
 
     # 4. Alternative departure airport access cost check
     route_str = str(option.get("route") or "").upper()
-    airport_str = str(option.get("airport") or "").upper()
-    detected_alt_origin = is_alternative_origin or any(alt in route_str for alt in ["BVA", "BEAUVAIS", "LTN", "LUTN", "STN", "STANSTED", "SEN", "GRO", "REU"])
+    detected_alt_origin = is_alternative_origin or any(
+        alt in route_str
+        for alt in ["BVA", "BEAUVAIS", "LTN", "LUTN", "STN", "STANSTED", "SEN", "GRO", "REU"]
+    )
 
     if detected_alt_origin:
         breakdown = option.get("cost_breakdown") or option.get("breakdown") or {}
         has_origin_access = (
             option.get("origin_access_cost") is not None
             or option.get("origin_access") is not None
-            or any("origin" in k.lower() or "navette" in k.lower() or "shuttle" in k.lower() for k in breakdown.keys())
+            or any(
+                "origin" in k.lower() or "navette" in k.lower() or "shuttle" in k.lower()
+                for k in breakdown.keys()
+            )
         )
         if not has_origin_access:
-            issues.append("Alternative departure airport option presented without origin access cost (e.g. shuttle or regional train)")
+            issues.append(
+                "Alternative departure airport option presented without origin access cost (e.g. shuttle or regional train)"
+            )
 
     # 5. Checked bag requirement check
     if requires_checked_bag:
@@ -799,23 +1066,39 @@ def validate_flight_option(
         baggage_policy = str(option.get("baggage_policy") or "").lower()
         checked_bag_included = option.get("checked_bag_included")
         has_bag_fee = (
-            any("soute" in k.lower() or "bag" in k.lower() or "luggage" in k.lower() for k in breakdown.keys())
+            any(
+                "soute" in k.lower() or "bag" in k.lower() or "luggage" in k.lower()
+                for k in breakdown.keys()
+            )
             or "soute incluse" in baggage_policy
             or "checked bag included" in baggage_policy
             or checked_bag_included is True
         )
-        if not has_bag_fee and ("sans soute" in baggage_policy or "soute +" in baggage_policy or "petit sac" in baggage_policy or checked_bag_included is False):
-            issues.append("Trip brief requires checked luggage but flight option cost excludes checked bag fees")
+        if not has_bag_fee:
+            issues.append(
+                "Trip brief requires checked luggage but flight option does not prove checked bag cost inclusion"
+            )
 
     # 6. Door-to-door cost and decomposability for alternative airports
-    d2d_val = option.get("door_to_door_total") or option.get("door_to_door_total_2pax") or option.get("door_to_door_cost")
+    d2d_val = (
+        option.get("door_to_door_total")
+        or option.get("door_to_door_total_2pax")
+        or option.get("door_to_door_cost")
+    )
 
     if is_alternative:
         if not d2d_val:
             issues.append("Alternative airport option presented without door-to-door total cost")
-        transfer = option.get("transfer_to_destination") or option.get("transfer_cost") or option.get("transfer_to_lisbon") or option.get("transfer_mode")
+        transfer = (
+            option.get("transfer_to_destination")
+            or option.get("transfer_cost")
+            or option.get("transfer_to_lisbon")
+            or option.get("transfer_mode")
+        )
         if not transfer:
-            issues.append("Alternative airport option missing transfer details to final destination")
+            issues.append(
+                "Alternative airport option missing transfer details to final destination"
+            )
 
     # Check decomposability and arithmetic if door-to-door cost is present
     if d2d_val:
@@ -828,9 +1111,29 @@ def validate_flight_option(
                 # Sum up breakdown components (excluding keys that represent the overall door-to-door total itself)
                 component_sum = 0.0
                 found_components = False
+                atomic_flight_keys = {
+                    k.lower().strip()
+                    for k in breakdown
+                    if any(
+                        token in k.lower()
+                        for token in ("flight_base", "checked_bag", "bag_fee", "luggage_fee")
+                    )
+                }
                 for k, v in breakdown.items():
                     k_lower = k.lower().strip()
-                    if k_lower in ("total", "door_to_door_total", "total_door_to_door", "total_p2p", "door_to_door") or k_lower.endswith("_door_to_door"):
+                    if k_lower in (
+                        "total",
+                        "door_to_door_total",
+                        "total_door_to_door",
+                        "total_p2p",
+                        "door_to_door",
+                    ) or k_lower.endswith("_door_to_door"):
+                        continue
+                    if atomic_flight_keys and k_lower in (
+                        "flight_total",
+                        "flight_total_with_luggage",
+                        "flight_total_2pax",
+                    ):
                         continue
                     amt = _extract_amount(v)
                     if amt is not None:
@@ -838,7 +1141,9 @@ def validate_flight_option(
                         found_components = True
 
                 if not found_components:
-                    issues.append("Door-to-door cost breakdown contains no parseable line item amounts")
+                    issues.append(
+                        "Door-to-door cost breakdown contains no parseable line item amounts"
+                    )
                 elif d2d_amount is not None and abs(component_sum - d2d_amount) > 0.5:
                     issues.append(
                         f"Door-to-door arithmetic mismatch: breakdown components sum to €{component_sum:.2f}, "
@@ -846,11 +1151,23 @@ def validate_flight_option(
                     )
             else:
                 # Check if separate itemized fields exist
-                flight_amt = _extract_amount(option.get("flight_price_2pax") or option.get("flight_total_2pax") or option.get("flight_price"))
-                transfer_cost_field = option.get("transfer_cost") or (
-                    option.get("transfer_to_lisbon", {}).get("cost_2pax") if isinstance(option.get("transfer_to_lisbon"), dict) else None
-                ) or (
-                    option.get("transfer_to_destination", {}).get("cost") if isinstance(option.get("transfer_to_destination"), dict) else None
+                flight_amt = _extract_amount(
+                    option.get("flight_price_2pax")
+                    or option.get("flight_total_2pax")
+                    or option.get("flight_price")
+                )
+                transfer_cost_field = (
+                    option.get("transfer_cost")
+                    or (
+                        option.get("transfer_to_lisbon", {}).get("cost_2pax")
+                        if isinstance(option.get("transfer_to_lisbon"), dict)
+                        else None
+                    )
+                    or (
+                        option.get("transfer_to_destination", {}).get("cost")
+                        if isinstance(option.get("transfer_to_destination"), dict)
+                        else None
+                    )
                 )
                 transfer_amt = _extract_amount(transfer_cost_field)
 
@@ -859,21 +1176,47 @@ def validate_flight_option(
                         "Door-to-door total is not decomposed line-by-line (missing cost_breakdown dict or explicit flight/transfer amounts)"
                     )
                 elif d2d_amount is not None:
-                    origin_amt = _extract_amount(option.get("origin_access_cost") or option.get("origin_access")) or 0.0
-                    overnight_amt = _extract_amount(option.get("overnight_stay") or option.get("overnight_cost")) or 0.0
+                    origin_amt = (
+                        _extract_amount(
+                            option.get("origin_access_cost") or option.get("origin_access")
+                        )
+                        or 0.0
+                    )
+                    overnight_amt = (
+                        _extract_amount(
+                            option.get("overnight_stay") or option.get("overnight_cost")
+                        )
+                        or 0.0
+                    )
                     extra_amt = _extract_amount(option.get("additional_fees")) or 0.0
-                    total_computed = flight_amt + origin_amt + transfer_amt + overnight_amt + extra_amt
+                    time_penalty = (
+                        _extract_amount(
+                            option.get("transfer_time_penalty") or option.get("transfer_time_value")
+                        )
+                        or 0.0
+                    )
+                    total_computed = (
+                        flight_amt
+                        + origin_amt
+                        + transfer_amt
+                        + overnight_amt
+                        + extra_amt
+                        + time_penalty
+                    )
                     if abs(total_computed - d2d_amount) > 0.5:
                         issues.append(
                             f"Door-to-door arithmetic mismatch: flight ({flight_amt}) + origin access ({origin_amt}) + "
-                            f"transfer ({transfer_amt}) + extras ({overnight_amt + extra_amt}) = €{total_computed:.2f}, "
+                            f"transfer ({transfer_amt}) + extras/penalty "
+                            f"({overnight_amt + extra_amt + time_penalty}) = €{total_computed:.2f}, "
                             f"but total is declared as {d2d_val}"
                         )
 
     return (len(issues) == 0), issues
 
 
-def validate_fixed_dates_skip(dates_fixed: bool, passes_present: List[str]) -> Tuple[bool, List[str]]:
+def validate_fixed_dates_skip(
+    dates_fixed: bool, passes_present: List[str]
+) -> Tuple[bool, List[str]]:
     """Validate that passes 3 and 4 are skipped when dates are strictly fixed."""
     issues: List[str] = []
     normalized = set()
@@ -898,7 +1241,13 @@ def validate_synthesis_has_reference(synthesis_text: str) -> Tuple[bool, List[st
     issues: List[str] = []
     text_lower = synthesis_text.lower()
 
-    if "ref" not in text_lower and "pass 1" not in text_lower and "pass_1" not in text_lower and "référence" not in text_lower and "reference" not in text_lower:
+    if (
+        "ref" not in text_lower
+        and "pass 1" not in text_lower
+        and "pass_1" not in text_lower
+        and "référence" not in text_lower
+        and "reference" not in text_lower
+    ):
         issues.append("Synthesis table does not show Pass 1 as the reference baseline")
 
     return (len(issues) == 0), issues
@@ -908,29 +1257,47 @@ def validate_retained_flight_options(passes_or_options: Any) -> Tuple[bool, List
     """Validate that every retained flight option has a deep direct link and step-by-step instructions."""
     issues: List[str] = []
 
-    def _check_opt(opt: Dict[str, Any], pass_name: str = "option"):
+    def _check_opt(opt: Dict[str, Any], pass_name: str = "option") -> None:
         is_retained = opt.get("retained") is True or opt.get("is_baseline_reference") is True
         if is_retained:
-            url = opt.get("direct_url") or opt.get("official_url") or opt.get("url") or opt.get("airline_url")
+            url = (
+                opt.get("direct_url")
+                or opt.get("official_url")
+                or opt.get("url")
+                or opt.get("airline_url")
+            )
             if not url:
                 issues.append(f"Retained option ({pass_name}) missing direct booking link")
             else:
                 url_str = str(url).strip()
                 if not is_valid_url(url_str):
-                    issues.append(f"Retained option ({pass_name}) has invalid booking URL: {url_str}")
+                    issues.append(
+                        f"Retained option ({pass_name}) has invalid booking URL: {url_str}"
+                    )
                 elif is_flight_ota_or_metasearch(url_str):
-                    issues.append(f"Retained option ({pass_name}) has OTA/metasearch booking link: {url_str}")
+                    issues.append(
+                        f"Retained option ({pass_name}) has OTA/metasearch booking link: {url_str}"
+                    )
                 else:
                     is_gen, rsn = is_generic_root_homepage(url_str, enforce_deep_path=True)
                     if is_gen:
-                        issues.append(f"Retained option ({pass_name}) booking link is root homepage: {url_str} ({rsn})")
+                        issues.append(
+                            f"Retained option ({pass_name}) booking link is root homepage: {url_str} ({rsn})"
+                        )
             if not opt.get("booking_instructions"):
-                issues.append(f"Retained option ({pass_name}) missing step-by-step booking instructions")
+                issues.append(
+                    f"Retained option ({pass_name}) missing step-by-step booking instructions"
+                )
 
     if isinstance(passes_or_options, list):
         for item in passes_or_options:
             if isinstance(item, dict):
-                for p_key in ["pass_1_base", "pass_2_multi_airport", "pass_3_flexible_dates", "pass_4_combined"]:
+                for p_key in [
+                    "pass_1_base",
+                    "pass_2_multi_airport",
+                    "pass_3_flexible_dates",
+                    "pass_4_combined",
+                ]:
                     if p_key in item:
                         p_val = item[p_key]
                         if isinstance(p_val, dict):
@@ -942,7 +1309,12 @@ def validate_retained_flight_options(passes_or_options: Any) -> Tuple[bool, List
                 if "airline" in item or "airport" in item or "direct_url" in item:
                     _check_opt(item)
     elif isinstance(passes_or_options, dict):
-        for p_key in ["pass_1_base", "pass_2_multi_airport", "pass_3_flexible_dates", "pass_4_combined"]:
+        for p_key in [
+            "pass_1_base",
+            "pass_2_multi_airport",
+            "pass_3_flexible_dates",
+            "pass_4_combined",
+        ]:
             if p_key in passes_or_options:
                 p_val = passes_or_options[p_key]
                 if isinstance(p_val, dict):
@@ -951,7 +1323,11 @@ def validate_retained_flight_options(passes_or_options: Any) -> Tuple[bool, List
                     for sub_opt in p_val:
                         if isinstance(sub_opt, dict):
                             _check_opt(sub_opt, pass_name=p_key)
-        if "airline" in passes_or_options or "airport" in passes_or_options or "direct_url" in passes_or_options:
+        if (
+            "airline" in passes_or_options
+            or "airport" in passes_or_options
+            or "direct_url" in passes_or_options
+        ):
             _check_opt(passes_or_options)
 
     return (len(issues) == 0), issues
@@ -978,51 +1354,94 @@ def validate_flight_search_skill_file(skill_path: Path) -> Tuple[bool, List[str]
     if "pass 4" not in content_lower and "pass_4" not in content_lower:
         issues.append("flight-search skill missing Pass 4 (Combined) methodology")
 
-    # Active discovery via 3 comparison engines (Google Flights, Skyscanner, Trip.com)
+    # Adaptive discovery: named examples, a minimum, and unavailable-engine logging.
     for engine in ["google flights", "skyscanner", "trip.com"]:
         if engine not in content_lower:
-            issues.append(f"flight-search skill missing mandatory comparison engine '{engine}' in discovery methodology")
+            issues.append(
+                f"flight-search skill missing supported comparison engine example '{engine}'"
+            )
+    if "adaptive" not in content_lower and "adaptatif" not in content_lower:
+        issues.append("flight-search skill missing adaptive comparison policy")
+    if "unavailable" not in content_lower and "indisponible" not in content_lower:
+        issues.append("flight-search skill missing unavailable-engine logging policy")
     if "source_log" not in content_lower:
         issues.append("flight-search skill missing source_log requirement for discovery tools")
 
     # Door-to-door cost methodology and decomposition rule
     if "door" not in content_lower and "porte" not in content_lower:
         issues.append("flight-search skill missing door-to-door cost computation methodology")
-    if "décomposition" not in content_lower and "breakdown" not in content_lower and "ligne par ligne" not in content_lower:
-        issues.append("flight-search skill missing requirement for line-by-line door-to-door cost breakdown")
+    if (
+        "décomposition" not in content_lower
+        and "breakdown" not in content_lower
+        and "ligne par ligne" not in content_lower
+    ):
+        issues.append(
+            "flight-search skill missing requirement for line-by-line door-to-door cost breakdown"
+        )
 
     # Origin access cost
-    if "origin_access_cost" not in content and "accès" not in content_lower and "origin_access" not in content_lower:
+    if (
+        "origin_access_cost" not in content
+        and "accès" not in content_lower
+        and "origin_access" not in content_lower
+    ):
         issues.append("flight-search skill missing origin_access_cost in door-to-door formula")
 
     # Defined transfer_time_value and 4h default application rule
-    if "transfer_time_value" not in content_lower and "transfer_time_penalty" not in content_lower and "15" not in content:
+    if (
+        "transfer_time_value" not in content_lower
+        and "transfer_time_penalty" not in content_lower
+        and "15" not in content
+    ):
         issues.append("flight-search skill missing explicit definition of transfer_time_penalty")
     if "4h" not in content_lower and "4 h" not in content_lower and "4 heures" not in content_lower:
-        issues.append("flight-search skill missing 4-hour threshold rule for transfer_time_penalty default application")
+        issues.append(
+            "flight-search skill missing 4-hour threshold rule for transfer_time_penalty default application"
+        )
 
     # Fixed dates skip rule
-    if "dates_fixed" not in content and "dates fixes" not in content_lower and "strictly fixed" not in content_lower:
+    if (
+        "dates_fixed" not in content
+        and "dates fixes" not in content_lower
+        and "strictly fixed" not in content_lower
+    ):
         issues.append("flight-search skill missing dates_fixed skip rule for passes 3 and 4")
 
     # One-way / multi-city handling
-    if "one_way" not in content_lower and "one-way" not in content_lower and "aller simple" not in content_lower:
+    if (
+        "one_way" not in content_lower
+        and "one-way" not in content_lower
+        and "aller simple" not in content_lower
+    ):
         issues.append("flight-search skill missing one-way flight search handling")
     if "multi" not in content_lower:
         issues.append("flight-search skill missing multi-city flight search handling")
 
     # Combinatorial bounding (max 5 airports, ±2 days in Pass 4)
-    if not any(k in content_lower for k in ["max 5", "maximum de 5", "maximum 5", "5 aéroports", "5 alternative"]):
+    if not any(
+        k in content_lower
+        for k in ["max 5", "maximum de 5", "maximum 5", "5 aéroports", "5 alternative"]
+    ):
         issues.append("flight-search skill missing upper bound on alternative airports (max 5)")
 
     # Night transfer / overnight stay rule
-    if "nuit" not in content_lower and "overnight" not in content_lower and "nocturne" not in content_lower:
+    if (
+        "nuit" not in content_lower
+        and "overnight" not in content_lower
+        and "nocturne" not in content_lower
+    ):
         issues.append("flight-search skill missing night transfer / overnight transit stay rule")
 
     # Airline direct link rule (vs aggregators and deep URLs)
     if "aggregat" not in content_lower and "ota" not in content_lower:
-        issues.append("flight-search skill missing OTA/aggregator exclusion rule for primary booking links")
-    if "racine" not in content_lower and "deep" not in content_lower and "profonde" not in content_lower:
+        issues.append(
+            "flight-search skill missing OTA/aggregator exclusion rule for primary booking links"
+        )
+    if (
+        "racine" not in content_lower
+        and "deep" not in content_lower
+        and "profonde" not in content_lower
+    ):
         issues.append("flight-search skill missing deep URL / root homepage avoidance rule")
     if "retained" not in content_lower and "retenue" not in content_lower:
         issues.append("flight-search skill missing deep link requirement on every retained option")
@@ -1036,20 +1455,29 @@ def validate_flight_search_skill_file(skill_path: Path) -> Tuple[bool, List[str]
         issues.append("flight-search skill missing retention threshold rule (≥ 20% or ≥ €50)")
 
     # Single best Pass 1 baseline rule
-    if "meilleur" not in content_lower and "best" not in content_lower and "unique" not in content_lower:
-        issues.append("flight-search skill missing rule establishing the single best Pass 1 result as the baseline")
+    if (
+        "meilleur" not in content_lower
+        and "best" not in content_lower
+        and "unique" not in content_lower
+    ):
+        issues.append(
+            "flight-search skill missing rule establishing the single best Pass 1 result as the baseline"
+        )
 
     # Unopened inventories rule (> 11 months / > 330 days)
     if "inventaire non ouvert" not in content_lower and "unopened" not in content_lower:
-        issues.append("flight-search skill missing price range rule for unopened inventories (> 11 months / > 330 days)")
+        issues.append(
+            "flight-search skill missing price range rule for unopened inventories (> 11 months / > 330 days)"
+        )
 
     return (len(issues) == 0), issues
 
 
 def validate_flight_comparison_sources(source_log_or_dossier: Any) -> Tuple[bool, List[str]]:
-    """Validate that the flight search records queries on all 3 comparison engines
-    (Google Flights, Skyscanner, Trip.com) in source_log and that none of them
-    appear as flight booking links.
+    """Require adaptive comparison evidence and direct-airline booking links.
+
+    At least one comparison engine must be logged. More engines are required by the
+    workflow only when they add coverage or resolve uncertainty, never as a quota.
     """
     issues: List[str] = []
 
@@ -1087,7 +1515,7 @@ def validate_flight_comparison_sources(source_log_or_dossier: Any) -> Tuple[bool
                         options_to_check.append(item)
             elif isinstance(val, dict):
                 options_to_check.append(val)
-                for sub_k, sub_v in val.items():
+                for _sub_k, sub_v in val.items():
                     if isinstance(sub_v, list):
                         for sub_item in sub_v:
                             if isinstance(sub_item, dict):
@@ -1098,23 +1526,27 @@ def validate_flight_comparison_sources(source_log_or_dossier: Any) -> Tuple[bool
         if "direct_url" in source_log_or_dossier or "airline" in source_log_or_dossier:
             options_to_check.append(source_log_or_dossier)
 
-    # Detect the 3 comparison engines in sources
+    # Detect supported comparison engines in sources.
     has_google_flights = False
     has_skyscanner = False
     has_trip_com = False
 
     if dossier_text:
-        has_google_flights = "google flights" in dossier_text or "flights.google.com" in dossier_text
+        has_google_flights = (
+            "google flights" in dossier_text or "flights.google.com" in dossier_text
+        )
         has_skyscanner = "skyscanner" in dossier_text
         has_trip_com = "trip.com" in dossier_text
     else:
         for item in source_items:
-            combined = " ".join([
-                str(item.get("name") or ""),
-                str(item.get("url") or ""),
-                str(item.get("role") or ""),
-                str(item.get("notes") or ""),
-            ]).lower()
+            combined = " ".join(
+                [
+                    str(item.get("name") or ""),
+                    str(item.get("url") or ""),
+                    str(item.get("role") or ""),
+                    str(item.get("notes") or ""),
+                ]
+            ).lower()
             if "google flights" in combined or "flights.google.com" in combined:
                 has_google_flights = True
             if "skyscanner" in combined:
@@ -1122,23 +1554,22 @@ def validate_flight_comparison_sources(source_log_or_dossier: Any) -> Tuple[bool
             if "trip.com" in combined:
                 has_trip_com = True
 
-    if not has_google_flights:
-        issues.append("Missing mandatory comparison engine 'Google Flights' in source_log")
-    if not has_skyscanner:
-        issues.append("Missing mandatory comparison engine 'Skyscanner' in source_log")
-    if not has_trip_com:
-        issues.append("Missing mandatory flight comparison engine 'Trip.com' in source_log")
+    if not any((has_google_flights, has_skyscanner, has_trip_com)):
+        issues.append("Missing comparison engine evidence in source_log")
 
     # Verify that comparison engines/OTAs are not used as flight booking links
     for opt in options_to_check:
-        url = opt.get("direct_url") or opt.get("official_url") or opt.get("url") or opt.get("airline_url")
+        url = (
+            opt.get("direct_url")
+            or opt.get("official_url")
+            or opt.get("url")
+            or opt.get("airline_url")
+        )
         if url:
             url_str = str(url).strip()
             if is_flight_ota_or_metasearch(url_str):
-                issues.append(f"Flight booking link points to comparison engine/OTA instead of direct airline carrier: {url_str}")
+                issues.append(
+                    f"Flight booking link points to comparison engine/OTA instead of direct airline carrier: {url_str}"
+                )
 
     return (len(issues) == 0), issues
-
-
-
-

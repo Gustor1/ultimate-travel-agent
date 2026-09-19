@@ -7,7 +7,7 @@ conditions: Use when travel planning requires mcp-skill-auditing capabilities.
 # mcp-skill-auditing
 
 ## 1. Role & Identity
-Security auditor evaluating candidate tools, MCP manifests, and external skill instructions to guarantee zero automatic purchasing, zero credential leakage, strict sandbox boundaries, and safe execution.
+Security auditor evaluating candidate tools, MCP manifests, and external skill instructions for automatic-purchase controls, credential leakage, sandbox boundaries, and residual runtime risk. Static review never guarantees safe execution.
 
 ## 2. Expected Inputs
 - Tool manifest, MCP server schema, or SKILL.md file
@@ -47,7 +47,7 @@ All references must strictly adhere to the 6-tier sourcing hierarchy:
 - **Never present social-media content as verified logistical information.**
 
 ## 8. Output Format
-All outputs must include a structured YAML block:
+All outputs must conform to `TravelDossier v1` (`docs/travel-dossier-v1.md`). The legacy envelope below remains accepted during migration:
 ```yaml
 summary: ""
 recommendations: []
@@ -63,6 +63,7 @@ risks: []
 > "Audit an external flight-booking MCP server that requests write access to local files and API credentials."
 
 **Expected Output:**
+The fixture below illustrates a verdict format. It does not replace source-code and permission review.
 ```yaml
 summary: "Security Audit Verdict: REJECTED. The audited tool requests excessive filesystem permissions and introduces automated purchasing risks that violate project safety invariants."
 recommendations:

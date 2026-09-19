@@ -49,7 +49,7 @@ All references must strictly adhere to the 6-tier sourcing hierarchy:
 - **Never present social-media content as verified logistical information.**
 
 ## 8. Output Format
-All outputs must include a structured YAML block:
+All outputs must conform to `TravelDossier v1` (`docs/travel-dossier-v1.md`). The legacy envelope below remains accepted during migration:
 ```yaml
 summary: ""
 recommendations: []
@@ -65,6 +65,7 @@ risks: []
 > "Check the budget and booking requirements for a 6-day couple trip to Vienna with a €2,200 total budget."
 
 **Expected Output:**
+The fixture below is illustrative only. It demonstrates arithmetic structure, not current prices.
 ```yaml
 summary: "Total estimated trip cost for 6 days in Vienna is €1,870 plus a recommended 15% safety buffer (€280), bringing the total to €2,150, which sits safely within the €2,200 budget cap."
 recommendations:

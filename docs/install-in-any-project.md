@@ -10,13 +10,13 @@ You can install this comprehensive travel planning toolkit directly into any exi
 From the root of this project (or after installing via pip):
 
 ```bash
-# Install the 13 core travel skills into your target project:
+# Install the 14 core travel skills into your target project:
 python -m ultimate_travel_agent.cli install-skills --target /path/to/my-project
 ```
 
 ### Installing Sub-Agents and Workflows
 
-To also install the 11 specialized sub-agents and 9 end-to-end travel workflows:
+To also install the 12 specialized agents and 9 end-to-end travel workflows:
 
 ```bash
 python -m ultimate_travel_agent.cli install-skills \
@@ -32,7 +32,7 @@ python -m ultimate_travel_agent.cli install-skills \
 | Flag | Description |
 |---|---|
 | `--target <path>` | **Required.** The absolute or relative path to the destination project. |
-| `--include-agents` | Copies the 11 specialized sub-agents into `<target>/.agents/agents/`. |
+| `--include-agents` | Copies the 12 specialized agents into `<target>/.agents/agents/`. |
 | `--include-workflows` | Copies the 9 travel workflows into `<target>/.agents/workflows/`. |
 | `--force` | Overwrites existing files in the target project. Without this flag, existing files are safely skipped. |
 
@@ -69,8 +69,9 @@ my-project/
     │   ├── travel-preparation-agent/agent.md
     │   ├── budget-analyst/agent.md
     │   ├── itinerary-optimizer/agent.md
-    │   ├── quality-controller/agent.md
-    │   └── mcp-skill-auditor/agent.md
+│   ├── quality-controller/agent.md
+│   ├── source-verification/agent.md
+│   └── mcp-skill-auditor/agent.md
     └── workflows/
         ├── plan-complete-trip.md
         ├── research-destination.md
@@ -93,4 +94,4 @@ If you ever wish to remove the travel skills from your project:
 python -m ultimate_travel_agent.cli uninstall-skills --target /path/to/my-project
 ```
 
-This removes the `.agents/skills/` travel folders while leaving unrelated project files untouched.
+This removes only manifest-tracked files. Modified files remain unless explicitly cleaned. Files replaced with `--force` are restored from local backups. A missing or malformed manifest stops removal.

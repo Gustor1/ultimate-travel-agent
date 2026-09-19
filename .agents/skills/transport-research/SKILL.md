@@ -50,7 +50,7 @@ All references must strictly adhere to the 6-tier sourcing hierarchy:
 - **Never present social-media content as verified logistical information.**
 
 ## 8. Output Format
-All outputs must include a structured YAML block:
+All outputs must conform to `TravelDossier v1` (`docs/travel-dossier-v1.md`). The legacy envelope below remains accepted during migration:
 ```yaml
 summary: ""
 recommendations: []
@@ -66,8 +66,9 @@ risks: []
 > "Compare train versus flight options from London to Amsterdam for 2 passengers on October 15."
 
 **Expected Output:**
+The fixture below is illustrative only. Durations, fares, emissions, and schedules require fresh sources.
 ```yaml
-summary: "Eurostar high-speed rail is strongly recommended over flying for London to Amsterdam: door-to-door time is comparable (4h15m rail vs 4h30m air door-to-door), with zero airport transfer hassle and ~80% lower carbon emissions."
+summary: "Eurostar and flying have comparable illustrative door-to-door times (4h50m rail vs 4h45m air). Rail may still be preferable for city-center access and lower emissions, subject to current fare and emissions sources."
 recommendations:
   - option_1_rail:
       operator: "Eurostar"

@@ -11,7 +11,7 @@ Architecture and orchestration specialist establishing agent dependency graphs, 
 
 ## 2. Expected Inputs
 - Trip complexity and destination scope
-- Sub-agent roster (11 agents)
+- Sub-agent roster (12 agents)
 - Environmental capabilities (filesystem, web search, browser)
 
 ## 3. Expected Outputs
@@ -48,7 +48,7 @@ All references must strictly adhere to the 6-tier sourcing hierarchy:
 - **Never present social-media content as verified logistical information.**
 
 ## 8. Output Format
-All outputs must include a structured YAML block:
+All outputs must conform to `TravelDossier v1` (`docs/travel-dossier-v1.md`). The legacy envelope below remains accepted during migration:
 ```yaml
 summary: ""
 recommendations: []
@@ -64,6 +64,7 @@ risks: []
 > "Define the wave execution plan and dependency graph for planning an international road trip in New Zealand."
 
 **Expected Output:**
+The fixture below illustrates topology only. Runtime-specific agent and tool support must be checked.
 ```yaml
 summary: "Established 5-wave multi-agent orchestration architecture for New Zealand road trip, enforcing clean data boundaries and preventing context bloat."
 recommendations:
@@ -75,18 +76,15 @@ recommendations:
         agents: ["budget-analyst"]
         objective: "Aggregate rental costs, fuel estimates, ferry fees, and accommodation expenses against user budget."
       wave_3_scheduling:
-        agents: ["itinerary-optimizer", "local-discovery-agent"]
-        objective: "Sequence driving segments with maximum 3.5h daily drive times and infuse scenic lookouts."
+        agents: ["itinerary-optimizer"]
+        objective: "Sequence validated driving segments and Wave 1 local discoveries with realistic daily drive limits."
       wave_4_quality_gate:
         agents: ["quality-controller", "source-verification"]
         objective: "Audit Cook Strait ferry connection times, seasonal road closures, and booking deadlines."
       wave_5_dossier_assembly:
         agents: ["travel-orchestrator"]
         objective: "Compile comprehensive final travel dossier with pre-booking checklist."
-source_log:
-  - name: "Antigravity Multi-Agent Systems Architecture Standard"
-    tier: 1
-    url: "https://antigravity.internal/docs/architecture"
+source_log: []
 assumptions:
   - "All sub-agents communicate via standardized structured YAML envelopes."
 missing_information:

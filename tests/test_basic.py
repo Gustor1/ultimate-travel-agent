@@ -2,6 +2,7 @@
 
 import subprocess
 import sys
+
 from ultimate_travel_agent import __version__
 from ultimate_travel_agent.cli import get_base_dir
 
@@ -27,7 +28,7 @@ def test_cli_help():
 
 
 def test_cli_list_skills():
-    """Verify list-skills subcommand outputs all 13 skills."""
+    """Verify list-skills subcommand outputs all 14 skills."""
     result = subprocess.run(
         [sys.executable, "-m", "ultimate_travel_agent.cli", "list-skills"],
         capture_output=True,
@@ -44,3 +45,4 @@ def test_cli_list_skills():
     assert "travel-safety" in result.stdout
     assert "source-verification" in result.stdout
     assert "travel-quality-control" in result.stdout
+    assert "flight-search" in result.stdout

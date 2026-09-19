@@ -59,15 +59,18 @@ All references must strictly adhere to the 6-tier sourcing hierarchy:
 
 ### Flight-Specific Source Rules & Deep Link Mandate
 - **Airline direct websites** (e.g., Air France, TAP Air Portugal, easyJet, Ryanair) are **Tier 2** and must always serve as the primary booking link.
-- **Active Discovery via Systematic 3-Engine Cross-Comparison**:
-  - Before verifying on airline direct sites, each flight search pass (Passes 1, 2, and 3 minimum) must systematically pass through a cross-comparison across **THREE** engines:
+- **Active Discovery via Adaptive Cross-Comparison**:
+  - Before verifying on airline direct sites, use **at least one available comparison engine** in Passes 1, 2, and 3. Google Flights, Skyscanner, and Trip.com are supported examples, not a rigid quota.
+  - Query a second or third engine only when it materially improves coverage: a price discrepancy, missing route, flexible-date search, nearby-airport search, regional inventory gap, or low confidence.
+  - When an engine is blocked, unavailable, or redundant, record that fact in `source_log`; do not retry mechanically or invent results.
+  - Supported engines include:
     1. **Google Flights**
     2. **Skyscanner**
     3. **Trip.com**
   - **Details of Cross-Comparison per Pass**:
-    - **Pass 1 (Base)**: Launch exact-date searches simultaneously on all 3 engines. Cross-reference results to preselect the top 3-5 best offers (airline, price, schedules, stops). Flag and document any significant price discrepancies between engines (e.g. same flight showing €240 on Google Flights/Skyscanner vs €244 on Trip.com) in the dossier.
-    - **Pass 2 (Multi-Airport)**: Use Google Flights "nearby airports" ("aéroports à proximité") and Trip.com broad regional search to discover alternative departure/arrival gateways, cross-checking candidate routes on Skyscanner.
-    - **Pass 3 (Flexible Dates)**: Use the Google Flights date grid ("grille de dates flexibles"), the Skyscanner price calendar, and Trip.com flexible dates; cross-reference all 3 to identify the cheapest departure and return days.
+    - **Pass 1 (Base)**: Run an exact-date search on one engine. Add another engine if the route or price needs corroboration, then preselect the top 3-5 offers.
+    - **Pass 2 (Multi-Airport)**: Use a nearby-airport or broad-regional search. Cross-check only retained candidates whose coverage or price is uncertain.
+    - **Pass 3 (Flexible Dates)**: Use an available date grid or price calendar. Add another engine when the identified minimum is not sufficiently supported.
   - **Strict Verification & Direct Booking Boundary**:
     - The cross-comparison is used **exclusively for rapid discovery, screening, and price spread detection**.
     - Every preselected candidate flight, true door-to-door cost, baggage fee, and live schedule must then be verified directly on the official airline website (Tier 2).
@@ -77,7 +80,7 @@ All references must strictly adhere to the 6-tier sourcing hierarchy:
     - Google Flights, Skyscanner, and Trip.com are classified as **comparison engines** ("moteurs de comparaison") during the discovery phase, distinct from editorial Tier 4 guides (Michelin, Lonely Planet).
     - **Trip.com Dual Status**: Trip.com functions strictly as a comparison tool for flights (never as a booking link), whereas it serves as the authorized primary practical booking channel for Chinese rail ticketing in `transport-research`.
   - **OTA Ban Intact**: The prohibition of OTAs as flight booking links remains absolute (Expedia, eDreams, Kiwi, Opodo, Lastminute forbidden; Trip.com strictly confined to discovery/comparison, never as a flight booking link).
-  - **Mandatory 3-Engine Source Logging**: All 3 comparison engines used must appear individually in `source_log` with verification date (`YYYY-MM-DD`). The dossier must state for each pass which engines were used and note observed price deltas between them.
+  - **Adaptive Source Logging**: Every engine actually consulted must appear individually in `source_log` with verification date (`YYYY-MM-DD`). Record unavailable or deliberately skipped engines and the reason. At least one comparison engine and one direct-airline verification are required for a booking-ready retained option.
 - **Deep URLs Mandatory on EVERY Retained Option**:
   - Every retained flight option (`retained: true` or Pass 1 `REF`) across Passes 1, 2, 3, and 4 **must provide a deep booking link** to the airline's flight selection portal (e.g., `https://www.flytap.com/en/booking/flights`, `https://www.easyjet.com/en/buy/flights`, `https://www.ryanair.com/gb/en/trip/flights/select`). Generic root domain homepages (e.g., `ryanair.com`, `easyjet.com/en`, `airfrance.fr`) are strictly forbidden.
   - **Mandatory Step-by-Step Instructions**: On every retained option, provide explicit user search instructions:
@@ -95,15 +98,15 @@ All references must strictly adhere to the 6-tier sourcing hierarchy:
 
 ### Pass 1 — Base (Single Best Reference Price)
 Search flights to the **principal airport** of the destination city on the **exact dates** requested by the user, incorporating origin access from the traveler's city center (e.g. RER B to CDG or Metro 14 to Orly) and luggage requirements.
-- **Systematic 3-Engine Cross-Comparison**: Query **Google Flights**, **Skyscanner**, and **Trip.com** simultaneously on the exact dates requested. Cross-reference results to preselect the top 3-5 best candidate offers (airline, base fare, times, stops) and document any noticeable pricing spread between engines.
+- **Adaptive Cross-Comparison**: Query at least one available comparison engine on the exact dates requested. Add another engine only when needed to resolve a price discrepancy, coverage gap, or confidence issue. Document all engines used or unavailable.
 - **Direct Carrier Verification**: Verify the preselected candidates directly on official airline portals (Tier 2) to confirm final base fare, baggage fees, and conditions.
 - When multiple airlines are found (e.g., TAP at €400, Transavia at €318, easyJet at €270 with checked bag), **the single best Pass 1 result** (the cheapest option strictly conforming to the brief's baggage and timing requirements) serves as the **unique reference baseline (REF)** for all subsequent comparisons.
 - Record: airline, flight numbers, flight duration, stops, baggage allowance, total price, deep direct URL, verification date, and comparison engine price deltas.
 
 ### Pass 2 — Multi-Airport (Fixed Dates)
 Keeping the exact travel dates from Pass 1, investigate alternative arrival gateways:
-- **Systematic 3-Engine Cross-Comparison Step**: Use Google Flights "nearby airports" ("aéroports à proximité") and Trip.com broad regional search to discover alternative departure and arrival hubs, cross-checking available routes and fares on Skyscanner.
-- **Direct Carrier Verification**: Verify candidate flights, exact schedules, and live bag fees directly on official airline portals (Tier 2). Document all 3 comparison engines in `source_log`.
+- **Adaptive Cross-Comparison Step**: Use an available nearby-airport or broad-regional search to discover alternative departure and arrival hubs. Cross-check only material candidates whose price or coverage is uncertain.
+- **Direct Carrier Verification**: Verify candidate flights, exact schedules, and live bag fees directly on official airline portals (Tier 2). Document engines used, skipped, or unavailable in `source_log`.
 - Other airports serving the same metropolitan area (e.g., London: LHR, LGW, STN, LTN, SEN).
 - Airports of adjacent cities connected by direct high-speed rail or express bus (e.g., Porto or Faro for Lisbon; Girona or Reus for Barcelona; Bologna or Florence for Rome).
 - Alternative departure airports in the traveler's origin region (e.g., Paris Beauvais BVA instead of CDG/Orly).
@@ -116,7 +119,7 @@ door_to_door_cost = flight_price + origin_access_cost + ground_transfer_cost + o
 ```
 Where:
 - `flight_price`: Total flight cost for all travelers, **including checked baggage fees if demanded by the brief**, mandatory taxes, and fees.
-- `origin_access_cost`: Total cost of round-trip ground transit from the traveler's city center to the departure airport for all travelers (e.g., Beauvais official shuttle €16.90/pers each way = €67.60 round-trip for 2 pax; or RER B to CDG €11.80/pers each way = €47.20 round-trip for 2 pax). **To ensure a fair comparison, origin access must be computed for both the baseline and alternatives at equal equipment.**
+- `origin_access_cost`: Total ground transit cost from the traveler's city center to the departure airport for all travelers. Use one-way access for `one_way`; use outbound and return access for `round_trip`. **To ensure a fair comparison, compute origin access for baseline and alternatives on the same trip basis.**
 - `ground_transfer_cost`: Total round-trip ground transport (rail, express bus, shuttle) connecting the alternative arrival airport to the final destination city center for all travelers (citing Tier 2 operators like CP, SNCF, Renfe, Rede Expressos).
 - `overnight_stay_cost`: Cost of a transit overnight stay (standard rate: 60 € to 90 € / room) if flight arrival occurs too late to catch the last onward ground connection on the same day.
 - `transfer_time_penalty` (or `transfer_time_value`): Economic valuation of extra travel fatigue and lost vacation time. Defined as a flat rate of **15 € per hour of additional ground transit time** compared to the Pass 1 baseline journey, documented explicitly in `assumptions`.
@@ -139,8 +142,8 @@ Retain an alternative airport option **only if** it yields a net saving $\ge 20\
 ### Pass 3 — Flexible Dates (Principal Airport)
 **Skip this pass entirely if the user specified `dates_fixed: true` or non-negotiable dates.**
 Using exclusively the principal airport from Pass 1:
-- **Systematic 3-Engine Cross-Comparison Step**: Use the Google Flights date grid ("grille de dates flexibles"), the Skyscanner price calendar, and the Trip.com flexible date matrix; cross-reference all 3 tools to spot the lowest fare dips in the $\pm 3$ days window. Note any pricing discrepancies across engines.
-- **Direct Carrier Verification**: Verify prices, seats, and baggage policies directly on the airline website (Tier 2). Record all 3 comparison engines in `source_log`.
+- **Adaptive Cross-Comparison Step**: Use an available flexible-date grid or price calendar in the $\pm 3$ days window. Add another engine only when a fare dip, missing route, or price discrepancy needs corroboration.
+- **Direct Carrier Verification**: Verify prices, seats, and baggage policies directly on the airline website (Tier 2). Record every engine consulted, skipped, or unavailable in `source_log`.
 - For round-trip journeys: test date shifts of -3, -2, -1, +1, +2, +3 days on departure AND return **independently**.
 - For one-way journeys: test shifts of -3, -2, -1, +1, +2, +3 days on the departure date only.
 - Document the exact date shift (e.g., "Aller +2j, Retour identique") and price delta vs the single best Pass 1 baseline.
@@ -173,7 +176,7 @@ Produce a comparative matrix sorted strictly by **ascending total door-to-door c
 - Passes must be executed and displayed in strict chronological sequence: 1 $\rightarrow$ 2 $\rightarrow$ 3 $\rightarrow$ 4.
 
 ## 9. Output Format
-All outputs must include a structured YAML block:
+All outputs must conform to `TravelDossier v1` (`docs/travel-dossier-v1.md`). The specialized flight structure belongs in `recommendations`; every critical price or schedule also needs a claim and source reference:
 ```yaml
 summary: ""
 recommendations:
@@ -189,6 +192,7 @@ recommendations:
         origin_access_cost: ""
         ground_transfer_destination: "€0"
         overnight_stay: "€0"
+        transfer_time_penalty: "€0"
         door_to_door_total: ""
       direct_url: ""
       booking_instructions: ""
@@ -209,6 +213,7 @@ risks: []
 > "Recherche des vols Paris → Lisbonne, 2 adultes, 10-17 octobre 2026, dates flexibles ±3 jours, 1 bagage cabine chacun + 1 valise en soute."
 
 **Expected Output:**
+The fixture below is illustrative only. It is not evidence of current fares, schedules, inventory, or availability.
 ```yaml
 summary: "Recherche de vols Paris → Lisbonne en 4 passes réalisée pour 2 adultes avec 1 valise en soute. Référence Passe 1 (REF) : easyJet CDG→LIS direct à €270 (€240 vol + €30 soute) + €47 RER = €317 porte-à-porte. Passe 2 : Porto via Beauvais revient à €283 tout compris (€165 vol+soute + €68 navette BVA + €50 train CP) soit seulement €34 d'économie (11%) pour +4h de trajet, donc REJETÉE sous le seuil de 20%/€50; Faro via Orly retenue à €261 (-€56). Passe 3 : easyJet CDG décalé au 12 octobre à €227 (-€90). Passe 4 : Faro décalé au 12 octobre offrant le meilleur tarif combiné à €211 (-€106, -33%)."
 recommendations:
@@ -224,6 +229,7 @@ recommendations:
         origin_access_cost: "€47 (RER B Paris Châtelet → CDG A/R 2p)"
         ground_transfer_destination: "€0"
         overnight_stay: "€0"
+        transfer_time_penalty: "€0"
         door_to_door_total: "€317"
       is_baseline_reference: true
       direct_url: "https://www.easyjet.com/en/buy/flights"
@@ -245,6 +251,7 @@ recommendations:
           origin_access_cost: "€68 (Navette officielle Paris Porte Maillot → BVA A/R 2p: 4x €16.90)"
           ground_transfer_destination: "€50 (Train CP promo A/R 2p)"
           overnight_stay: "€0 (correspondance le jour même confirmée)"
+          transfer_time_penalty: "€0 (additional time does not exceed the >4h threshold)"
           door_to_door_total: "€283"
         saving_vs_pass1: "-€34 vs REF easyJet €317 (-11%)"
         retained: false
@@ -267,6 +274,7 @@ recommendations:
           origin_access_cost: "€41 (Métro ligne 14 Châtelet → Orly A/R 2p)"
           ground_transfer_destination: "€40 (Autocar A/R 2p)"
           overnight_stay: "€0 (correspondance le jour même confirmée)"
+          transfer_time_penalty: "€0"
           door_to_door_total: "€261"
         saving_vs_pass1: "-€56 vs REF easyJet €317 (-18%)"
         retained: true
@@ -285,6 +293,7 @@ recommendations:
           origin_access_cost: "€47 (RER B A/R 2p)"
           ground_transfer_destination: "€0"
           overnight_stay: "€0"
+          transfer_time_penalty: "€0"
           door_to_door_total: "€227"
         saving_vs_pass1: "-€90 vs REF easyJet €317 (-28%)"
         retained: true
@@ -302,6 +311,7 @@ recommendations:
           origin_access_cost: "€41 (Métro 14 A/R 2p)"
           ground_transfer_destination: "€40 (Autocar A/R 2p)"
           overnight_stay: "€0"
+          transfer_time_penalty: "€0"
           door_to_door_total: "€211"
         saving_vs_pass1: "-€106 vs REF easyJet €317 (-33%)"
         retained: true
@@ -311,15 +321,18 @@ recommendations:
   - synthesis_table: "Tableau comparatif trié par coût porte-à-porte croissant avec ligne REF unique"
 source_log:
   - name: "Google Flights (Moteur de comparaison / découverte & grille tarifaire)"
-    tier: 4
+    source_type: "comparison_engine"
+    authority: "secondary"
     url: "https://www.google.com/travel/flights"
     verification_date: "2026-09-17"
   - name: "Skyscanner (Moteur de comparaison / calendrier & aéroports)"
-    tier: 4
+    source_type: "comparison_engine"
+    authority: "secondary"
     url: "https://www.skyscanner.net"
     verification_date: "2026-09-17"
   - name: "Trip.com (Moteur de comparaison de vols / recherche large)"
-    tier: 5
+    source_type: "comparison_engine"
+    authority: "secondary"
     url: "https://www.trip.com/flights"
     verification_date: "2026-09-17"
   - name: "easyJet Official Flight Booking Engine"
@@ -361,7 +374,7 @@ risks:
 ## Direct Link Requirements & Flight Source Rules
 - Every flight option must include a **deep direct URL to the airline's official booking engine** (Tier 2). Generic root domain homepages are strictly prohibited.
 - **Deep link & Search Instructions Mandatory on ALL Retained Options**: Every retained option across Passes 1, 2, 3, and 4 must provide both the deep booking link (`direct_url`) and explicit step-by-step query instructions (`booking_instructions`) for the user.
-- **Systematic 3-Engine Cross-Comparison**: Google Flights, Skyscanner, and Trip.com are systematically queried in parallel across Passes 1, 2, and 3 to discover candidate routes, test flexible dates, and detect pricing spreads. All 3 comparison engines must be recorded in `source_log`.
+- **Adaptive Cross-Comparison**: Use at least one available comparison engine across Passes 1, 2, and 3, and add further engines only for material coverage or confidence gaps. Record consulted, skipped, and unavailable engines in `source_log`.
 - **Direct Carrier Booking Only**: Booking links are exclusively direct carrier websites (Tier 2). Google Flights, Skyscanner, and Trip.com are comparison tools only and must NEVER appear as flight booking links. (Trip.com is retained as a booking channel solely for Chinese rail in transport-research).
 - **Unopened Inventories (> 11 months / > 330 days)**: Must output realistic price ranges (e.g. `850-950 €`), tagged `"estimation, inventaire non ouvert"`. Fictitious exact decimals are prohibited.
 - Ground transfer fares must cite the official operator URL (Tier 2, e.g. `cp.pt`, `rede-expressos.pt`, `aeroportparisbeauvais.com`).

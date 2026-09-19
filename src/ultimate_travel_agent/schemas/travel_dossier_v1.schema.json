@@ -1,0 +1,109 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/Gustor1/ultimate-travel-agent/schemas/travel_dossier_v1.schema.json",
+  "title": "TravelDossier v1",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "mode",
+    "status",
+    "summary",
+    "recommendations",
+    "claims",
+    "sources",
+    "costs",
+    "assumptions",
+    "missing_information",
+    "verification_required",
+    "risks",
+    "readiness"
+  ],
+  "properties": {
+    "schema_version": {"const": "travel-dossier/v1"},
+    "mode": {"enum": ["inspiration", "booking_ready"]},
+    "status": {"enum": ["complete", "partial", "blocked"]},
+    "summary": {"type": "string", "minLength": 1},
+    "recommendations": {"type": "array"},
+    "claims": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["claim_id", "text", "status", "source_ids", "critical"],
+        "properties": {
+          "claim_id": {"type": "string", "pattern": "^[a-z0-9][a-z0-9._-]*$"},
+          "text": {"type": "string", "minLength": 1},
+          "status": {
+            "enum": ["official_verified", "cross_checked", "community_recommended", "social_discovery_only", "estimated", "unverified", "outdated"]
+          },
+          "source_ids": {"type": "array", "items": {"type": "string"}},
+          "critical": {"type": "boolean"},
+          "observed_at": {"type": ["string", "null"], "format": "date"},
+          "expires_at": {"type": ["string", "null"], "format": "date"}
+        }
+      }
+    },
+    "sources": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["source_id", "name", "url", "source_type", "authority", "retrieved_at"],
+        "properties": {
+          "source_id": {"type": "string", "pattern": "^[a-z0-9][a-z0-9._-]*$"},
+          "name": {"type": "string", "minLength": 1},
+          "url": {"type": "string", "format": "uri"},
+          "source_type": {
+            "enum": ["government", "direct_operator", "tourism_institution", "comparison_engine", "editorial", "community", "social"]
+          },
+          "authority": {"enum": ["primary", "secondary", "discovery_only"]},
+          "retrieved_at": {"type": "string", "format": "date"},
+          "expires_at": {"type": ["string", "null"], "format": "date"},
+          "tier": {"type": ["integer", "null"], "minimum": 1, "maximum": 6}
+        }
+      }
+    },
+    "costs": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["amount", "currency"],
+        "properties": {
+          "amount": {
+            "oneOf": [
+              {"type": "integer", "minimum": 0},
+              {"type": "string", "pattern": "^(0|[1-9][0-9]*)(\\.[0-9]+)?$"}
+            ]
+          },
+          "currency": {"type": "string", "pattern": "^[A-Z]{3}$"},
+          "quantity": {
+            "oneOf": [
+              {"type": "integer", "minimum": 1},
+              {"type": "string", "pattern": "^(0\\.[0-9]*[1-9][0-9]*|[1-9][0-9]*(\\.[0-9]+)?)$"}
+            ]
+          },
+          "total": {
+            "oneOf": [
+              {"type": "null"},
+              {"type": "integer", "minimum": 0},
+              {"type": "string", "pattern": "^(0|[1-9][0-9]*)(\\.[0-9]+)?$"}
+            ]
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "assumptions": {"type": "array", "items": {"type": "string"}},
+    "missing_information": {"type": "array", "items": {"type": "string"}},
+    "verification_required": {"type": "array", "items": {"type": "string"}},
+    "risks": {"type": "array", "items": {"type": "string"}},
+    "readiness": {
+      "type": "object",
+      "required": ["booking_ready", "blockers"],
+      "properties": {
+        "booking_ready": {"type": "boolean"},
+        "blockers": {"type": "array", "items": {"type": "string"}}
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": true
+}

@@ -25,7 +25,7 @@ In this Skills-First architecture, your role is to utilize specialized travel sk
 - Upstream outputs from coordinating agents.
 
 ## 4. Outputs
-A structured YAML result envelope conforming to project standards:
+A `TravelDossier v1` fragment with dated destination-context claims. Legacy envelope during migration:
 ```yaml
 summary: "Concise summary of findings"
 recommendations: []

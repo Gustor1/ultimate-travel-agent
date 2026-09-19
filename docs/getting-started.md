@@ -28,9 +28,9 @@ Ce guide explique comment installer, configurer et exécuter `ultimate-travel-ag
    - Sur Windows (PowerShell) : `.\.venv\Scripts\Activate.ps1`
    - Sur Windows (cmd) : `.\.venv\Scripts\activate.bat`
 
-3. Installez le paquet en mode éditable avec les dépendances de développement et MCP :
+3. Installez le paquet en mode éditable avec les dépendances de développement :
    ```bash
-   pip install -e ".[dev,mcp]"
+   pip install -e ".[dev]"
    ```
 
 ---
@@ -61,6 +61,9 @@ python -m ultimate_travel_agent.cli install-skills \
 # Valider la conformité et la sécurité des skills installées
 python -m ultimate_travel_agent.cli validate-skills
 
+# Valider un dossier JSON/YAML avec TravelDossier v1
+python -m ultimate_travel_agent.cli validate-dossier dossier.yaml
+
 # Désinstaller proprement le pack de skills sans toucher aux fichiers personnalisés
 python -m ultimate_travel_agent.cli uninstall-skills --target /chemin/vers/mon-projet
 ```
@@ -77,4 +80,3 @@ Pour planifier un voyage complet avec vos agents IA (Antigravity, Claude Code, C
    Follow the workflow .agents/workflows/plan-complete-trip.md using this brief:
    [Coller votre brief ici]
    ```
-

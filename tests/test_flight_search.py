@@ -6,12 +6,11 @@ import pytest
 
 from ultimate_travel_agent.validator import (
     is_flight_ota_or_metasearch,
-    is_generic_root_homepage,
+    validate_fixed_dates_skip,
     validate_flight_comparison_sources,
     validate_flight_option,
     validate_flight_pass_order,
     validate_flight_search_skill_file,
-    validate_fixed_dates_skip,
     validate_retained_flight_options,
     validate_skill_file,
     validate_synthesis_has_reference,
@@ -68,7 +67,9 @@ class TestFlightSearchSkillStructure:
         """The transport-planner agent must reference flight-search."""
         agent_path = REPO_ROOT / ".agents" / "agents" / "transport-planner" / "agent.md"
         content = agent_path.read_text(encoding="utf-8")
-        assert "flight-search" in content, "transport-planner agent.md does not reference flight-search"
+        assert "flight-search" in content, (
+            "transport-planner agent.md does not reference flight-search"
+        )
 
 
 # ──────────────────────────────────────────────
@@ -275,7 +276,9 @@ class TestDoorToDoorArithmeticAndDecomposition:
             },
             "transfer_mode": "train",
         }
-        passed, issues = validate_flight_option(option, is_alternative=True, is_alternative_origin=True)
+        passed, issues = validate_flight_option(
+            option, is_alternative=True, is_alternative_origin=True
+        )
         assert not passed, "Alternative departure airport without origin access cost should fail"
         assert any("origin access" in i.lower() for i in issues)
 
@@ -293,7 +296,9 @@ class TestDoorToDoorArithmeticAndDecomposition:
             },
             "transfer_mode": "train",
         }
-        passed, issues = validate_flight_option(option, is_alternative=True, is_alternative_origin=True)
+        passed, issues = validate_flight_option(
+            option, is_alternative=True, is_alternative_origin=True
+        )
         assert passed, f"Alternative departure airport with origin access rejected: {issues}"
 
     def test_checked_bag_omitted_when_brief_requires_it_fails(self):
@@ -422,9 +427,14 @@ class TestWorkflowIntegration:
         workflow_path = REPO_ROOT / ".agents" / "workflows" / "plan-complete-trip.md"
         content = workflow_path.read_text(encoding="utf-8")
         assert "flight-search" in content, "plan-complete-trip.md missing flight-search reference"
-        flight_idx = content.lower().index("flight-search")
-        accom_lines = [i for i, line in enumerate(content.split("\n")) if "accommodation-researcher" in line.lower() and "depends" in line.lower()]
-        assert len(accom_lines) > 0, "plan-complete-trip.md missing accommodation-researcher dependency on flight-search"
+        accom_lines = [
+            i
+            for i, line in enumerate(content.split("\n"))
+            if "accommodation-researcher" in line.lower() and "depends" in line.lower()
+        ]
+        assert len(accom_lines) > 0, (
+            "plan-complete-trip.md missing accommodation-researcher dependency on flight-search"
+        )
 
     def test_compare_transport_references_flight_search(self):
         workflow_path = REPO_ROOT / ".agents" / "workflows" / "compare-transport.md"
@@ -585,15 +595,15 @@ class TestUnopenedInventoriesPriceRanges:
 
 
 # ──────────────────────────────────────────────
-# 11. 3-Engine Cross-Comparison (Google Flights, Skyscanner, Trip.com)
+# 11. Adaptive Cross-Comparison (Google Flights, Skyscanner, Trip.com)
 # ──────────────────────────────────────────────
 
 
 class TestFlightComparisonEngines:
-    """Validate 3-engine cross-comparison logging and carrier direct booking enforcement."""
+    """Validate adaptive comparison logging and carrier direct booking enforcement."""
 
-    def test_dossier_with_single_comparison_engine_fails(self):
-        """A source_log containing only Google Flights fails due to missing Skyscanner and Trip.com."""
+    def test_dossier_with_single_comparison_engine_passes(self):
+        """One comparison engine is sufficient when it covers the search."""
         dossier = {
             "source_log": [
                 {
@@ -615,12 +625,10 @@ class TestFlightComparisonEngines:
             ],
         }
         passed, issues = validate_flight_comparison_sources(dossier)
-        assert not passed, "Single comparison engine should fail"
-        assert any("Skyscanner" in i for i in issues)
-        assert any("Trip.com" in i for i in issues)
+        assert passed, f"Adaptive single-engine research failed: {issues}"
 
-    def test_dossier_with_two_comparison_engines_fails(self):
-        """A source_log with Google Flights and Skyscanner (missing Trip.com) fails."""
+    def test_dossier_with_two_comparison_engines_passes(self):
+        """Two comparison engines pass without a mechanical third-engine quota."""
         dossier = {
             "source_log": [
                 {
@@ -636,8 +644,18 @@ class TestFlightComparisonEngines:
             ],
         }
         passed, issues = validate_flight_comparison_sources(dossier)
-        assert not passed, "Missing Trip.com should fail"
-        assert any("Trip.com" in i for i in issues)
+        assert passed, f"Adaptive two-engine research failed: {issues}"
+
+    def test_dossier_without_comparison_engine_fails(self):
+        dossier = {
+            "source_log": [{"name": "TAP Air Portugal", "url": "https://www.flytap.com"}],
+            "options": [
+                {"airline": "TAP", "direct_url": "https://www.flytap.com/en/booking/flights"}
+            ],
+        }
+        passed, issues = validate_flight_comparison_sources(dossier)
+        assert not passed
+        assert any("Missing comparison engine evidence" in issue for issue in issues)
 
     def test_flight_booking_link_to_trip_com_fails(self):
         """A flight dossier where a flight booking link points to Trip.com fails."""
@@ -688,7 +706,7 @@ class TestFlightComparisonEngines:
             assert any("comparison engine/OTA" in i for i in issues)
 
     def test_dossier_with_all_three_engines_and_airline_booking_passes(self):
-        """A flight dossier with Google Flights, Skyscanner, and Trip.com in source_log and airline links passes."""
+        """Multiple engines and airline-direct links remain valid."""
         dossier = {
             "source_log": [
                 {
@@ -723,9 +741,8 @@ class TestFlightComparisonEngines:
         assert passed, f"Should pass: {issues}"
 
     def test_paris_lisbon_expected_output_passes_comparison_sources(self):
-        """paris-lisbon-flights-output.md must satisfy all 3 comparison engines."""
+        """paris-lisbon-flights-output.md must include adaptive comparison evidence."""
         output_file = REPO_ROOT / "examples" / "expected-outputs" / "paris-lisbon-flights-output.md"
         content = output_file.read_text(encoding="utf-8")
         passed, issues = validate_flight_comparison_sources(content)
         assert passed, f"Expected output failed comparison sources: {issues}"
-

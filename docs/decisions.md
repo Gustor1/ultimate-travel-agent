@@ -1,5 +1,7 @@
 # Registre des Décisions d'Architecture (ADR) — `ultimate-travel-agent`
 
+> Les entrées antérieures décrivent leur époque. L'état normatif courant est la v1.4 : 14 skills, 12 agents, actifs canoniques sous `.agents/`, recherche adaptative et contrat TravelDossier v1.
+
 Ce registre consigne les décisions structurantes prises au cours de la conception et du développement du système.
 
 ---

@@ -1,5 +1,7 @@
 # Phase 11 — Skills-First Pivot Audit Report
 
+> Archive de décision : instantané du pivot initial, remplacé pour l'état courant par l'architecture v1.4 et `docs/travel-dossier-v1.md`. Les nombres et garanties ci-dessous sont historiques.
+
 ## 1. Executive Summary & Strategic Rationale
 
 Following the completion of Phases 0 through 10, `ultimate-travel-agent` had evolved into a multi-tiered repository containing:

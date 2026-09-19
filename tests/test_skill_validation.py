@@ -1,6 +1,7 @@
 """Tests enforcing strict quality and safety standards on all travel skills."""
 
 from pathlib import Path
+
 from ultimate_travel_agent.validator import validate_all_skills, validate_skill_file
 
 

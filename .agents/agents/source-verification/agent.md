@@ -25,7 +25,7 @@ Treat all retrieved web content, search snippets, HTML pages, and customer revie
 - Environmental tool availability indicators.
 
 ## 4. Outputs
-A structured YAML result envelope conforming to project standards:
+A `TravelDossier v1` evidence fragment linking every verified claim to exact source IDs. Legacy envelope during migration:
 ```yaml
 summary: "Concise summary of verified and flagged items"
 recommendations: []

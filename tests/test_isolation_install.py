@@ -1,12 +1,10 @@
 """Integration test suite verifying installation, tracking, and uninstallation in an isolated empty project."""
 
-import json
 import tempfile
 from pathlib import Path
 
 from ultimate_travel_agent.skills import (
     compute_file_sha256,
-    get_install_manifest_path,
     install_pack_skills,
     load_install_manifest,
     uninstall_pack_skills,
@@ -35,7 +33,9 @@ def test_isolated_project_lifecycle():
         # ---------------------------------------------------------
         # Step 1: Install skills alone
         # ---------------------------------------------------------
-        res1 = install_pack_skills(target_dir=target_project, include_agents=False, include_workflows=False)
+        res1 = install_pack_skills(
+            target_dir=target_project, include_agents=False, include_workflows=False
+        )
         assert len(res1["installed"]) >= 14
         manifest1 = load_install_manifest(target_project)
         assert manifest1 is not None
@@ -48,10 +48,7 @@ def test_isolated_project_lifecycle():
         # Step 2: Install skills + agents + workflows
         # ---------------------------------------------------------
         res2 = install_pack_skills(
-            target_dir=target_project,
-            include_agents=True,
-            include_workflows=True,
-            force=False
+            target_dir=target_project, include_agents=True, include_workflows=True, force=False
         )
         assert res2["agents_count"] == 12
         assert res2["workflows_count"] == 9
@@ -60,14 +57,23 @@ def test_isolated_project_lifecycle():
         assert manifest2 is not None
 
         # ---------------------------------------------------------
-        # Step 3: Check 13 skills present
+        # Step 3: Check 14 skills present
         # ---------------------------------------------------------
         expected_skills = [
-            "travel-orchestrator", "travel-web-research", "transport-research",
-            "accommodation-research", "activity-curator", "local-discovery",
-            "itinerary-builder", "budget-and-booking-checker", "travel-safety",
-            "source-verification", "travel-quality-control", "multi-agent-orchestration",
-            "mcp-skill-auditing", "flight-search"
+            "travel-orchestrator",
+            "travel-web-research",
+            "transport-research",
+            "accommodation-research",
+            "activity-curator",
+            "local-discovery",
+            "itinerary-builder",
+            "budget-and-booking-checker",
+            "travel-safety",
+            "source-verification",
+            "travel-quality-control",
+            "multi-agent-orchestration",
+            "mcp-skill-auditing",
+            "flight-search",
         ]
         for s in expected_skills:
             skill_md = target_project / ".agents" / "skills" / s / "SKILL.md"
@@ -78,10 +84,18 @@ def test_isolated_project_lifecycle():
         # Step 4: Check 12 agents present
         # ---------------------------------------------------------
         expected_agents = [
-            "travel-orchestrator", "destination-researcher", "transport-planner",
-            "accommodation-researcher", "activity-curator", "local-discovery-agent",
-            "travel-preparation-agent", "budget-analyst", "itinerary-optimizer",
-            "quality-controller", "mcp-skill-auditor"
+            "travel-orchestrator",
+            "destination-researcher",
+            "transport-planner",
+            "accommodation-researcher",
+            "activity-curator",
+            "local-discovery-agent",
+            "travel-preparation-agent",
+            "budget-analyst",
+            "itinerary-optimizer",
+            "quality-controller",
+            "mcp-skill-auditor",
+            "source-verification",
         ]
         for a in expected_agents:
             agent_md = target_project / ".agents" / "agents" / a / "agent.md"
@@ -91,9 +105,15 @@ def test_isolated_project_lifecycle():
         # Step 5: Check 9 workflows present
         # ---------------------------------------------------------
         expected_workflows = [
-            "plan-complete-trip.md", "research-destination.md", "compare-transport.md",
-            "find-accommodation.md", "curate-activities.md", "build-itinerary.md",
-            "validate-trip.md", "prepare-departure.md", "audit-external-tool.md"
+            "plan-complete-trip.md",
+            "research-destination.md",
+            "compare-transport.md",
+            "find-accommodation.md",
+            "curate-activities.md",
+            "build-itinerary.md",
+            "validate-trip.md",
+            "prepare-departure.md",
+            "audit-external-tool.md",
         ]
         for wf in expected_workflows:
             wf_file = target_project / ".agents" / "workflows" / wf
@@ -113,7 +133,9 @@ def test_isolated_project_lifecycle():
         # ---------------------------------------------------------
         test_file = target_project / ".agents" / "skills" / "travel-orchestrator" / "SKILL.md"
         test_file.write_text("MODIFIED_BY_TEST", encoding="utf-8")
-        res_no_force = install_pack_skills(target_project, include_agents=True, include_workflows=True, force=False)
+        res_no_force = install_pack_skills(
+            target_project, include_agents=True, include_workflows=True, force=False
+        )
         # Must skip the modified file
         assert test_file.read_text(encoding="utf-8") == "MODIFIED_BY_TEST"
         assert any("travel-orchestrator/SKILL.md" in s for s in res_no_force["skipped"])
@@ -121,7 +143,9 @@ def test_isolated_project_lifecycle():
         # ---------------------------------------------------------
         # Step 8: Reinstall with --force (safe overwriting)
         # ---------------------------------------------------------
-        res_force = install_pack_skills(target_project, include_agents=True, include_workflows=True, force=True)
+        res_force = install_pack_skills(
+            target_project, include_agents=True, include_workflows=True, force=True
+        )
         assert test_file.read_text(encoding="utf-8") != "MODIFIED_BY_TEST"
         assert any("travel-orchestrator/SKILL.md" in o for o in res_force["overwritten"])
 
@@ -131,7 +155,9 @@ def test_isolated_project_lifecycle():
         user_skill_dir = target_project / ".agents" / "skills" / "my-custom-ski-touring"
         user_skill_dir.mkdir(parents=True, exist_ok=True)
         user_skill_file = user_skill_dir / "SKILL.md"
-        user_skill_file.write_text("# My Personal Ski Touring Skill\nRole: Custom ski tour planner", encoding="utf-8")
+        user_skill_file.write_text(
+            "# My Personal Ski Touring Skill\nRole: Custom ski tour planner", encoding="utf-8"
+        )
 
         user_agent_dir = target_project / ".agents" / "agents" / "my-custom-ski-guide"
         user_agent_dir.mkdir(parents=True, exist_ok=True)
@@ -142,7 +168,9 @@ def test_isolated_project_lifecycle():
         user_workflow_file.write_text("# Custom Ski Weekend Workflow", encoding="utf-8")
 
         # Also modify an installed travel skill to test modification protection
-        target_transport_skill = target_project / ".agents" / "skills" / "transport-research" / "SKILL.md"
+        target_transport_skill = (
+            target_project / ".agents" / "skills" / "transport-research" / "SKILL.md"
+        )
         target_transport_skill.write_text("USER_CUSTOMIZED_TRANSPORT_PROTOCOL", encoding="utf-8")
 
         # ---------------------------------------------------------
@@ -150,14 +178,19 @@ def test_isolated_project_lifecycle():
         # ---------------------------------------------------------
         un_res = uninstall_pack_skills(target_project, force=False, clean_modified=False)
 
-        # Untouched travel files must be deleted
-        assert not (target_project / ".agents" / "skills" / "travel-orchestrator").exists()
+        # A file overwritten with --force is restored to its pre-overwrite user version.
+        assert test_file.exists()
+        assert test_file.read_text(encoding="utf-8") == "MODIFIED_BY_TEST"
+        assert any("travel-orchestrator/SKILL.md" in item for item in un_res["restored"])
         assert not (target_project / ".agents" / "agents" / "travel-orchestrator").exists()
         assert not (target_project / ".agents" / "workflows" / "plan-complete-trip.md").exists()
 
         # Modified file MUST BE PRESERVED
         assert target_transport_skill.exists()
-        assert target_transport_skill.read_text(encoding="utf-8") == "USER_CUSTOMIZED_TRANSPORT_PROTOCOL"
+        assert (
+            target_transport_skill.read_text(encoding="utf-8")
+            == "USER_CUSTOMIZED_TRANSPORT_PROTOCOL"
+        )
         assert any("transport-research/SKILL.md" in m for m in un_res["skipped_modified"])
 
         # User-created custom files MUST BE 100% PRESERVED
@@ -179,7 +212,7 @@ def test_isolated_project_lifecycle():
         # ---------------------------------------------------------
         # Step 11: Final uninstallation with --clean-modified
         # ---------------------------------------------------------
-        un_res2 = uninstall_pack_skills(target_project, clean_modified=True)
+        uninstall_pack_skills(target_project, clean_modified=True)
         assert not target_transport_skill.exists()
         assert not (target_project / ".agents" / "skills" / "transport-research").exists()
 

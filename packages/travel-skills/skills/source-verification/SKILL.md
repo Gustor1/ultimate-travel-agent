@@ -48,7 +48,7 @@ All references must strictly adhere to the 6-tier sourcing hierarchy:
 - **Never present social-media content as verified logistical information.**
 
 ## 8. Output Format
-All outputs must include a structured YAML block:
+All outputs must conform to `TravelDossier v1` (`docs/travel-dossier-v1.md`). Each verified fact must become a claim linked to exact source IDs:
 ```yaml
 summary: ""
 recommendations: []
@@ -64,6 +64,7 @@ risks: []
 > "Verify whether the Louvre Museum in Paris is open on Tuesdays and whether tickets can be bought at the door."
 
 **Expected Output:**
+The fixture below is illustrative only and must not be reused as current admission policy.
 ```yaml
 summary: "Verification confirmed: The Louvre Museum is strictly CLOSED every Tuesday, and timed-entry advance online ticket reservation is mandatory to guarantee entry."
 recommendations:
@@ -83,11 +84,12 @@ source_log:
     tier: 1
     url: "https://www.louvre.fr"
 assumptions:
-  - "Visitor is paying standard adult admission (€22 online)."
+  - "Visitor category and residency are unknown; no admission price is assumed."
 missing_information:
   - "Whether visitor qualifies for free admission (EU residents under 26, disabled visitors)."
 verification_required:
   - "Confirm night opening availability (often Fridays until 21:45)."
+  - "Confirm the current admission category and price for the visitor's residency/status."
 risks:
   - "Third-party ticket reseller sites frequently markup tickets by 50-100% without valid reason." 
 ```

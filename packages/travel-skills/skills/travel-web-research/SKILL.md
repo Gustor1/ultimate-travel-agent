@@ -91,7 +91,7 @@ All references must strictly adhere to the 6-tier sourcing hierarchy:
 - **Never present social-media content as verified logistical information.**
 
 ## 10. Output Format
-All outputs must include a structured YAML block:
+All outputs must conform to `TravelDossier v1` (`docs/travel-dossier-v1.md`). Every time-sensitive fact must carry retrieval and expiry dates:
 ```yaml
 summary: ""
 recommendations: []
@@ -107,6 +107,7 @@ risks: []
 > "Research visiting Lisbon, Portugal during the first week of May for a couple interested in architecture and gastronomy."
 
 **Expected Output:**
+The fixture below is illustrative only. Climate, customs, events, and access rules require fresh verification.
 ```yaml
 summary: "May in Lisbon offers optimal spring weather (18-22°C, low rainfall), moderate shoulder-season crowds, and blooming jacarandas."
 recommendations:

@@ -50,7 +50,7 @@ All references must strictly adhere to the 6-tier sourcing hierarchy:
 - **Never present social-media content as verified logistical information.**
 
 ## 8. Output Format
-All outputs must include a structured YAML block:
+All outputs must conform to `TravelDossier v1` (`docs/travel-dossier-v1.md`). Visa, entry, health, and safety facts are critical claims and require current primary sources:
 ```yaml
 summary: ""
 recommendations: []
@@ -66,6 +66,7 @@ risks: []
 > "Assess safety, visa, and health requirements for a Canadian citizen traveling to Costa Rica for 10 days in November."
 
 **Expected Output:**
+The fixture below is illustrative only. Re-verify every entry, health, and safety claim for the travel date.
 ```yaml
 summary: "Costa Rica is generally safe with stable democratic governance; Canadian citizens do not require an entry visa for stays up to 180 days, but valid return tickets and 1-day passport validity past departure are legally required."
 recommendations:
@@ -107,7 +108,7 @@ risks:
 
 ### 2. China Grounding Invariants
 - **No Automatic Visa Assumption**: Never automatically prescribe a tourist visa without verifying traveler nationality, length of stay, and travel dates.
-- **Visa-Free Exemptions**: Highlight unilateral visa exemption policies (e.g. 15-day or 30-day visa-free entry for eligible European and other nationalities) and 144-hour transit exemptions.
+- **Visa-Free Exemptions**: Check the current unilateral exemption and visa-free transit policy against the National Immigration Administration. The former 72/144-hour transit framework was expanded to 240 hours, but eligibility, ports, permitted regions, and duration remain date- and nationality-sensitive.
 - **Official Direct Portals**:
   - National Immigration Administration (NIA): `https://en.nia.gov.cn`
   - Chinese Visa Application Service Centre: `https://www.visaforchina.cn`

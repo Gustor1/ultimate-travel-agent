@@ -2,13 +2,12 @@
 
 import argparse
 import os
-import shutil
 import tempfile
 from pathlib import Path
-import pytest
+
 import yaml
 
-from ultimate_travel_agent.cli import install_skills, uninstall_skills, get_base_dir
+from ultimate_travel_agent.cli import get_base_dir, install_skills, uninstall_skills
 
 
 def test_install_in_temp_project():
@@ -24,7 +23,7 @@ def test_install_in_temp_project():
         )
         install_skills(args)
 
-        # 1. Check all 13 skills are installed
+        # 1. Check all 14 skills are installed
         skills_dest = target_path / ".agents" / "skills"
         assert skills_dest.exists()
         expected_skills = [
@@ -41,6 +40,7 @@ def test_install_in_temp_project():
             "travel-quality-control",
             "multi-agent-orchestration",
             "mcp-skill-auditing",
+            "flight-search",
         ]
         for skill in expected_skills:
             skill_file = skills_dest / skill / "SKILL.md"
@@ -116,8 +116,8 @@ def test_uninstall():
         assert not (target_path / ".agents" / "workflows").exists()
 
 
-def test_all_13_skills_frontmatter_and_policies():
-    """Verify that all 13 skills adhere to the mandatory schema, frontmatter, and safety invariants."""
+def test_all_14_skills_frontmatter_and_policies():
+    """Verify that all 14 skills adhere to the mandatory schema, frontmatter, and safety invariants."""
     base_dir = get_base_dir()
     skills_dir = base_dir / ".agents" / "skills"
 
@@ -135,6 +135,7 @@ def test_all_13_skills_frontmatter_and_policies():
         "travel-quality-control",
         "multi-agent-orchestration",
         "mcp-skill-auditing",
+        "flight-search",
     ]
 
     for skill_name in expected_skills:
@@ -237,8 +238,8 @@ def test_all_4_example_briefs_detailed():
             assert "Information Requiring Verification" in content
 
 
-def test_all_11_agents_skills_first():
-    """Verify that all 11 sub-agents in .agents/agents are configured for Skills-First."""
+def test_all_12_agents_skills_first():
+    """Verify that all 12 sub-agents in .agents/agents are configured for Skills-First."""
     base_dir = get_base_dir()
     agents_dir = base_dir / ".agents" / "agents"
 
@@ -254,6 +255,7 @@ def test_all_11_agents_skills_first():
         "itinerary-optimizer",
         "quality-controller",
         "mcp-skill-auditor",
+        "source-verification",
     ]
 
     for agent_id in expected_agents:
@@ -325,13 +327,14 @@ def test_no_mcp_api_components_in_main():
     assert (history_dir / "data").exists()
 
 
-
 def test_no_secrets_and_personal_paths():
     """Verify zero sensitive API keys and zero personal Windows filepaths in repository."""
     base_dir = get_base_dir()
 
-    for root, dirs, files in os.walk(base_dir):
-        if any(ignored in root for ignored in [".git", "node_modules", "__pycache__", ".pytest_cache"]):
+    for root, _dirs, files in os.walk(base_dir):
+        if any(
+            ignored in root for ignored in [".git", "node_modules", "__pycache__", ".pytest_cache"]
+        ):
             continue
         for file in files:
             if not file.endswith((".py", ".md", ".json", ".yaml", ".yml")):
@@ -342,6 +345,12 @@ def test_no_secrets_and_personal_paths():
                 assert "c:\\Users\\eliot" not in content.lower(), f"Personal path in {path}"
                 # Ensure no live API tokens
                 if "api_key" in content.lower():
-                    assert "mock" in content.lower() or "example" in content.lower() or "your_" in content.lower() or "without" in content.lower() or "keyless" in content.lower(), f"Potential exposed secret in {path}"
+                    assert (
+                        "mock" in content.lower()
+                        or "example" in content.lower()
+                        or "your_" in content.lower()
+                        or "without" in content.lower()
+                        or "keyless" in content.lower()
+                    ), f"Potential exposed secret in {path}"
             except UnicodeDecodeError:
                 pass

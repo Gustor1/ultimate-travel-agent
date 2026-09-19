@@ -1,21 +1,19 @@
 """Functional validation test suite for direct links, source tiers, and regional scenarios."""
 
-import re
 from pathlib import Path
-import pytest
 
 from ultimate_travel_agent.validator import (
-    is_valid_url,
-    is_generic_search_url,
     is_generic_root_homepage,
-    validate_hotel_record,
+    is_generic_search_url,
+    is_valid_url,
     validate_activity_record,
-    validate_transport_record,
-    validate_source_record,
-    validate_url_retention,
     validate_china_scenario,
+    validate_hotel_record,
     validate_london_scenario,
     validate_portugal_scenario,
+    validate_source_record,
+    validate_transport_record,
+    validate_url_retention,
 )
 
 
@@ -181,7 +179,10 @@ def test_london_scenario_functional_validity():
     assert passed, f"London functional scenario failed: {issues}"
 
     # Specific assertions
-    assert "https://tfl.gov.uk/fares/how-to-pay-and-save/pay-as-you-go/contactless-and-oyster-compared" in content
+    assert (
+        "https://tfl.gov.uk/fares/how-to-pay-and-save/pay-as-you-go/contactless-and-oyster-compared"
+        in content
+    )
     assert "https://www.hrp.org.uk/tower-of-london/visit/tickets-and-prices/" in content
     assert "https://www.britishmuseum.org/visit" in content
     assert "FREE" in content or "Free" in content or "free" in content
@@ -202,7 +203,10 @@ def test_portugal_scenario_functional_validity():
     assert "https://aima.gov.pt" in content
     assert "https://www.cp.pt/" in content
     assert "https://www.portugaltolls.com/en/tolls-payment" in content
-    assert "https://bilheteira.parquesdesintra.pt/evento/parque-e-palacio-nacional-da-pena/263/en" in content
+    assert (
+        "https://bilheteira.parquesdesintra.pt/evento/parque-e-palacio-nacional-da-pena/263/en"
+        in content
+    )
     assert "RNET" in content
     assert "https://www.lisboaplazahotel.com/" in content
 
@@ -278,7 +282,9 @@ def test_dropped_urls_fail_retention():
         "https://www.12306.cn/en/index.html",
         "https://dropped-url.example.com",
     ]
-    partial_text = "Here is the plan with https://www.thepuxuan.com and https://www.12306.cn/en/index.html."
+    partial_text = (
+        "Here is the plan with https://www.thepuxuan.com and https://www.12306.cn/en/index.html."
+    )
     passed, missing = validate_url_retention(agent_urls, partial_text)
     assert not passed
     assert "https://dropped-url.example.com" in missing
@@ -330,12 +336,22 @@ def test_dead_or_malformed_urls_fail():
         assert not is_valid_url(bad_url), f"Malformed URL considered valid: {bad_url}"
 
         # In hotel record
-        h = {"name": "Bad URL Hotel", "direct_url": bad_url, "verification_date": "2026-09-16", "tier": 2}
+        h = {
+            "name": "Bad URL Hotel",
+            "direct_url": bad_url,
+            "verification_date": "2026-09-16",
+            "tier": 2,
+        }
         p_h, issues_h = validate_hotel_record(h)
         assert not p_h, f"Hotel with bad URL {bad_url} should fail"
 
         # In transport record
-        t = {"route": "A to B", "operator": "Bus Co", "operator_url": bad_url, "verification_date": "2026-09-16"}
+        t = {
+            "route": "A to B",
+            "operator": "Bus Co",
+            "operator_url": bad_url,
+            "verification_date": "2026-09-16",
+        }
         p_t, issues_t = validate_transport_record(t)
         assert not p_t, f"Transport with bad URL {bad_url} should fail"
 
@@ -388,7 +404,11 @@ def test_missing_verification_date_in_records_fail():
     assert not p_h
     assert any("Missing verification date" in issue for issue in issues_h)
 
-    transport = {"route": "X to Y", "operator": "Rail Co", "operator_url": "https://rail.example.com"}
+    transport = {
+        "route": "X to Y",
+        "operator": "Rail Co",
+        "operator_url": "https://rail.example.com",
+    }
     p_t, issues_t = validate_transport_record(transport)
     assert not p_t
     assert any("Missing verification date" in issue for issue in issues_t)
@@ -504,4 +524,3 @@ def test_scenarios_missing_verification_dates_fail():
     p_pt, issues_pt = validate_portugal_scenario(portugal_no_date)
     assert not p_pt
     assert any("missing explicit verification dates" in issue.lower() for issue in issues_pt)
-

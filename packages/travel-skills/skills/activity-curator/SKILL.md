@@ -53,7 +53,7 @@ All references must strictly adhere to the 6-tier sourcing hierarchy:
 - **Never present social-media content as verified logistical information.**
 
 ## 8. Output Format
-All outputs must include a structured YAML block:
+All outputs must conform to `TravelDossier v1` (`docs/travel-dossier-v1.md`). The legacy envelope below remains accepted during migration:
 ```yaml
 summary: ""
 recommendations: []
@@ -69,6 +69,7 @@ risks: []
 > "Suggest cultural and gastronomic activities in Seville for 3 days with strategies to avoid peak crowds and a rain backup."
 
 **Expected Output:**
+The fixture below is illustrative only. Prices, hours, booking rules, and links require fresh verification.
 ```yaml
 summary: "Curated 3-day cultural and culinary program for Seville with morning heritage visits to bypass heat/crowds, evening tapas routes, and indoor rain contingencies."
 recommendations:

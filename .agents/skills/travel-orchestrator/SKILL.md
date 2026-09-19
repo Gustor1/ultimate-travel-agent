@@ -48,7 +48,7 @@ All references must strictly adhere to the 6-tier sourcing hierarchy:
 - **Never present social-media content as verified logistical information.**
 
 ## 8. Output Format
-All outputs must include a structured YAML block:
+Final output must conform to `TravelDossier v1` (`docs/travel-dossier-v1.md`). Upgrade legacy sub-agent envelopes before synthesis:
 ```yaml
 summary: ""
 recommendations: []
@@ -64,6 +64,7 @@ risks: []
 > "Plan a 5-day balanced cultural and culinary trip to Kyoto for 2 adults in late October with a $2,500 total budget."
 
 **Expected Output:**
+The fixture below is illustrative only. It is not a completed or booking-ready dossier.
 ```yaml
 summary: "5-day balanced cultural and culinary itinerary in Kyoto for 2 adults (late October), budget $2,500."
 recommendations:

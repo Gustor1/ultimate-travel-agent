@@ -23,7 +23,9 @@ A portable, runtime-agnostic **Travel Skills Pack** for AI coding agents and age
 
 **Ultimate Travel Agent** is a portable, skills-first travel research and planning pack for AI coding agents and agentic development environments.
 
-The project is designed to be runtime-agnostic. The core product is a file-based skills pack rather than an application tied to one AI platform. Each skill is defined in structured Markdown with YAML frontmatter, providing clear instructions, role boundaries, input/output contracts, and strict safety rules that any compatible agentic environment can load and execute.
+The core product is a portable file-based skills pack rather than an application tied to one AI platform. Each compatible host still needs a runtime adapter that maps declared capabilities to its real tools and permission model.
+
+The active branch contains no MCP server, provider API hub, booking engine, or FastAPI interface. Historical prototypes remain documented separately; future runtime integrations belong in optional packages.
 
 ---
 
@@ -32,7 +34,7 @@ The project is designed to be runtime-agnostic. The core product is a file-based
 The toolkit organizes travel expertise into four core functional areas:
 
 ### 1. Research
-- **Flight Search**: Structured 4-pass flight optimization (base, multi-airport, flexible dates, combined) with systematic cross-comparison across search engines (Google Flights, Skyscanner, Trip.com) and direct airline verification.
+- **Flight Search**: Structured 4-pass flight optimization (base, multi-airport, flexible dates, combined) with adaptive comparison-engine research and direct airline verification.
 - **Accommodation Research**: Strategic neighborhood scouting, safety and noise vetting, transit accessibility, and cancellation policy checks.
 - **Ground Transport Research**: Multi-modal transit planning (high-speed rail, regional trains, buses, ferries, car rental) with official operator schedules and fares.
 - **Local Discovery**: Authentic neighborhood eateries, cultural venues, and community spots, with strict tagging of unconfirmed social sources.
@@ -66,7 +68,7 @@ The platform integration strategy distinguishes three tiers:
 
 | Environment | Status | Notes |
 |---|---|---|
-| **Core skills pack** | Automated validation | Validated by 115 automated tests covering YAML schemas, sourcing tiers, and safety invariants |
+| **Core skills pack** | Automated validation | Skills, installation lifecycle, `TravelDossier v1`, evidence links, and safety invariants |
 | **Antigravity** | Documented / experimental | Documented installation and workflow integration via CLI installer (`.agents/`) |
 | **Claude Code** | Planned | Integration guide to be added after end-to-end testing |
 | **OpenAI Codex** | Planned | Integration guide to be added after end-to-end testing |
@@ -88,6 +90,9 @@ The repository provides a Python CLI utility (`ultimate_travel_agent.cli`) to in
 git clone https://github.com/Gustor1/ultimate-travel-agent.git
 cd ultimate-travel-agent
 
+# Install the CLI and bundled declarative assets
+python -m pip install -e .
+
 # List all 14 travel skills
 python -m ultimate_travel_agent.cli list-skills
 ```
@@ -101,12 +106,17 @@ python -m ultimate_travel_agent.cli install-skills \
   --include-workflows
 ```
 
-The installer records cryptographic SHA-256 hashes in `<target>/.agents/.ultimate-travel-agent-install.json`, ensuring user-created skills and custom modifications are never overwritten or deleted.
+The installer records SHA-256 hashes in `<target>/.agents/.ultimate-travel-agent-install.json`. Existing files are skipped by default. `--force` creates recoverable local backups; uninstallation restores overwritten files. Missing or malformed manifests fail closed.
 
 ### 3. Validate Skill Compliance
 Verify that installed skills comply with YAML frontmatter rules, 6-tier sourcing standards, and safety invariants:
 ```bash
 python -m ultimate_travel_agent.cli validate-skills
+```
+
+Validate a generated JSON/YAML dossier against the shared contract:
+```bash
+python -m ultimate_travel_agent.cli validate-dossier dossier.yaml
 ```
 
 ### 4. Non-Destructive Uninstallation
@@ -129,7 +139,7 @@ The pack contains **14 core travel skills** located under [`.agents/skills/`](.a
 |---|---|---|
 | [`travel-orchestrator`](.agents/skills/travel-orchestrator/SKILL.md) | Coordination | Coordinates the 5-wave planning lifecycle and consolidates the final sourced travel dossier. |
 | [`travel-web-research`](.agents/skills/travel-web-research/SKILL.md) | Research | 12-step research protocol for climate, regional norms, crowd calendars, and official data. |
-| [`flight-search`](.agents/skills/flight-search/SKILL.md) | Research | Structured 4-pass flight optimization with 3-engine cross-comparison and direct carrier booking links. |
+| [`flight-search`](.agents/skills/flight-search/SKILL.md) | Research | Structured 4-pass flight optimization with adaptive comparison and direct carrier booking links. |
 | [`transport-research`](.agents/skills/transport-research/SKILL.md) | Research | Door-to-door multi-modal transit comparison (rail, road, ferry) with official operator channels. |
 | [`accommodation-research`](.agents/skills/accommodation-research/SKILL.md) | Research | Vets strategic neighborhoods and curates lodging options with safety, transit, and cancellation terms. |
 | [`activity-curator`](.agents/skills/activity-curator/SKILL.md) | Research | Curates cultural, outdoor, and culinary activities with anti-crowd tactics and rain backups. |
@@ -141,6 +151,8 @@ The pack contains **14 core travel skills** located under [`.agents/skills/`](.a
 | [`travel-quality-control`](.agents/skills/travel-quality-control/SKILL.md) | Verification | Audits transit feasibility, pacing realism, budget arithmetic, and contingency coverage. |
 | [`multi-agent-orchestration`](.agents/skills/multi-agent-orchestration/SKILL.md) | Coordination | Coordinates execution topologies, wave dependencies, and fallback states for agent teams. |
 | [`mcp-skill-auditing`](.agents/skills/mcp-skill-auditing/SKILL.md) | Coordination | Audits external tools and MCP servers for security integrity, permission scope, and injection risks. |
+
+The canonical assets live in `.agents/`. `packages/travel-skills/skills/` is a generated compatibility mirror checked by CI.
 
 See the complete [Skills Catalog (EN)](docs/skills-catalog.md) or [Catalogue des Skills (FR)](docs/skills-catalog.fr.md).
 
@@ -169,6 +181,7 @@ Template briefs are provided in [`examples/trip-brief-template.md`](examples/tri
 - **[Travel Workflow](docs/travel-workflow.md)**: The 5-wave lifecycle and multi-agent coordination pipeline.
 - **[Security & Privacy Model](docs/security-model.md)**: Least-privilege agent permissions, untrusted web content isolation, and zero-PII policies.
 - **[Source Verification Policy](docs/source-verification.md)**: The 6-tier sourcing hierarchy and official domain validation rules.
+- **[TravelDossier v1](docs/travel-dossier-v1.md)**: Claim ledger, evidence taxonomy, freshness, typed money, and booking-readiness rules.
 - **[Known Limitations](docs/known-limitations.md)**: Current system boundaries, offline behavior, and manual verification requirements.
 - **[Installation Guide](docs/install-in-any-project.md)** ([Version FR](docs/install-in-any-project.fr.md)): Step-by-step installation and uninstallation in any project.
 - **[Antigravity Integration](docs/use-with-antigravity.md)** ([Version FR](docs/use-with-antigravity.fr.md)): Documentation for running within the Antigravity agentic environment.

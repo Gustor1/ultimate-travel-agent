@@ -1,6 +1,6 @@
 # Travel Skills Pack
 
-A standalone, installable package of 14 battle-tested travel planning, source verification, financial budgeting, safety, and orchestration skills for Antigravity-compatible AI agents.
+A compatibility view of 14 travel skills. Canonical assets live in the repository `.agents/` tree and are bundled inside the Python wheel.
 
 ---
 
@@ -81,7 +81,9 @@ python packages/travel-skills/uninstall.py --target /path/to/target-project
 ## 4. Guarantees & Safety
 
 - **Non-Destructive by Default**: Never overwrites existing project skills unless `--force` is passed explicitly.
-- **Selective Scope**: Only installs and removes skills listed in `manifest.json`.
+- **Selective Scope**: Only installs and removes assets listed in the canonical manifest.
+- **Fail Closed**: Missing, malformed, escaping, or symlinked manifest paths are never removed.
+- **Recoverable Force Updates**: `--force` stores local backups and uninstallation restores replaced files.
 - **Zero Third-Party Dependencies**: The installer uses only standard library (`shutil`, `pathlib`, `json`, `argparse`).
 - **Cross-Platform**: Tested and working on Windows, macOS, and Linux.
 - **Offline & Local**: Requires zero network access.

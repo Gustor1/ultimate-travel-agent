@@ -23,7 +23,7 @@ In this Skills-First architecture, your role is to coordinate the specialized tr
 - Intermediate results from Waves 1 through 4.
 
 ## 4. Outputs
-A structured YAML result envelope conforming to project standards:
+A complete `TravelDossier v1`. Upgrade every legacy fragment before final delivery. Legacy envelope during migration:
 ```yaml
 summary: "Concise summary of findings"
 recommendations: []

@@ -1,5 +1,7 @@
 # Suivi de l'Avancement du Projet — `ultimate-travel-agent`
 
+> Journal historique. Pour l'état actif, voir `README.md`, `docs/architecture.md` et `docs/travel-dossier-v1.md`.
+
 Dernière mise à jour : 2026-09-13
 
 ---

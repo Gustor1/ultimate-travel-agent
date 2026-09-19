@@ -1,0 +1,30 @@
+schema_version: travel-dossier/v1
+mode: inspiration
+status: partial
+summary: "Illustrative Paris–Lisbon option; live fare must be rechecked."
+recommendations:
+  - "Compare a direct flight with the overnight train/bus combination."
+claims:
+  - claim_id: illustrative-route
+    text: "A direct-flight route is normally available."
+    status: estimated
+    source_ids: []
+    critical: false
+sources: []
+costs:
+  - amount: "120.00"
+    currency: EUR
+    quantity: "2"
+    total: "240.00"
+assumptions:
+  - "All values in this fixture are illustrative, not live inventory."
+missing_information:
+  - "Exact travel dates"
+verification_required:
+  - "Verify schedule, baggage and total fare on the direct operator site."
+risks:
+  - "Inventory and fares can change before booking."
+readiness:
+  booking_ready: false
+  blockers:
+    - "No live operator evidence"

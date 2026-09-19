@@ -25,7 +25,7 @@ To activate authentication on your deployed server:
 
 ```bash
 # Set your server API key
-export TRAVEL_MCP_API_KEY="travelet-sk-live-9823f4b8293ec"
+export TRAVEL_MCP_API_KEY="YOUR_MCP_API_KEY"
 
 # Optional: explicitly enforce authentication requirement
 export TRAVEL_MCP_AUTH_REQUIRED="true"

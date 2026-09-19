@@ -23,7 +23,7 @@ def main() -> int:
         description="Install Travel Skills Pack into an Antigravity project with manifest tracking."
     )
     parser.add_argument("--target", "-t", required=True, type=Path, help="Path to target project root.")
-    parser.add_argument("--include-agents", action="store_true", help="Include 11 specialized sub-agents.")
+    parser.add_argument("--include-agents", action="store_true", help="Include 12 specialized agents.")
     parser.add_argument("--include-workflows", action="store_true", help="Include 9 travel workflows.")
     parser.add_argument("--force", "-f", action="store_true", help="Overwrite existing files.")
     parser.add_argument("--dry-run", action="store_true", help="Simulate installation.")

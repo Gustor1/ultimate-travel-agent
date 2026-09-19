@@ -1,7 +1,7 @@
 # Workflow: Validate Trip Quality & Feasibility
 
 ## 1. Purpose
-Conducts an objective, multi-point quality assurance audit on the entire drafted travel dossier before delivering it to the traveler.
+Conducts an objective quality audit against `TravelDossier v1` before delivery.
 Verifies temporal feasibility, transit connection realism, budget arithmetic, source integrity, and constraint compliance.
 
 ## 2. Agents Involved
@@ -15,11 +15,13 @@ Verifies temporal feasibility, transit connection realism, budget arithmetic, so
 - **Output**: Quality assurance report with validation score, detected flaws, blocking issues, and final publication approval.
 
 ## 4. Step-by-Step Execution Process
-1. **Temporal & Transit Audit**: Check every transit connection. Flag impossible transfers (e.g. <45 mins between disparate terminals) or excessive driving days (>5 hours).
-2. **Operating Hours & Days Check**: Verify that scheduled attractions are open on the assigned calendar days (e.g. verifying Monday museum closures).
-3. **Budget Consistency Audit**: Re-calculate all line items, confirm currency conversion consistency, and verify the mandatory 10-15% safety reserve.
-4. **Source Provenance Verification**: Ensure that no unverified social media claims or AI hallucinations are presented as logistical facts.
-5. **Constraint Compliance**: Check that user dietary restrictions, mobility needs, and pacing preferences are strictly honored.
+
+1. Validate the `TravelDossier v1` structure and unique claim/source IDs.
+2. Reject missing or expired evidence references.
+3. Recalculate typed cost totals from atomic components.
+4. Check every transit connection, opening day, geographic cluster, pacing limit, and user constraint.
+5. Reject social or community discoveries presented as operational facts without primary evidence.
+6. Set `readiness.booking_ready: true` only when no critical blocker remains.
 
 ## 5. Deliverables
 - Quality Assurance Audit Report

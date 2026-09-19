@@ -23,7 +23,7 @@ In this Skills-First architecture, your role is strictly offline processing and 
 - Upstream outputs from coordinating agents.
 
 ## 4. Outputs
-A structured YAML result envelope conforming to project standards:
+A `TravelDossier v1` fragment using exact typed money components. Legacy envelope during migration:
 ```yaml
 summary: "Concise summary of findings"
 recommendations: []

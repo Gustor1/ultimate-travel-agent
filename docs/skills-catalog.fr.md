@@ -1,6 +1,6 @@
 # Catalogue des Skills de Voyage
 
-Liste exhaustive des 13 skills spécialisées incluses dans `ultimate-travel-agent`.
+Liste exhaustive des 14 skills spécialisées incluses dans `ultimate-travel-agent`.
 Toutes les skills sont locales, open source (licence MIT) et compatibles avec Antigravity.
 
 ---

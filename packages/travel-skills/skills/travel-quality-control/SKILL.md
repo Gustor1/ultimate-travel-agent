@@ -48,7 +48,7 @@ All references must strictly adhere to the 6-tier sourcing hierarchy:
 - **Never present social-media content as verified logistical information.**
 
 ## 8. Output Format
-All outputs must include a structured YAML block:
+All outputs must conform to `TravelDossier v1` (`docs/travel-dossier-v1.md`). Quality control must block `booking_ready` when any critical claim is stale or unverified:
 ```yaml
 summary: ""
 recommendations: []
@@ -64,6 +64,7 @@ risks: []
 > "Perform quality control on a 4-day Rome plan that schedules the Colosseum at 10:00 and the Vatican Museums at 12:30 on the same day."
 
 **Expected Output:**
+The fixture below is illustrative only. Live closures and transfer times require fresh verification.
 ```yaml
 summary: "Quality Control Gate: REJECTED / MODIFICATIONS REQUIRED. Detected severe logistical conflict between morning Colosseum tour and early afternoon Vatican Museum slot."
 recommendations:

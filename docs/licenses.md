@@ -1,34 +1,16 @@
-# Audit des Licences des Dépendances — `ultimate-travel-agent`
+# Licences des dépendances
 
-Ce document certifie la conformité juridique et la compatibilité open-source de l'ensemble des dépendances et bibliothèques intégrées dans `ultimate-travel-agent`.
+État du paquet actif v1.4. Les prototypes MCP/API sont historiques et ne font pas partie des dépendances de la branche principale.
 
----
+| Dépendance | Groupe | Licence | Rôle |
+|---|---|---|---|
+| Python `>=3.10` | runtime | PSF | Exécution |
+| pydantic `>=2.0` | runtime | MIT | Contrat et validation TravelDossier v1 |
+| PyYAML `>=6.0` | runtime | MIT | Lecture et écriture YAML |
+| pytest | dev | MIT | Tests |
+| pytest-cov | dev | MIT | Couverture |
+| ruff | dev | MIT / Apache-2.0 | Lint et format |
+| mypy | dev | MIT | Vérification de types |
+| build | dev | MIT | Construction des distributions |
 
-## 1. Dépendances Directes du Socle Principal (Core)
-
-| Dépendance | Version minimale | Licence | Compatibilité MIT | Rôle dans le projet |
-| :--- | :--- | :--- | :--- | :--- |
-| **Python** | `>=3.10` | Python Software Foundation (PSF) | **Oui** | Langage d'exécution |
-| **pydantic** | `>=2.0.0` | MIT | **Oui** | Modélisation des données et validation stricte |
-| **pyyaml** | `>=6.0.0` | MIT | **Oui** | Sérialisation et désérialisation YAML |
-| **typing-extensions** | `>=4.8.0` | PSF | **Oui** | Typage statique rétrocompatible |
-
----
-
-## 2. Dépendances Optionnelles et Outils de Développement
-
-| Dépendance | Groupe | Licence | Compatibilité MIT | Rôle dans le projet |
-| :--- | :--- | :--- | :--- | :--- |
-| **mcp** (Model Context Protocol) | `[mcp]` | MIT | **Oui** | SDK serveur MCP local standardisé |
-| **pytest** | `[dev]` | MIT | **Oui** | Moteur de tests automatisés |
-| **pytest-cov** | `[dev]` | MIT | **Oui** | Mesure de couverture de code |
-| **ruff** | `[dev]` | MIT / Apache 2.0 | **Oui** | Linter et formateur de code ultra-rapide |
-| **mypy** | `[dev]` | MIT | **Oui** | Vérificateur de typage statique strict |
-
----
-
-## 3. Conclusion de l'Audit de Licence
-
-- Toutes les dépendances directes et optionnelles utilisent des licences hautement permissives (**MIT** ou **PSF**).
-- Aucune dépendance à licence virale (GPL / AGPL) ou restrictive propriétaire n'a été retenue.
-- Le projet peut être redistribué, modifié et intégré commercialement ou non sous licence **MIT**.
+Ces licences sont permissives et compatibles avec la licence MIT du projet. Cette liste décrit les dépendances déclarées dans `pyproject.toml`; elle ne constitue pas un avis juridique.
