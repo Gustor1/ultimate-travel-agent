@@ -20,6 +20,8 @@ from pydantic import (
     model_validator,
 )
 
+from ultimate_travel_agent.profiles import TravelerProfile
+
 VerificationStatus = Literal[
     "official_verified",
     "cross_checked",
@@ -103,6 +105,10 @@ class Claim(BaseModel):
     critical: bool = False
     observed_at: date | None = None
     expires_at: date | None = None
+    topic: str | None = None
+    confidence: int | None = Field(default=None, ge=0, le=100)
+    conflicts_with: list[str] = Field(default_factory=list)
+    fallback: str | None = None
 
 
 class ReadinessGate(BaseModel):
@@ -130,6 +136,19 @@ class TravelDossierV1(BaseModel):
     verification_required: list[str] = Field(default_factory=list)
     risks: list[str] = Field(default_factory=list)
     readiness: ReadinessGate = Field(default_factory=ReadinessGate)
+    traveler_profile: TravelerProfile | None = None
+    research_state: dict[str, Any] = Field(default_factory=dict)
+    itinerary: list[dict[str, Any]] = Field(default_factory=list)
+    locations: list[dict[str, Any]] = Field(default_factory=list)
+    scenarios: list[dict[str, Any]] = Field(default_factory=list)
+    decision_log: list[dict[str, Any]] = Field(default_factory=list)
+    revalidation_plan: list[dict[str, Any]] = Field(default_factory=list)
+    flight_search: dict[str, Any] = Field(default_factory=dict)
+    accommodation_search: dict[str, Any] = Field(default_factory=dict)
+    mobility_assessment: dict[str, Any] = Field(default_factory=dict)
+    true_cost_comparison: dict[str, Any] = Field(default_factory=dict)
+    price_watch: dict[str, Any] = Field(default_factory=dict)
+    disruption_recovery: dict[str, Any] = Field(default_factory=dict)
 
 
 def _legacy_source_type(tier: int) -> SourceType:
@@ -221,6 +240,13 @@ def validate_travel_dossier(
             issues.append(f"Claim {claim.claim_id} references unknown sources: {missing_sources}")
         if claim.expires_at is not None and claim.expires_at < current_date:
             issues.append(f"Claim {claim.claim_id} is expired")
+        unknown_conflicts = [
+            claim_id for claim_id in claim.conflicts_with if claim_id not in claim_ids
+        ]
+        if unknown_conflicts:
+            issues.append(
+                f"Claim {claim.claim_id} conflicts with unknown claims: {unknown_conflicts}"
+            )
 
     if dossier.mode == "booking_ready" or dossier.readiness.booking_ready:
         if dossier.mode != "booking_ready" or not dossier.readiness.booking_ready:
@@ -233,6 +259,8 @@ def validate_travel_dossier(
                 issues.append(f"Critical claim {claim.claim_id} is not verified")
             if not claim.source_ids:
                 issues.append(f"Critical claim {claim.claim_id} has no source")
+            if claim.conflicts_with:
+                issues.append(f"Critical claim {claim.claim_id} has unresolved conflicts")
             for source_id in claim.source_ids:
                 source = source_map.get(source_id)
                 if (

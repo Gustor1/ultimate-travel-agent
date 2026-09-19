@@ -38,7 +38,11 @@
           "source_ids": {"type": "array", "items": {"type": "string"}},
           "critical": {"type": "boolean"},
           "observed_at": {"type": ["string", "null"], "format": "date"},
-          "expires_at": {"type": ["string", "null"], "format": "date"}
+          "expires_at": {"type": ["string", "null"], "format": "date"},
+          "topic": {"type": ["string", "null"]},
+          "confidence": {"type": ["integer", "null"], "minimum": 0, "maximum": 100},
+          "conflicts_with": {"type": "array", "items": {"type": "string"}},
+          "fallback": {"type": ["string", "null"]}
         }
       }
     },
@@ -103,7 +107,41 @@
         "blockers": {"type": "array", "items": {"type": "string"}}
       },
       "additionalProperties": false
-    }
+    },
+    "traveler_profile": {
+      "type": ["object", "null"],
+      "properties": {
+        "profile_id": {"type": "string", "pattern": "^[a-z0-9][a-z0-9._-]*$"},
+        "travelers": {"type": "integer", "minimum": 1, "maximum": 30},
+        "pacing": {"enum": ["relaxed", "balanced", "packed"]},
+        "mobility": {"enum": ["standard", "limited", "wheelchair"]},
+        "daily_walking_km": {"oneOf": [{"type": "integer"}, {"type": "string"}]},
+        "max_daily_activity_hours": {"oneOf": [{"type": "integer"}, {"type": "string"}]},
+        "max_layover_minutes": {"type": "integer"},
+        "crowd_tolerance": {"type": "integer", "minimum": 0, "maximum": 100},
+        "heat_tolerance": {"type": "integer", "minimum": 0, "maximum": 100},
+        "interests": {"type": "array", "items": {"type": "string"}},
+        "dietary_requirements": {"type": "array", "items": {"type": "string"}},
+        "accessibility_requirements": {"type": "array", "items": {"type": "string"}},
+        "avoid": {"type": "array", "items": {"type": "string"}},
+        "budget_currency": {"type": "string", "pattern": "^[A-Z]{3}$"},
+        "category_budgets": {"type": "object"}
+      },
+      "required": ["profile_id"],
+      "additionalProperties": false
+    },
+    "research_state": {"type": "object"},
+    "itinerary": {"type": "array", "items": {"type": "object"}},
+    "locations": {"type": "array", "items": {"type": "object"}},
+    "scenarios": {"type": "array", "items": {"type": "object"}},
+    "decision_log": {"type": "array", "items": {"type": "object"}},
+    "revalidation_plan": {"type": "array", "items": {"type": "object"}},
+    "flight_search": {"type": "object"},
+    "accommodation_search": {"type": "object"},
+    "mobility_assessment": {"type": "object"},
+    "true_cost_comparison": {"type": "object"},
+    "price_watch": {"type": "object"},
+    "disruption_recovery": {"type": "object"}
   },
   "additionalProperties": true
 }

@@ -129,7 +129,12 @@ def validate_all_skills(skills_dir: Optional[Path] = None) -> Tuple[bool, Dict[s
     for skill_folder in sorted(skills_dir.iterdir()):
         if skill_folder.is_dir() and (skill_folder / "SKILL.md").exists():
             skill_md = skill_folder / "SKILL.md"
-            passed, issues = validate_skill_file(skill_md)
+            if skill_folder.name == "flight-search":
+                passed, issues = validate_flight_search_skill_file(skill_md)
+            elif skill_folder.name == "accommodation-research":
+                passed, issues = validate_accommodation_search_skill_file(skill_md)
+            else:
+                passed, issues = validate_skill_file(skill_md)
             reports[skill_folder.name] = issues
             if not passed:
                 all_passed = False
@@ -1333,6 +1338,37 @@ def validate_retained_flight_options(passes_or_options: Any) -> Tuple[bool, List
     return (len(issues) == 0), issues
 
 
+def validate_accommodation_search_skill_file(
+    skill_path: Path,
+) -> Tuple[bool, List[str]]:
+    """Validate transit-first, multi-provider, final-price hotel methodology."""
+
+    passed, issues = validate_skill_file(skill_path)
+    if not skill_path.exists():
+        return passed, issues
+    content = skill_path.read_text(encoding="utf-8").lower()
+    for required in ["metro", "tram", "bus"]:
+        if required not in content:
+            issues.append(f"accommodation skill missing transit mode '{required}'")
+    if "walking" not in content and "marche" not in content:
+        issues.append("accommodation skill missing transit walking-time validation")
+    for provider in ["google hotels", "booking.com"]:
+        if provider not in content:
+            issues.append(f"accommodation skill missing comparison provider '{provider}'")
+    if "agoda" not in content and "trip.com" not in content:
+        issues.append("accommodation skill missing Agoda or Trip.com comparison")
+    for fee in ["city_tax", "cleaning_fee", "service_fee", "breakfast_cost"]:
+        if fee not in content:
+            issues.append(f"accommodation skill missing final-price component '{fee}'")
+    if "free_until" not in content and "deadline" not in content:
+        issues.append("accommodation skill missing cancellation deadline")
+    if "equal to or cheaper" not in content and "égal ou moins cher" not in content:
+        issues.append("accommodation skill missing official-direct preference rule")
+    if "pending" not in content or "coverage" not in content:
+        issues.append("accommodation skill missing research coverage gate")
+    return len(issues) == 0, issues
+
+
 def validate_flight_search_skill_file(skill_path: Path) -> Tuple[bool, List[str]]:
     """Extended validation specific to the flight-search SKILL.md."""
     # First run the generic skill validator
@@ -1417,12 +1453,24 @@ def validate_flight_search_skill_file(skill_path: Path) -> Tuple[bool, List[str]
     if "multi" not in content_lower:
         issues.append("flight-search skill missing multi-city flight search handling")
 
-    # Combinatorial bounding (max 5 airports, ±2 days in Pass 4)
+    # Bounded but complete matrix (max 5 airports, ±3 days in Pass 4)
     if not any(
         k in content_lower
         for k in ["max 5", "maximum de 5", "maximum 5", "5 aéroports", "5 alternative"]
     ):
         issues.append("flight-search skill missing upper bound on alternative airports (max 5)")
+    if "cartesian" not in content_lower and "cartésien" not in content_lower:
+        issues.append("flight-search skill missing full flexible-date Cartesian grid")
+    if "±3" not in content and "\\pm 3" not in content:
+        issues.append("flight-search skill missing ±3-day combined search coverage")
+    if "coverage_report" not in content_lower or "pending" not in content_lower:
+        issues.append("flight-search skill missing machine-verifiable coverage report")
+    if "separate ticket" not in content_lower and "billet séparé" not in content_lower:
+        issues.append("flight-search skill missing separate-ticket transfer safeguards")
+    if "cross-border" not in content_lower and "transfrontal" not in content_lower:
+        issues.append("flight-search skill missing cross-border gateway safeguards")
+    if "departure_airports_flexible" not in content_lower:
+        issues.append("flight-search skill missing explicit fixed-origin default")
 
     # Night transfer / overnight stay rule
     if (

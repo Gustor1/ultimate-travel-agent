@@ -15,7 +15,7 @@ Compares door-to-door transit time, financial cost, transfer complexity, luggage
 - **Output**: Multi-modal transit comparison matrix with door-to-door estimates, official booking links, and booking window guidelines. For air travel, includes the 4-pass flight search synthesis table.
 
 ## 4. Step-by-Step Execution Process
-1. **Flight Search (4-Pass)**: Execute `flight-search` skill to scan air options across base airport, alternative airports, flexible dates, and combined permutations. Skip passes 3-4 if dates are strictly fixed.
+1. **Flight Search (4-Pass)**: Generate the deterministic search matrix, then execute `flight-search` across base airport, fixed-date alternative gateways, the full flexible-date grid, and the full bounded combined matrix. Skip passes 3-4 if dates are strictly fixed. Do not continue while coverage contains pending cells; unavailable/skipped cells require reasons.
 2. **Identify Ground Transport Modes**: Identify available rail, bus, ferry, driving, and shared transit corridors between origin and destination using `transport-research` skill.
 3. **Door-to-Door Calculation**: Add local transfer times, airport/station check-in buffers, security processing, and luggage retrieval to pure transit times.
 4. **Cost & Booking Window Analysis**: Check baseline fare tiers, baggage fee policies, and advance purchase windows for best rates.
@@ -24,6 +24,7 @@ Compares door-to-door transit time, financial cost, transfer complexity, luggage
 
 ## 5. Deliverables
 - Multi-Modal Comparison Matrix (including 4-pass flight synthesis)
+- Flight Search Coverage Report (expected/searched/unavailable/skipped/pending by pass)
 - Door-to-Door Journey Breakdown
 - Official Booking Channel Directory
 - Advance Booking Timeline

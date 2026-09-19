@@ -16,9 +16,11 @@ Air travel search specialist executing a systematic 4-pass scan to identify opti
   - `one_way` (aller simple): Departure date only. Passes 3 and 4 test date shifts exclusively on the departure date.
   - `multi_city` (multi-villes): List of ordered route segments. Each segment is evaluated as an independent 4-pass search before chronological consolidation.
 - **Flexibility**: Whether dates are strictly fixed (`dates_fixed: true`) or flexible ($\pm 1, \pm 2, \pm 3$ days).
+- **Airport Flexibility**: Arrival airports are flexible by default when alternatives are supplied. The departure airport stays fixed unless the user explicitly enables `departure_airports_flexible`.
 - **Party Composition**: Number of adult/child travelers and cabin class preference.
 - **Luggage Policy Requirements**: Cabin bag only (under-seat or trolley) vs checked luggage (number of bags and weight). When checked bags are required by the brief, checked baggage fees **must be included in the evaluated cost**.
 - **Budget & Constraints**: Maximum budget (if any), traveler origin location in departure city (to compute origin access cost), traveler nationality (for transit visa prerequisites).
+- **Connection Scope**: Search direct, one-stop, and optionally two-stop itineraries (`max_flight_stops`, maximum 2), including useful domestic connections when `include_domestic_connections: true`.
 
 ## 3. Expected Outputs
 - 4-pass progressive flight search results with clear separation between passes.
@@ -27,6 +29,7 @@ Air travel search specialist executing a systematic 4-pass scan to identify opti
 - Mandatory line-by-line door-to-door cost breakdown (`cost_breakdown`) itemizing flight, departure airport access, destination transfer, and transit overnight stay (leaving zero unexplained amounts).
 - Single best Pass 1 reference baseline price always visible as baseline `REF`.
 - Identification of night transfer constraints and transit accommodation costs when same-day ground connection is impossible.
+- Machine-verifiable `coverage_report` listing expected, searched, unavailable, skipped, and pending combinations for every pass.
 
 ## 4. Necessary Tools & Capabilities
 - filesystem_read
@@ -102,6 +105,7 @@ Search flights to the **principal airport** of the destination city on the **exa
 - **Direct Carrier Verification**: Verify the preselected candidates directly on official airline portals (Tier 2) to confirm final base fare, baggage fees, and conditions.
 - When multiple airlines are found (e.g., TAP at €400, Transavia at €318, easyJet at €270 with checked bag), **the single best Pass 1 result** (the cheapest option strictly conforming to the brief's baggage and timing requirements) serves as the **unique reference baseline (REF)** for all subsequent comparisons.
 - Record: airline, flight numbers, flight duration, stops, baggage allowance, total price, deep direct URL, verification date, and comparison engine price deltas.
+- Store every flight leg as an ordered segment with airport codes and offset-aware departure/arrival timestamps. This makes proposed domestic connections and layovers auditable rather than prose-only.
 
 ### Pass 2 — Multi-Airport (Fixed Dates)
 Keeping the exact travel dates from Pass 1, investigate alternative arrival gateways:
@@ -109,8 +113,11 @@ Keeping the exact travel dates from Pass 1, investigate alternative arrival gate
 - **Direct Carrier Verification**: Verify candidate flights, exact schedules, and live bag fees directly on official airline portals (Tier 2). Document engines used, skipped, or unavailable in `source_log`.
 - Other airports serving the same metropolitan area (e.g., London: LHR, LGW, STN, LTN, SEN).
 - Airports of adjacent cities connected by direct high-speed rail or express bus (e.g., Porto or Faro for Lisbon; Girona or Reus for Barcelona; Bologna or Florence for Rome).
-- Alternative departure airports in the traveler's origin region (e.g., Paris Beauvais BVA instead of CDG/Orly).
+- Regional or cross-border gateways connected by high-speed rail, bus, ferry, or a domestic flight. Examples to investigate, never assume: Hong Kong via Shenzhen or Guangzhou; Shanghai via Hangzhou, Nanjing, or Wuxi/Suzhou ground access.
+- Alternative departure airports in the traveler's origin region only when `departure_airports_flexible: true` (e.g., Paris Beauvais BVA instead of CDG/Orly). Otherwise keep the requested departure airport fixed.
 - **Combinatorial Bound**: Evaluate a **maximum of 5 alternative airports**.
+
+For each gateway, record the onward mode, duration, cost, last same-day departure, whether it crosses a border, whether a separate ticket is required, whether baggage must be reclaimed/rechecked, the minimum safe buffer, and the entry/transit rule requiring verification. Never model a city without an airport as an airport: for Suzhou, identify a real serving gateway such as Wuxi and state the final ground segment.
 
 #### Complete Door-to-Door Cost Formula
 For every alternative airport option, compute the comprehensive door-to-door cost:
@@ -144,7 +151,7 @@ Retain an alternative airport option **only if** it yields a net saving $\ge 20\
 Using exclusively the principal airport from Pass 1:
 - **Adaptive Cross-Comparison Step**: Use an available flexible-date grid or price calendar in the $\pm 3$ days window. Add another engine only when a fare dip, missing route, or price discrepancy needs corroboration.
 - **Direct Carrier Verification**: Verify prices, seats, and baggage policies directly on the airline website (Tier 2). Record every engine consulted, skipped, or unavailable in `source_log`.
-- For round-trip journeys: test date shifts of -3, -2, -1, +1, +2, +3 days on departure AND return **independently**.
+- For round-trip journeys: generate the complete Cartesian grid from `-flex_days` through `+flex_days` for departure and return, including combinations where only one leg moves. With `flex_days: 3`, this is up to 49 date pairs including the Pass 1 baseline, or 48 new Pass 3 cells. Reject only chronologically invalid pairs.
 - For one-way journeys: test shifts of -3, -2, -1, +1, +2, +3 days on the departure date only.
 - Document the exact date shift (e.g., "Aller +2j, Retour identique") and price delta vs the single best Pass 1 baseline.
 - **Mandatory Deep Link on Retained Options**: Every retained date-shift option (`retained: true`) must include a deep direct booking link (`direct_url`) and step-by-step user search instructions (`booking_instructions`).
@@ -152,7 +159,8 @@ Using exclusively the principal airport from Pass 1:
 ### Pass 4 — Combined (Flexible Dates × Multi-Airport)
 **Skip this pass entirely if the user specified `dates_fixed: true`.**
 Combine date flexibility with alternative airports:
-- **Combinatorial Limitation**: Limit date shifts to **$\pm 2$ days** (rather than $\pm 3$) centered around the **top 3 most promising alternative candidates** identified across Pass 2 and Pass 3.
+- **Complete bounded matrix**: Apply the requested flexibility from $\pm 1$ through **$\pm 3$ days** to every retained arrival gateway (maximum 5). Generate every valid date-pair × airport cell; do not silently prune combinations before discovery.
+- To control browser/API cost, use cheap comparison discovery across the full matrix, then perform direct-airline verification only for materially competitive results. A blocked or unavailable cell is valid only when logged with a reason.
 - The agent prioritizes high-saving combinations (e.g. low-cost midweek fare drops paired with high-speed rail connections).
 - Apply the complete door-to-door formula (including origin access, checked luggage, and transfer time penalty if > 4h) and the retention threshold ($\ge 20\%$ or $\ge 50\,€$ saving vs Pass 1 REF).
 - **Mandatory Deep Link on Retained Options**: Every retained combined option (`retained: true`) must include a deep direct booking link (`direct_url`) and step-by-step user search instructions (`booking_instructions`).
@@ -162,6 +170,16 @@ When evaluating alternative airports:
 - Inquire and verify the scheduled departure time of the last train or bus to the final destination on the arrival evening.
 - Allow an incompressible safety buffer of at least **45 minutes** between flight landing and ground transit departure (for deplaning, border control, luggage reclaim, and terminal exit).
 - If flight arrival is too late for same-day connection, an overnight stay near the alternative airport or station (60 € - 90 €) **must be added** to the door-to-door cost and prominently flagged as an operational risk.
+
+### Separate Tickets, Domestic Connections & Borders
+- Label single-ticket protected connections separately from self-transfers or separate tickets.
+- For a separate flight ticket, require at least a 120-minute configurable buffer, then increase it when immigration, terminal change, baggage reclaim/recheck, or disruption exposure warrants it.
+- Never assume through-checked baggage on separate tickets.
+- Verify entry and transit rules for every border crossing, including Hong Kong ↔ mainland China. Do not infer that a transit exemption covers a landside rail or self-transfer connection.
+- Add missed-connection exposure and replacement-ticket risk to `risks`; a cheaper unprotected itinerary must not be presented as equivalent to a protected through-ticket.
+
+### Search Coverage Proof
+Create a stable cell ID for every pass/airport/date combination. Each cell must finish as `searched`, `unavailable`, or `skipped`; `unavailable` and `skipped` require a reason. A search is incomplete while any cell remains `pending`. Booking-ready coverage additionally requires dated source IDs for every searched cell and at least one successful Pass 1 result.
 
 ### Final Synthesis Table
 Produce a comparative matrix sorted strictly by **ascending total door-to-door cost**:
@@ -200,6 +218,13 @@ recommendations:
   - pass_2_multi_airport: []
   - pass_3_flexible_dates: []
   - pass_4_combined: []
+  - coverage_report:
+      expected_by_pass: {1: 0, 2: 0, 3: 0, 4: 0}
+      searched_by_pass: {1: 0, 2: 0, 3: 0, 4: 0}
+      unavailable: 0
+      skipped: 0
+      pending: 0
+      complete: false
   - synthesis_table: []
 source_log: []
 assumptions: []

@@ -1,0 +1,42 @@
+search_id: shanghai-flexible
+trip_type: round_trip
+origin_airport: CDG
+destination_city: Shanghai
+principal_airport: PVG
+outbound_date: 2027-05-12
+return_date: 2027-05-20
+dates_fixed: false
+flex_days: 3
+arrival_airports_flexible: true
+passengers: 1
+alternative_gateways:
+  - airport_code: HGH
+    city: Hangzhou
+    country: China
+    transfer:
+      mode: high_speed_rail
+      destination: Shanghai
+      duration_minutes: 120
+      likely_cost: "25.00"
+      separate_ticket: true
+      minimum_buffer_minutes: 150
+  - airport_code: NKG
+    city: Nanjing
+    country: China
+    transfer:
+      mode: high_speed_rail
+      destination: Shanghai
+      duration_minutes: 150
+      likely_cost: "30.00"
+      separate_ticket: true
+      minimum_buffer_minutes: 150
+  - airport_code: WUX
+    city: Wuxi
+    country: China
+    transfer:
+      mode: regional_rail
+      destination: Shanghai via Wuxi/Suzhou corridor
+      duration_minutes: 120
+      likely_cost: "20.00"
+      separate_ticket: true
+      minimum_buffer_minutes: 150

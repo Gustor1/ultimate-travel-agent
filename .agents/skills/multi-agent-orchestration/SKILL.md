@@ -60,6 +60,9 @@ risks: []
 ```
 
 ## 9. Concrete Example
+
+Use progressive research gates: downstream agents receive only decisions already accepted upstream. Persist stage state and decision IDs so retries are idempotent. Do not fan out destination-specific accommodation or activity searches before destination, dates, and area are selected.
+
 **User Request:**
 > "Define the wave execution plan and dependency graph for planning an international road trip in New Zealand."
 

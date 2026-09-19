@@ -60,7 +60,20 @@ verification_required: []
 risks: []
 ```
 
-## 9. Concrete Example
+## 9. Door-to-Door True Cost
+
+- Compare complete travel options, not headline fares. Required categories must be declared before ranking.
+- Include fare, baggage, seats, airport/station transfers, taxes, local transport, breakfast, extra nights, insurance, visas, parking, and other mandatory costs when applicable.
+- Record total door-to-door duration and, when the traveler supplies a value of time, show time cost separately from supplier prices.
+- Add an explicit configurable risk reserve for separate tickets or self-transfers. Never present the reserve as a quoted supplier charge.
+- An option missing any required category cannot win merely because its visible subtotal is lower.
+- Use exact decimals, one comparison currency, source IDs for verified components, and list all unverified components.
+- For repeated flight or hotel checks, preserve timestamped sourced observations. Report target reached, threshold price drop/rise, or stale data; never turn a short history into a price prediction.
+
+## 10. Concrete Example
+
+Represent each cost as low/likely/high, use exact decimal values, and attach the currency, dated exchange rate, source, category, and traveler quantity. Report category caps and a separate reserve. Compare economy, balanced, and comfort totals. Never merge the reserve into a quoted supplier price or hide a missing exchange rate.
+
 **User Request:**
 > "Check the budget and booking requirements for a 6-day couple trip to Vienna with a €2,200 total budget."
 

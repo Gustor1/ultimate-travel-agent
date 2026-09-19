@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "ultimate-travel-agent"
-version = "1.4.0"
+version = "1.8.0"
 description = "A generic, privacy-first, multi-agent travel planning system for curated, realistic itineraries."
 readme = "README.md"
 license = "MIT"

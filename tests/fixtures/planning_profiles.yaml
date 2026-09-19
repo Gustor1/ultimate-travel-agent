@@ -1,0 +1,33 @@
+- profile_id: solo-balanced
+  travelers: 1
+  pacing: balanced
+- profile_id: couple-comfort
+  travelers: 2
+  pacing: relaxed
+  category_budgets: {lodging: "1200.00"}
+- profile_id: family-four
+  travelers: 4
+  pacing: relaxed
+  max_daily_activity_hours: "6"
+- profile_id: senior-slow
+  travelers: 2
+  pacing: relaxed
+  daily_walking_km: "4"
+- profile_id: wheelchair-city
+  travelers: 1
+  mobility: wheelchair
+  accessibility_requirements: [step-free routes]
+- profile_id: dietary-vegan
+  travelers: 2
+  dietary_requirements: [vegan]
+- profile_id: business-fast
+  travelers: 1
+  pacing: packed
+  max_daily_activity_hours: "12"
+- profile_id: backpack-budget
+  travelers: 1
+  category_budgets: {lodging: "300", food: "180"}
+- profile_id: low-crowd-culture
+  travelers: 2
+  crowd_tolerance: 10
+  interests: [museums, local culture]

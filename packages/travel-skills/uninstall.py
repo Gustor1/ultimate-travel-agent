@@ -15,7 +15,7 @@ repo_src = Path(__file__).resolve().parent.parent.parent / "src"
 if repo_src.exists():
     sys.path.insert(0, str(repo_src))
 
-from ultimate_travel_agent.skills import uninstall_pack_skills
+from ultimate_travel_agent.skills import uninstall_pack_skills  # noqa: E402
 
 
 def main() -> int:

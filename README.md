@@ -35,7 +35,9 @@ The toolkit organizes travel expertise into four core functional areas:
 
 ### 1. Research
 - **Flight Search**: Structured 4-pass flight optimization (base, multi-airport, flexible dates, combined) with adaptive comparison-engine research and direct airline verification.
+- **Flexible Flight Matrix**: Executable airport/date matrix generation up to ±3 days, regional and cross-border gateways, self-transfer safeguards, exact coverage reporting, and door-to-door offer ranking.
 - **Accommodation Research**: Strategic neighborhood scouting, safety and noise vetting, transit accessibility, and cancellation policy checks.
+- **Hotel Comparison**: Transit-first neighborhood screening, Google Hotels/Booking/Agoda/Trip.com discovery, normalized final prices, cancellation comparison, and official-direct preference.
 - **Ground Transport Research**: Multi-modal transit planning (high-speed rail, regional trains, buses, ferries, car rental) with official operator schedules and fares.
 - **Local Discovery**: Authentic neighborhood eateries, cultural venues, and community spots, with strict tagging of unconfirmed social sources.
 - **Activity Curation**: Cultural, outdoor, and culinary experiences with anti-crowd tactics, booking requirements, and bad-weather contingencies.
@@ -44,6 +46,9 @@ The toolkit organizes travel expertise into four core functional areas:
 - **Itinerary Construction**: Logical day-by-day sequencing with geographic clustering to eliminate backtracking and avoid traveler fatigue.
 - **Budget & Booking Readiness**: Itemized expense consolidation, 10–15% safety reserves, and chronological pre-departure booking checklists.
 - **Travel Safety & Preparation**: Country entry rules, visa exemptions, passport validity requirements, health advisories, and emergency protocols.
+- **Advanced Planning Toolkit**: Persistent preference profiles, explainable scoring, uncertainty and contradiction tracking, progressive research gates, geographic/time feasibility, scenario budgets, decision history, portable exports, price-watch assessment, and pre-departure revalidation schedules.
+- **Door-to-Door Optimization**: Scores hotel access to real trip anchors and compares full travel costs including transfers, baggage, time, extra nights, and self-transfer exposure.
+- **Targeted Disruption Recovery**: Replaces only affected itinerary items while preserving fixed and unaffected bookings.
 
 ### 3. Verification
 - **Source Verification**: Enforcement of a strict 6-tier sourcing hierarchy (prioritizing official government portals and carrier websites over community blogs or social media).
@@ -182,6 +187,11 @@ Template briefs are provided in [`examples/trip-brief-template.md`](examples/tri
 - **[Security & Privacy Model](docs/security-model.md)**: Least-privilege agent permissions, untrusted web content isolation, and zero-PII policies.
 - **[Source Verification Policy](docs/source-verification.md)**: The 6-tier sourcing hierarchy and official domain validation rules.
 - **[TravelDossier v1](docs/travel-dossier-v1.md)**: Claim ledger, evidence taxonomy, freshness, typed money, and booking-readiness rules.
+- **[Advanced Planning](docs/advanced-planning.md)**: Profiles, scoring, route/budget helpers, exports, and revalidation.
+- **[Flexible Flight Search](docs/flexible-flight-search.md)**: Exhaustive four-pass matrices, gateway transfers, coverage proof, and CLI usage.
+- **[Hotel Comparison](docs/hotel-comparison.md)**: Metro/tram-first access checks, comparable rates, cancellation terms, and direct-channel preference.
+- **[Door-to-Door Optimization](docs/door-to-door-optimization.md)**: Weighted hotel mobility and complete travel-cost comparison.
+- **[Disruption Recovery](docs/disruption-recovery.md)**: Verified, conflict-free replacement of affected itinerary items.
 - **[Known Limitations](docs/known-limitations.md)**: Current system boundaries, offline behavior, and manual verification requirements.
 - **[Installation Guide](docs/install-in-any-project.md)** ([Version FR](docs/install-in-any-project.fr.md)): Step-by-step installation and uninstallation in any project.
 - **[Antigravity Integration](docs/use-with-antigravity.md)** ([Version FR](docs/use-with-antigravity.fr.md)): Documentation for running within the Antigravity agentic environment.

@@ -1,0 +1,14 @@
+search_id: paris-transit
+city: Paris
+country: France
+check_in: 2027-05-10
+check_out: 2027-05-13
+guests: 2
+rooms: 1
+currency: EUR
+neighborhoods: [Bastille, République, Opéra]
+maximum_transit_walk_minutes: 12
+step_free_required: false
+breakfast_required: false
+free_cancellation_required: true
+maximum_total: "750.00"

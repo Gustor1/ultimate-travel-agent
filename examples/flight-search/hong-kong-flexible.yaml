@@ -1,0 +1,37 @@
+search_id: hong-kong-flexible
+trip_type: round_trip
+origin_airport: CDG
+destination_city: Hong Kong
+principal_airport: HKG
+outbound_date: 2027-10-10
+return_date: 2027-10-17
+dates_fixed: false
+flex_days: 3
+arrival_airports_flexible: true
+passengers: 2
+checked_bags: 1
+alternative_gateways:
+  - airport_code: SZX
+    city: Shenzhen
+    country: China
+    transfer:
+      mode: high_speed_rail
+      destination: Hong Kong
+      duration_minutes: 90
+      likely_cost: "35.00"
+      separate_ticket: true
+      cross_border: true
+      minimum_buffer_minutes: 180
+      visa_or_entry_check_required: true
+  - airport_code: CAN
+    city: Guangzhou
+    country: China
+    transfer:
+      mode: high_speed_rail
+      destination: Hong Kong
+      duration_minutes: 150
+      likely_cost: "45.00"
+      separate_ticket: true
+      cross_border: true
+      minimum_buffer_minutes: 180
+      visa_or_entry_check_required: true

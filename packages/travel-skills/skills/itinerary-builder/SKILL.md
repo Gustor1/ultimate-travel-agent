@@ -62,6 +62,9 @@ risks: []
 ```
 
 ## 9. Concrete Example
+
+Apply the traveler profile's walking, mobility, activity-hour, layover, crowd, heat, dietary, and accessibility limits as hard constraints. Store IANA time zones and offset-aware timestamps. Cluster coordinates, detect overlaps and backtracking, include door-to-door transit and recovery time after major time-zone shifts. Every weather-sensitive or capacity-sensitive segment needs a compatible fallback. When a sourced disruption occurs, preserve unaffected items and replace only explicitly affected items with verified, available, conflict-free options; fixed bookings are hard constraints.
+
 **User Request:**
 > "Build a balanced 3-day day-by-day itinerary for a couple visiting Berlin in September."
 

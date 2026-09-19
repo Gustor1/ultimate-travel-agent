@@ -18,8 +18,10 @@ Lodging analyst who evaluates strategic neighborhoods, cross-checks verified gue
 
 ## 3. Expected Outputs
 - Neighborhood safety and convenience analysis
+- Verified nearby public transport ranked metro, tram, commuter rail, bus, then other modes, with walking time and accessibility status
 - Curated shortlist of 3-5 verified lodging properties
-- Nightly and total estimated rates with tax breakdown
+- Like-for-like comparison across Google Hotels, Booking.com, and at least one of Agoda or Trip.com
+- Nightly and final-stay rates with taxes, city/resort/cleaning/service fees, breakfast, and other mandatory charges separated
 - Cancellation policy summary and official direct reservation links
 
 ## 4. Necessary Tools & Capabilities
@@ -51,11 +53,45 @@ All references must strictly adhere to the 6-tier sourcing hierarchy:
 - **Never bypass login, paywalls, robots rules or site restrictions.**
 - **Never present social-media content as verified logistical information.**
 
-## 8. Output Format
+## 8. Transit-First Hotel Comparison Methodology
+
+### Pass 1 — Neighborhood & Public Transport
+- Evaluate the neighborhood before searching deeply for properties: safety, nighttime access, noise, and journey time to the trip's principal activity clusters.
+- For every property, verify named stops and walking times with an official transit authority, mapping/routing source, or both.
+- Rank eligible transport in this order: **metro → tram → commuter rail → bus → ferry/shuttle/other**. A bus stop does not replace an available metro/tram assessment.
+- Default walking threshold is 12 minutes and must follow the traveler profile. Record lines, step-free status when relevant, service limitations, verification date, and source URL.
+- If no suitable stop exists inside the threshold, state it explicitly; never describe a hotel as "well connected" from neighborhood reputation alone.
+- For shortlisted hotels, evaluate verified door-to-door journeys to weighted trip anchors (airport/station, principal activity clusters, and city center). Record total time, walking, transfers, modes, frequency, first/last service, step-free status, source, and verification date.
+- Treat missing required anchors, service hours that do not cover the traveler's needed time, excessive walking, or unverified required step-free access as blockers. Bus-only journeys and unknown frequency must remain visible warnings.
+
+### Pass 2 — Adaptive Multi-Site Price Discovery
+- Compare the same dates, occupancy, room count, room type, meal plan, and cancellation conditions.
+- Consult **Google Hotels** for discovery, **Booking.com**, and at least one of **Agoda** or **Trip.com**. Use both Agoda and Trip.com when regional coverage or a material price discrepancy warrants it.
+- Google Hotels is a comparison surface, never the final booking channel. Aggregator results require property-specific URLs; generic roots are forbidden.
+- Log every consulted, unavailable, or deliberately skipped provider with a dated reason. Never invent a quote when a site blocks access.
+
+### Pass 3 — Official Property Verification
+- Verify shortlisted properties directly on their official website: identical room, occupancy, dates, availability, taxes, breakfast, payment timing, cancellation deadline, and mandatory fees.
+- Preserve regional rules: foreign-guest acceptance in China and RNET/RNAL licensing in Portugal.
+
+### Pass 4 — Final Price & Policy Decision
+- Compute `final_stay_total = nightly_rate × nights × rooms + taxes + city_tax + resort_fee + cleaning_fee + service_fee + breakfast_cost + other_fees` using exact decimals.
+- Never compare different room types, occupancy, meal plans, currencies, or cancellation conditions as equivalent.
+- Prefer the official channel when its comparable final total is equal to or cheaper than the cheapest bookable third party.
+- When a third party is materially cheaper, show both totals and the difference; do not hide weaker cancellation, payment, support, or loyalty conditions.
+- Keep cancellation as structured data: refundable/non-refundable, free-cancellation deadline with timezone, penalty, prepayment, and plain-language details.
+
+### Coverage Gate
+Research is incomplete while any transit, comparison, or official-verification task remains `pending`. `unavailable` and `skipped` require reasons. Booking-ready accommodation research requires verified transit, official-property evidence, and at least two successfully searched discovery sources.
+
+## 9. Output Format
 All outputs must conform to `TravelDossier v1` (`docs/travel-dossier-v1.md`). The legacy envelope below remains accepted during migration:
 ```yaml
 summary: ""
-recommendations: []
+recommendations:
+  - neighborhood_transit: []
+  - hotel_comparisons: []
+  - coverage_report: {}
 source_log: []
 assumptions: []
 missing_information: []
@@ -63,7 +99,7 @@ verification_required: []
 risks: []
 ```
 
-## 9. Concrete Example
+## 10. Concrete Example
 **User Request:**
 > "Find 3 quiet, boutique lodging options in Florence, Italy near Santa Maria Novella or Oltrarno under €220/night for October."
 
@@ -111,6 +147,7 @@ risks:
 ### 1. Mandatory Direct Property URL Standard
 - Every lodging option must feature a direct URL to the specific hotel official website or an identified listing page (Tier 2/Tier 1).
 - Generic aggregator root domains (e.g. `booking.com/`, `expedia.com/` without a property slug) and search engine queries are strictly prohibited.
+- Property-specific Booking.com, Agoda, or Trip.com pages may be logged for comparison, but the official property URL remains mandatory and is preferred when its comparable final price is equal or lower.
 - Each lodging entry must include:
   - Hotel Name
   - City & Neighborhood

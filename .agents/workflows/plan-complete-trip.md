@@ -34,7 +34,7 @@ Dispatch independent tasks concurrently:
 1. `destination-researcher`: Regional climate, seasonal crowd indicators, cultural customs.
 2. `transport-planner`: Inter-city and long-distance transport comparison door-to-door.
 3. `accommodation-researcher` depends on `flight-search` and `transport-planner` dates before checking live lodging availability.
-   - **Flight search** (using `flight-search` skill): Execute the 4-pass progressive flight scan (base → multi-airport → flexible dates → combined). The result proposes effective date candidates and must complete **before** accommodation research begins.
+   - **Flight search** (using `flight-search` skill): Generate and execute the full bounded 4-pass matrix (base → fixed-date gateways → full flexible-date grid → full dates × gateways matrix). The result proposes effective date candidates and must have zero pending search cells **before** accommodation research begins.
    - **Ground transport** (using `transport-research` skill): Rail, bus, ferry, and car rental options.
 3. `activity-curator`: Broad cultural and recreational candidates not dependent on final dates.
 4. `travel-preparation-agent`: Visa prerequisites, entry rules, passport validity, emergency templates.

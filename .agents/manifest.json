@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "name": "travel-skills",
-  "version": "1.4.0",
+  "version": "1.8.0",
   "description": "Runtime-agnostic travel planning skills, agents, and workflows.",
   "author": "Ultimate Travel Agent Contributors",
   "license": "MIT",

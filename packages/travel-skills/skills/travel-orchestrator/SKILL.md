@@ -60,6 +60,11 @@ risks: []
 ```
 
 ## 9. Concrete Example
+
+Before dispatching broad research, load or create a privacy-minimal `traveler_profile`. Research progressively in this order: brief, destination, dates, area, options, booking. Do not search deeply for accommodation or activities until the preceding choice is recorded.
+
+For every shortlist, expose weighted scores for cost, duration, fatigue, reliability, flexibility, safety, and carbon. When tradeoffs are material, return economy, balanced, and comfort scenarios. Record each accepted choice in `decision_log` with rejected options and reasons. Preserve confidence, contradictions, fallbacks, itinerary locations, and a pre-departure `revalidation_plan` in the final dossier.
+
 **User Request:**
 > "Plan a 5-day balanced cultural and culinary trip to Kyoto for 2 adults in late October with a $2,500 total budget."
 
