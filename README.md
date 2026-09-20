@@ -49,6 +49,12 @@ The toolkit organizes travel expertise into four core functional areas:
 - **Advanced Planning Toolkit**: Persistent preference profiles, explainable scoring, uncertainty and contradiction tracking, progressive research gates, geographic/time feasibility, scenario budgets, decision history, portable exports, price-watch assessment, and pre-departure revalidation schedules.
 - **Door-to-Door Optimization**: Scores hotel access to real trip anchors and compares full travel costs including transfers, baggage, time, extra nights, and self-transfer exposure.
 - **Targeted Disruption Recovery**: Replaces only affected itinerary items while preserving fixed and unaffected bookings.
+- **Adaptive & Group Planning**: Builds essential/rain/low-energy variants and ranks complete group ballots without overriding hard vetoes.
+- **Advanced Route Optimization**: Uses sourced travel matrices, opening windows, and fixed appointments rather than straight-line proximity alone.
+- **Neighborhood Quality**: Scores safety, noise, metro/tram, late service, essential shops, accessibility, and tourist pressure with dated evidence.
+- **Controlled Booking & Trip Mode**: Verifies exact checkout handoffs and provides offline-aware current/next travel actions without handling payment data.
+- **Secure Live Connectors**: Executes bounded HTTPS/JSON requests with environment-based credentials, host locking, and secret redaction.
+- **Scheduled Signed Alerts**: Produces deduplicated price events and optionally delivers them to an explicitly configured HTTPS webhook.
 
 ### 3. Verification
 - **Source Verification**: Enforcement of a strict 6-tier sourcing hierarchy (prioritizing official government portals and carrier websites over community blogs or social media).
@@ -192,6 +198,9 @@ Template briefs are provided in [`examples/trip-brief-template.md`](examples/tri
 - **[Hotel Comparison](docs/hotel-comparison.md)**: Metro/tram-first access checks, comparable rates, cancellation terms, and direct-channel preference.
 - **[Door-to-Door Optimization](docs/door-to-door-optimization.md)**: Weighted hotel mobility and complete travel-cost comparison.
 - **[Disruption Recovery](docs/disruption-recovery.md)**: Verified, conflict-free replacement of affected itinerary items.
+- **[Secure Live Connectors](docs/live-connectors.md)**: Credential-safe provider-neutral API calls.
+- **[Adaptive & Group Planning](docs/adaptive-group-planning.md)**: Day variants, fair group decisions, and time-window route optimization.
+- **[Booking & Trip Mode](docs/booking-and-trip-mode.md)**: Explicit checkout confirmation and offline next-action guidance.
 - **[Known Limitations](docs/known-limitations.md)**: Current system boundaries, offline behavior, and manual verification requirements.
 - **[Installation Guide](docs/install-in-any-project.md)** ([Version FR](docs/install-in-any-project.fr.md)): Step-by-step installation and uninstallation in any project.
 - **[Antigravity Integration](docs/use-with-antigravity.md)** ([Version FR](docs/use-with-antigravity.fr.md)): Documentation for running within the Antigravity agentic environment.

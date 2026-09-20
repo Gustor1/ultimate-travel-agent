@@ -149,6 +149,14 @@ class TravelDossierV1(BaseModel):
     true_cost_comparison: dict[str, Any] = Field(default_factory=dict)
     price_watch: dict[str, Any] = Field(default_factory=dict)
     disruption_recovery: dict[str, Any] = Field(default_factory=dict)
+    connector_results: list[dict[str, Any]] = Field(default_factory=list)
+    adaptive_plans: list[dict[str, Any]] = Field(default_factory=list)
+    group_decisions: list[dict[str, Any]] = Field(default_factory=list)
+    neighborhood_assessments: list[dict[str, Any]] = Field(default_factory=list)
+    booking_handoffs: list[dict[str, Any]] = Field(default_factory=list)
+    trip_mode: dict[str, Any] = Field(default_factory=dict)
+    optimized_routes: list[dict[str, Any]] = Field(default_factory=list)
+    notification_receipts: list[dict[str, Any]] = Field(default_factory=list)
 
 
 def _legacy_source_type(tier: int) -> SourceType:

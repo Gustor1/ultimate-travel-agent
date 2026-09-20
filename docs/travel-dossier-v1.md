@@ -106,7 +106,7 @@ ultimate-travel-agent validate-dossier dossier.yaml
 
 ## Optional planning extensions
 
-Version 1.5+ keeps the v1 envelope backward compatible and adds optional fields: `traveler_profile`, `research_state`, `itinerary`, `locations`, `scenarios`, `decision_log`, `revalidation_plan`, `flight_search`, `accommodation_search`, `mobility_assessment`, `true_cost_comparison`, `price_watch`, and `disruption_recovery`.
+Version 1.5+ keeps the v1 envelope backward compatible and adds optional fields: `traveler_profile`, `research_state`, `itinerary`, `locations`, `scenarios`, `decision_log`, `revalidation_plan`, `flight_search`, `accommodation_search`, `mobility_assessment`, `true_cost_comparison`, `price_watch`, `disruption_recovery`, `connector_results`, `adaptive_plans`, `group_decisions`, `neighborhood_assessments`, `booking_handoffs`, `trip_mode`, `optimized_routes`, and `notification_receipts`.
 
 Claims may also contain `topic`, numeric `confidence`, `conflicts_with`, and `fallback`. Critical unresolved conflicts block booking readiness.
 

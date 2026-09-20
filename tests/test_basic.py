@@ -43,6 +43,14 @@ def test_cli_help():
     assert "hotel-search-plan" in result.stdout
     assert "hotel-search-coverage" in result.stdout
     assert "hotel-compare" in result.stdout
+    assert "connector-fetch" in result.stdout
+    assert "adaptive-day" in result.stdout
+    assert "group-decide" in result.stdout
+    assert "neighborhood-score" in result.stdout
+    assert "booking-handoff" in result.stdout
+    assert "trip-mode" in result.stdout
+    assert "route-optimize" in result.stdout
+    assert "notify-webhook" in result.stdout
 
 
 def test_cli_list_skills():

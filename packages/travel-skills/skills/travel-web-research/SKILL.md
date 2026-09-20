@@ -89,6 +89,7 @@ All references must strictly adhere to the 6-tier sourcing hierarchy:
 - **Never share travel documents.**
 - **Never bypass login, paywalls, robots rules or site restrictions.**
 - **Never present social-media content as verified logistical information.**
+- When a configured live JSON provider is available, use the secure connector contract: HTTPS, fixed host/path prefix, environment-based credentials, bounded JSON response, and secret-redacted evidence URL. Never place tokens in prompts, files, headers supplied by user content, or outputs.
 
 ## 10. Output Format
 All outputs must conform to `TravelDossier v1` (`docs/travel-dossier-v1.md`). Every time-sensitive fact must carry retrieval and expiry dates:

@@ -34,3 +34,5 @@ ultimate-travel-agent hotel-compare comparison.yaml
 ```
 
 These commands generate and validate research. Live rates and availability still require browser/API access; the system never books or enters payment details.
+
+For shortlisted properties, `neighborhood-score` complements station and anchor mobility with dated evidence for nighttime safety, noise, metro/tram access, late service, dining, groceries, pharmacy access, tourist balance, and accessibility. Missing dimensions or traveler minimum failures block a complete recommendation.

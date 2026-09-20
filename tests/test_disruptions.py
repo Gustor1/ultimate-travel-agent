@@ -2,6 +2,7 @@ from ultimate_travel_agent.disruptions import (
     Disruption,
     ItineraryItem,
     RecoveryOption,
+    build_cascading_recovery_plan,
     build_recovery_plan,
 )
 
@@ -93,3 +94,120 @@ def test_unverified_recovery_cannot_be_selected() -> None:
         [option],
     )
     assert not result.complete
+
+
+def test_recovery_propagates_to_missed_dependent_connection() -> None:
+    itinerary = [
+        ItineraryItem(
+            item_id="flight",
+            title="Flight",
+            category="transport",
+            start="2027-05-10T10:00:00Z",
+            end="2027-05-10T12:00:00Z",
+        ),
+        ItineraryItem(
+            item_id="train",
+            title="Train",
+            category="transport",
+            start="2027-05-10T13:00:00Z",
+            end="2027-05-10T14:00:00Z",
+            fixed=True,
+            depends_on_item_ids=["flight"],
+            minimum_connection_minutes=60,
+        ),
+        ItineraryItem(
+            item_id="hotel",
+            title="Hotel",
+            category="lodging",
+            start="2027-05-10T16:00:00Z",
+            end="2027-05-11T09:00:00Z",
+            depends_on_item_ids=["train"],
+            minimum_connection_minutes=30,
+        ),
+    ]
+    disruption = Disruption(
+        disruption_id="flight-delay",
+        kind="delay",
+        affected_item_ids=["flight"],
+        summary="Flight arrives late",
+        observed_at="2027-05-10T08:00:00Z",
+        source_id="airline",
+    )
+    options = [
+        RecoveryOption(
+            option_id="later-flight",
+            replaces_item_id="flight",
+            title="Later flight",
+            start="2027-05-10T11:00:00Z",
+            end="2027-05-10T13:30:00Z",
+            verified=True,
+            source_id="airline-later",
+        ),
+        RecoveryOption(
+            option_id="later-train",
+            replaces_item_id="train",
+            title="Later train",
+            start="2027-05-10T15:00:00Z",
+            end="2027-05-10T16:00:00Z",
+            verified=True,
+            source_id="rail-later",
+        ),
+        RecoveryOption(
+            option_id="later-checkin",
+            replaces_item_id="hotel",
+            title="Late check-in",
+            start="2027-05-10T17:00:00Z",
+            end="2027-05-11T09:00:00Z",
+            verified=True,
+            source_id="hotel-late",
+        ),
+    ]
+    result = build_cascading_recovery_plan(itinerary, disruption, options)
+    assert result.complete
+    assert result.propagated_item_ids == ["hotel", "train"]
+    assert [item.replaced_item_id for item in result.replacements] == [
+        "flight",
+        "train",
+        "hotel",
+    ]
+
+
+def test_cascading_recovery_blocks_when_downstream_has_no_option() -> None:
+    itinerary = [
+        ItineraryItem(
+            item_id="flight",
+            title="Flight",
+            category="transport",
+            start="2027-05-10T10:00:00Z",
+            end="2027-05-10T12:00:00Z",
+        ),
+        ItineraryItem(
+            item_id="train",
+            title="Train",
+            category="transport",
+            start="2027-05-10T13:00:00Z",
+            end="2027-05-10T14:00:00Z",
+            depends_on_item_ids=["flight"],
+            minimum_connection_minutes=60,
+        ),
+    ]
+    disruption = Disruption(
+        disruption_id="flight-delay",
+        kind="delay",
+        affected_item_ids=["flight"],
+        summary="Flight arrives late",
+        observed_at="2027-05-10T08:00:00Z",
+        source_id="airline",
+    )
+    delayed = RecoveryOption(
+        option_id="later-flight",
+        replaces_item_id="flight",
+        title="Later flight",
+        start="2027-05-10T11:00:00Z",
+        end="2027-05-10T13:30:00Z",
+        verified=True,
+        source_id="airline-later",
+    )
+    result = build_cascading_recovery_plan(itinerary, disruption, [delayed])
+    assert not result.complete
+    assert "no verified conflict-free recovery for train" in result.blockers

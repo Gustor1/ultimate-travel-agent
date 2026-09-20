@@ -38,4 +38,6 @@ ultimate-travel-agent price-watch price-history.yaml
 
 The input contains one `watch` plus its `observations`. Configure a target price, percentage-change threshold, currency, and maximum observation age. A stale result must be refreshed before any booking decision.
 
+When a `policy` and prior `state` are supplied, the command also returns a deduplicated alert event and `next_check_at`. An operator may deliver that event through `notify-webhook`, which requires an explicit HTTPS endpoint and optionally signs the payload with an environment-provided HMAC secret. No notification is sent merely by assessing a price watch.
+
 All dossier exports validate `TravelDossier v1` first. Existing v1 files remain valid; the new fields are optional.

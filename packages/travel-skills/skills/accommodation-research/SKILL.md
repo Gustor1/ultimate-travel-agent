@@ -63,6 +63,7 @@ All references must strictly adhere to the 6-tier sourcing hierarchy:
 - If no suitable stop exists inside the threshold, state it explicitly; never describe a hotel as "well connected" from neighborhood reputation alone.
 - For shortlisted hotels, evaluate verified door-to-door journeys to weighted trip anchors (airport/station, principal activity clusters, and city center). Record total time, walking, transfers, modes, frequency, first/last service, step-free status, source, and verification date.
 - Treat missing required anchors, service hours that do not cover the traveler's needed time, excessive walking, or unverified required step-free access as blockers. Bus-only journeys and unknown frequency must remain visible warnings.
+- Score shortlisted neighborhoods across dated, sourced evidence for nighttime safety, noise comfort, metro/tram access, late service, dining, groceries, pharmacy access, tourist balance, and accessibility. Missing dimensions or traveler minimum failures block a complete recommendation; stale evidence remains visible.
 
 ### Pass 2 — Adaptive Multi-Site Price Discovery
 - Compare the same dates, occupancy, room count, room type, meal plan, and cancellation conditions.

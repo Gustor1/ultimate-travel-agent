@@ -354,9 +354,12 @@ def price_watch_cmd(args: argparse.Namespace) -> None:
     from pydantic import TypeAdapter
 
     from ultimate_travel_agent.monitoring import (
+        PriceAlertPolicy,
+        PriceAlertState,
         PriceObservation,
         PriceWatch,
         assess_price_watch,
+        schedule_price_watch,
     )
 
     data = _load_mapping(Path(args.input).resolve())
@@ -364,7 +367,12 @@ def price_watch_cmd(args: argparse.Namespace) -> None:
     observations = TypeAdapter(list[PriceObservation]).validate_python(
         data.get("observations")
     )
-    print(assess_price_watch(watch, observations).model_dump_json(indent=2))
+    if "policy" in data or "state" in data:
+        policy = PriceAlertPolicy.model_validate(data.get("policy", {}))
+        state = PriceAlertState.model_validate(data.get("state", {}))
+        print(schedule_price_watch(watch, observations, policy, state).model_dump_json(indent=2))
+    else:
+        print(assess_price_watch(watch, observations).model_dump_json(indent=2))
 
 
 def disruption_plan_cmd(args: argparse.Namespace) -> None:
@@ -375,6 +383,7 @@ def disruption_plan_cmd(args: argparse.Namespace) -> None:
         Disruption,
         ItineraryItem,
         RecoveryOption,
+        build_cascading_recovery_plan,
         build_recovery_plan,
     )
 
@@ -382,10 +391,175 @@ def disruption_plan_cmd(args: argparse.Namespace) -> None:
     itinerary = TypeAdapter(list[ItineraryItem]).validate_python(data.get("itinerary"))
     disruption = Disruption.model_validate(data.get("disruption"))
     options = TypeAdapter(list[RecoveryOption]).validate_python(data.get("options"))
-    result = build_recovery_plan(itinerary, disruption, options)
+    result = (
+        build_cascading_recovery_plan(itinerary, disruption, options)
+        if args.cascade
+        else build_recovery_plan(itinerary, disruption, options)
+    )
     print(result.model_dump_json(indent=2))
     if not result.complete:
         raise SystemExit(1)
+
+
+def connector_fetch_cmd(args: argparse.Namespace) -> None:
+    """Execute one bounded live JSON connector request."""
+    from ultimate_travel_agent.connectors import (
+        ConnectorConfig,
+        ConnectorNormalizationSpec,
+        ConnectorRequest,
+        execute_json_connector,
+        normalize_connector_result,
+    )
+
+    data = _load_mapping(Path(args.input).resolve())
+    config = ConnectorConfig.model_validate(data.get("config"))
+    request = ConnectorRequest.model_validate(data.get("request"))
+    result = execute_json_connector(config, request)
+    if "normalization" in data:
+        spec = ConnectorNormalizationSpec.model_validate(data.get("normalization"))
+        print(normalize_connector_result(result, spec).model_dump_json(indent=2))
+    else:
+        print(result.model_dump_json(indent=2))
+
+
+def adaptive_day_cmd(args: argparse.Namespace) -> None:
+    """Build essential, balanced, rain, and low-energy day variants."""
+    from pydantic import TypeAdapter
+
+    from ultimate_travel_agent.adaptive import (
+        ActivityCandidate,
+        AdaptiveDayRequest,
+        build_adaptive_day,
+    )
+
+    data = _load_mapping(Path(args.input).resolve())
+    request = AdaptiveDayRequest.model_validate(data.get("request"))
+    activities = TypeAdapter(list[ActivityCandidate]).validate_python(data.get("activities"))
+    print(build_adaptive_day(request, activities).model_dump_json(indent=2))
+
+
+def group_decide_cmd(args: argparse.Namespace) -> None:
+    """Rank complete group ballots with hard vetoes."""
+    from pydantic import TypeAdapter
+
+    from ultimate_travel_agent.group_planning import (
+        GroupOption,
+        ParticipantBallot,
+        rank_group_options,
+    )
+
+    data = _load_mapping(Path(args.input).resolve())
+    options = TypeAdapter(list[GroupOption]).validate_python(data.get("options"))
+    ballots = TypeAdapter(list[ParticipantBallot]).validate_python(data.get("ballots"))
+    print(rank_group_options(options, ballots).model_dump_json(indent=2))
+
+
+def neighborhood_score_cmd(args: argparse.Namespace) -> None:
+    """Score evidence-backed neighborhood quality."""
+    from datetime import date
+
+    from ultimate_travel_agent.neighborhood import (
+        NeighborhoodProfile,
+        NeighborhoodRequirements,
+        assess_neighborhood,
+    )
+
+    data = _load_mapping(Path(args.input).resolve())
+    profile = NeighborhoodProfile.model_validate(data.get("profile"))
+    requirements = NeighborhoodRequirements.model_validate(data.get("requirements", {}))
+    as_of_raw = data.get("as_of")
+    as_of = date.fromisoformat(as_of_raw) if isinstance(as_of_raw, str) else None
+    print(assess_neighborhood(profile, requirements, as_of=as_of).model_dump_json(indent=2))
+
+
+def booking_handoff_cmd(args: argparse.Namespace) -> None:
+    """Prepare or explicitly confirm a user-controlled checkout handoff."""
+    from datetime import datetime
+
+    from ultimate_travel_agent.booking import (
+        BookingConfirmation,
+        BookingIntent,
+        confirm_booking_handoff,
+        prepare_booking_handoff,
+    )
+
+    data = _load_mapping(Path(args.input).resolve())
+    intent = BookingIntent.model_validate(data.get("intent"))
+    now_raw = data.get("now")
+    if not isinstance(now_raw, str):
+        raise ValueError("booking handoff input requires ISO datetime now")
+    now = datetime.fromisoformat(now_raw.replace("Z", "+00:00"))
+    if "confirmation" in data:
+        confirmation = BookingConfirmation.model_validate(data.get("confirmation"))
+        result = confirm_booking_handoff(intent, confirmation, now=now)
+    else:
+        result = prepare_booking_handoff(intent, now=now)
+    print(result.model_dump_json(indent=2))
+    if result.status == "blocked":
+        raise SystemExit(1)
+
+
+def trip_mode_cmd(args: argparse.Namespace) -> None:
+    """Show current item, next action, and offline readiness."""
+    from ultimate_travel_agent.trip_mode import TripModeRequest, build_trip_companion
+
+    request = TripModeRequest.model_validate(_load_mapping(Path(args.input).resolve()))
+    print(build_trip_companion(request).model_dump_json(indent=2))
+
+
+def route_optimize_cmd(args: argparse.Namespace) -> None:
+    """Optimize a day using sourced travel times and visit windows."""
+    from datetime import datetime
+
+    from pydantic import TypeAdapter
+
+    from ultimate_travel_agent.route_optimizer import (
+        RouteVisit,
+        SourcedTravelTime,
+        optimize_route_with_windows,
+    )
+
+    data = _load_mapping(Path(args.input).resolve())
+    visits = TypeAdapter(list[RouteVisit]).validate_python(data.get("visits"))
+    travel_times = TypeAdapter(list[SourcedTravelTime]).validate_python(
+        data.get("travel_times")
+    )
+    origin_id = data.get("origin_id")
+    day_start = data.get("day_start")
+    day_end = data.get("day_end")
+    if (
+        not isinstance(origin_id, str)
+        or not isinstance(day_start, str)
+        or not isinstance(day_end, str)
+    ):
+        raise ValueError("route input requires origin_id, day_start, and day_end strings")
+    destination_raw = data.get("destination_id")
+    destination_id = destination_raw if isinstance(destination_raw, str) else None
+    result = optimize_route_with_windows(
+        origin_id,
+        datetime.fromisoformat(day_start.replace("Z", "+00:00")),
+        datetime.fromisoformat(day_end.replace("Z", "+00:00")),
+        visits,
+        travel_times,
+        destination_id,
+    )
+    print(result.model_dump_json(indent=2))
+    if not result.complete:
+        raise SystemExit(1)
+
+
+def notify_webhook_cmd(args: argparse.Namespace) -> None:
+    """Deliver one explicitly configured signed webhook notification."""
+    from ultimate_travel_agent.notifications import (
+        NotificationMessage,
+        WebhookNotificationConfig,
+        dispatch_webhook_notification,
+    )
+
+    data = _load_mapping(Path(args.input).resolve())
+    config = WebhookNotificationConfig.model_validate(data.get("config"))
+    message = NotificationMessage.model_validate(data.get("message"))
+    print(dispatch_webhook_notification(config, message).model_dump_json(indent=2))
 
 
 def main() -> None:
@@ -526,6 +700,51 @@ def main() -> None:
         "disruption-plan", help="Replace only disrupted itinerary items"
     )
     disruption_parser.add_argument("input", help="Disruption recovery JSON/YAML payload")
+    disruption_parser.add_argument(
+        "--cascade",
+        action="store_true",
+        help="Propagate missed connections through declared dependencies",
+    )
+
+    connector_parser = subparsers.add_parser(
+        "connector-fetch", help="Execute a secure live JSON connector request"
+    )
+    connector_parser.add_argument("input", help="Connector config and request JSON/YAML")
+
+    adaptive_parser = subparsers.add_parser(
+        "adaptive-day", help="Build weather and energy day variants"
+    )
+    adaptive_parser.add_argument("input", help="Adaptive day JSON/YAML payload")
+
+    group_parser = subparsers.add_parser(
+        "group-decide", help="Rank group options with hard vetoes"
+    )
+    group_parser.add_argument("input", help="Group decision JSON/YAML payload")
+
+    neighborhood_parser = subparsers.add_parser(
+        "neighborhood-score", help="Score evidence-backed neighborhood quality"
+    )
+    neighborhood_parser.add_argument("input", help="Neighborhood JSON/YAML payload")
+
+    booking_parser = subparsers.add_parser(
+        "booking-handoff", help="Prepare a user-controlled booking checkout"
+    )
+    booking_parser.add_argument("input", help="Booking handoff JSON/YAML payload")
+
+    trip_mode_parser = subparsers.add_parser(
+        "trip-mode", help="Show current trip state and next action"
+    )
+    trip_mode_parser.add_argument("input", help="Trip mode JSON/YAML payload")
+
+    route_parser = subparsers.add_parser(
+        "route-optimize", help="Optimize sourced travel times and visit windows"
+    )
+    route_parser.add_argument("input", help="Route optimization JSON/YAML payload")
+
+    notify_parser = subparsers.add_parser(
+        "notify-webhook", help="Deliver an explicitly configured signed alert"
+    )
+    notify_parser.add_argument("input", help="Webhook config and message JSON/YAML")
 
     args = parser.parse_args()
 
@@ -567,6 +786,22 @@ def main() -> None:
         price_watch_cmd(args)
     elif args.command == "disruption-plan":
         disruption_plan_cmd(args)
+    elif args.command == "connector-fetch":
+        connector_fetch_cmd(args)
+    elif args.command == "adaptive-day":
+        adaptive_day_cmd(args)
+    elif args.command == "group-decide":
+        group_decide_cmd(args)
+    elif args.command == "neighborhood-score":
+        neighborhood_score_cmd(args)
+    elif args.command == "booking-handoff":
+        booking_handoff_cmd(args)
+    elif args.command == "trip-mode":
+        trip_mode_cmd(args)
+    elif args.command == "route-optimize":
+        route_optimize_cmd(args)
+    elif args.command == "notify-webhook":
+        notify_webhook_cmd(args)
 
 
 if __name__ == "__main__":

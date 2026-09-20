@@ -141,7 +141,15 @@
     "mobility_assessment": {"type": "object"},
     "true_cost_comparison": {"type": "object"},
     "price_watch": {"type": "object"},
-    "disruption_recovery": {"type": "object"}
+    "disruption_recovery": {"type": "object"},
+    "connector_results": {"type": "array", "items": {"type": "object"}},
+    "adaptive_plans": {"type": "array", "items": {"type": "object"}},
+    "group_decisions": {"type": "array", "items": {"type": "object"}},
+    "neighborhood_assessments": {"type": "array", "items": {"type": "object"}},
+    "booking_handoffs": {"type": "array", "items": {"type": "object"}},
+    "trip_mode": {"type": "object"},
+    "optimized_routes": {"type": "array", "items": {"type": "object"}},
+    "notification_receipts": {"type": "array", "items": {"type": "object"}}
   },
   "additionalProperties": true
 }

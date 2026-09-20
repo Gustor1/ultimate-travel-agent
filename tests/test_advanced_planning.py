@@ -19,11 +19,14 @@ from ultimate_travel_agent.exports import (
     export_pdf,
 )
 from ultimate_travel_agent.monitoring import (
+    PriceAlertPolicy,
+    PriceAlertState,
     PriceObservation,
     PriceWatch,
     assess_price_watch,
     build_revalidation_plan,
     due_tasks,
+    schedule_price_watch,
 )
 from ultimate_travel_agent.planning import (
     CostEstimate,
@@ -243,3 +246,44 @@ def test_price_watch_rejects_mixed_or_future_observations() -> None:
         assess_price_watch(
             watch, [wrong], now=datetime(2026, 9, 19, 11, tzinfo=timezone.utc)
         )
+
+
+def test_price_alert_scheduler_deduplicates_with_cooldown() -> None:
+    watch = PriceWatch(
+        watch_id="flight-alert", subject="flight", currency="EUR", target_price="500"
+    )
+    observations = [
+        PriceObservation(
+            watch_id=watch.watch_id,
+            amount="480",
+            currency="EUR",
+            observed_at="2026-09-20T08:00:00Z",
+            source_id="source-flight",
+        )
+    ]
+    now = datetime(2026, 9, 20, 9, tzinfo=timezone.utc)
+    first = schedule_price_watch(
+        watch,
+        observations,
+        PriceAlertPolicy(check_interval_hours=6, cooldown_hours=24),
+        now=now,
+    )
+    assert first.alert is not None
+    assert first.next_check_at == datetime(2026, 9, 20, 15, tzinfo=timezone.utc)
+    repeated = schedule_price_watch(
+        watch,
+        observations,
+        state=first.state,
+        now=datetime(2026, 9, 20, 10, tzinfo=timezone.utc),
+    )
+    assert repeated.alert is None
+    expired = schedule_price_watch(
+        watch,
+        observations,
+        state=PriceAlertState(
+            last_status="target_reached",
+            last_notified_at="2026-09-18T09:00:00Z",
+        ),
+        now=now,
+    )
+    assert expired.alert is not None

@@ -1,0 +1,42 @@
+catalog_version: "1"
+scenarios:
+  - scenario_id: hong-kong-via-mainland
+    title: Hong Kong via Shenzhen or Guangzhou
+    regions: [Hong Kong, China]
+    required_controls: [flexible_airports, cross_border, true_cost]
+    expected_risk: Entry rules and cross-border transfer must be verified.
+  - scenario_id: tokyo-late-arrival
+    title: Tokyo arrival after the last rail service
+    regions: [Japan]
+    required_controls: [service_hours, hotel_mobility, offline_mode]
+    expected_risk: The nearest station is irrelevant when service has ended.
+  - scenario_id: greek-island-weather
+    title: Greek island ferry disruption
+    regions: [Greece]
+    required_controls: [weather_fallback, disruption_cascade, adaptive_day]
+    expected_risk: Ferry cancellation changes lodging and onward connections.
+  - scenario_id: paris-step-free
+    title: Step-free Paris accommodation
+    regions: [France]
+    required_controls: [step_free, neighborhood_score, hotel_mobility]
+    expected_risk: A nearby station may not provide step-free access.
+  - scenario_id: family-consensus
+    title: Family trip with incompatible preferences
+    regions: [Europe]
+    required_controls: [group_veto, adaptive_day, walking_limit]
+    expected_risk: Majority preference must not override a hard accessibility veto.
+  - scenario_id: self-transfer-delay
+    title: Separate-ticket missed connection
+    regions: [International]
+    required_controls: [self_transfer, true_cost, disruption_cascade]
+    expected_risk: Delay exposure propagates to every dependent reservation.
+  - scenario_id: hotel-price-volatility
+    title: Hotel price drop with stale observation
+    regions: [International]
+    required_controls: [price_alert, freshness, controlled_booking]
+    expected_risk: A stale low price must be refreshed before checkout.
+  - scenario_id: rainy-high-energy-day
+    title: Outdoor itinerary during heavy rain and fatigue
+    regions: [International]
+    required_controls: [adaptive_day, weather_fallback, route_windows]
+    expected_risk: Essential outdoor items require an explicit conflict warning.

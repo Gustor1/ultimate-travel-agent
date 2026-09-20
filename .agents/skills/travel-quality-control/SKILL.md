@@ -61,7 +61,7 @@ risks: []
 
 ## 9. Concrete Example
 
-Gate approval on profile limits, offset-aware time feasibility, minimum connections, route distance/backtracking, low/likely/high budget arithmetic, scenario tradeoffs, critical contradictions, fallbacks, and scheduled revalidation. Require an actionable booking checklist plus calendar/map/offline exports when the host supports file output.
+Gate approval on profile limits, offset-aware time feasibility, sourced route matrices, opening windows, minimum connections, neighborhood evidence, low/likely/high budget arithmetic, group vetoes, adaptive variants, critical contradictions, fallbacks, disruption dependency propagation, and scheduled revalidation. Require an actionable booking checklist plus calendar/map/offline exports, emergency contacts, booking references, and offline maps/documents when the host supports file output.
 
 **User Request:**
 > "Perform quality control on a 4-day Rome plan that schedules the Colosseum at 10:00 and the Vatican Museums at 12:30 on the same day."

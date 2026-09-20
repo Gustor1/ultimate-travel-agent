@@ -8,5 +8,6 @@
 - Travel policies and prices expire quickly. `TravelDossier v1` blocks booking-ready status when critical evidence is stale or absent.
 - Offline mode provides structure and arithmetic, not live travel facts.
 - Legacy dossiers are accepted but stay in inspiration mode until migrated to claim-level evidence.
-- The active branch contains no MCP server, API provider hub, browser UI, booking engine, or payment capability.
+- The active branch contains a secure provider-neutral JSON connector, but provider-specific OAuth acquisition, response normalization, quotas, and commercial API accounts remain deployment responsibilities.
+- The project has no browser UI, payment capability, or autonomous purchasing. Booking handoffs always return control to the user on the provider website.
 - Human review remains mandatory before any purchase, reservation, visa decision, medical decision, or non-refundable commitment.

@@ -10,6 +10,12 @@ from pydantic import BaseModel, ConfigDict, Field, field_validator, model_valida
 
 from ultimate_travel_agent.contracts import TravelDossierV1
 
+PriceAlertStatus = Literal["target_reached", "price_drop", "price_rise", "stale"]
+
+
+def _default_price_alert_statuses() -> list[PriceAlertStatus]:
+    return ["target_reached", "price_drop", "price_rise", "stale"]
+
 
 class RevalidationTask(BaseModel):
     model_config = ConfigDict(extra="forbid")
@@ -125,6 +131,44 @@ class PriceWatchAssessment(BaseModel):
     message: str
 
 
+class PriceAlertPolicy(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    check_interval_hours: int = Field(default=12, ge=1, le=168)
+    cooldown_hours: int = Field(default=24, ge=1, le=720)
+    notify_on: list[PriceAlertStatus] = Field(default_factory=_default_price_alert_statuses)
+
+
+class PriceAlertState(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    last_status: str | None = None
+    last_notified_at: datetime | None = None
+
+    @model_validator(mode="after")
+    def timezone_is_required(self) -> "PriceAlertState":
+        if self.last_notified_at is not None and self.last_notified_at.tzinfo is None:
+            raise ValueError("last_notified_at must be timezone-aware")
+        return self
+
+
+class PriceAlertEvent(BaseModel):
+    event_id: str
+    watch_id: str
+    status: str
+    created_at: datetime
+    current_price: Decimal
+    currency: str
+    message: str
+
+
+class PriceMonitoringDecision(BaseModel):
+    assessment: PriceWatchAssessment
+    next_check_at: datetime
+    alert: PriceAlertEvent | None
+    state: PriceAlertState
+
+
 def assess_price_watch(
     watch: PriceWatch,
     observations: list[PriceObservation],
@@ -178,4 +222,50 @@ def assess_price_watch(
         change_from_first_percent=change,
         observed_at=latest.observed_at,
         message=message,
+    )
+
+
+def schedule_price_watch(
+    watch: PriceWatch,
+    observations: list[PriceObservation],
+    policy: PriceAlertPolicy | None = None,
+    state: PriceAlertState | None = None,
+    *,
+    now: datetime | None = None,
+) -> PriceMonitoringDecision:
+    """Create a deduplicated alert event and the next scheduler deadline."""
+
+    current_time = now or datetime.now(timezone.utc)
+    if current_time.tzinfo is None:
+        raise ValueError("now must be timezone-aware")
+    active_policy = policy or PriceAlertPolicy()
+    previous = state or PriceAlertState()
+    assessment = assess_price_watch(watch, observations, now=current_time)
+    alert: PriceAlertEvent | None = None
+    cooldown_passed = (
+        previous.last_notified_at is None
+        or current_time - previous.last_notified_at
+        >= timedelta(hours=active_policy.cooldown_hours)
+    )
+    should_notify = assessment.status in active_policy.notify_on and (
+        assessment.status != previous.last_status or cooldown_passed
+    )
+    updated_state = previous.model_copy(deep=True)
+    if should_notify:
+        alert = PriceAlertEvent(
+            event_id=f"{watch.watch_id}-{assessment.status}-{int(current_time.timestamp())}",
+            watch_id=watch.watch_id,
+            status=assessment.status,
+            created_at=current_time,
+            current_price=assessment.current_price,
+            currency=watch.currency,
+            message=assessment.message,
+        )
+        updated_state.last_status = assessment.status
+        updated_state.last_notified_at = current_time
+    return PriceMonitoringDecision(
+        assessment=assessment,
+        next_check_at=current_time + timedelta(hours=active_policy.check_interval_hours),
+        alert=alert,
+        state=updated_state,
     )

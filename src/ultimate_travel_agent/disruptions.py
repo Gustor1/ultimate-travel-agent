@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import datetime, timedelta
 from decimal import Decimal
 from typing import Literal
 
@@ -18,6 +18,8 @@ class ItineraryItem(BaseModel):
     start: datetime
     end: datetime
     fixed: bool = False
+    depends_on_item_ids: list[str] = Field(default_factory=list)
+    minimum_connection_minutes: int = Field(default=0, ge=0, le=720)
 
     @model_validator(mode="after")
     def valid_window(self) -> "ItineraryItem":
@@ -25,6 +27,10 @@ class ItineraryItem(BaseModel):
             raise ValueError("itinerary timestamps must be timezone-aware")
         if self.end <= self.start:
             raise ValueError("itinerary item must end after it starts")
+        if len(self.depends_on_item_ids) != len(set(self.depends_on_item_ids)):
+            raise ValueError("depends_on_item_ids must be unique")
+        if self.item_id in self.depends_on_item_ids:
+            raise ValueError("itinerary item cannot depend on itself")
         return self
 
 
@@ -87,6 +93,7 @@ class RecoveryPlan(BaseModel):
     disruption_id: str
     unchanged_item_ids: list[str]
     replacements: list[RecoverySelection]
+    propagated_item_ids: list[str] = Field(default_factory=list)
     blockers: list[str]
     complete: bool
 
@@ -133,6 +140,109 @@ def build_recovery_plan(
         disruption_id=disruption.disruption_id,
         unchanged_item_ids=[item.item_id for item in unaffected],
         replacements=selections,
+        blockers=blockers,
+        complete=not blockers and len(selections) == len(affected),
+    )
+
+
+def build_cascading_recovery_plan(
+    itinerary: list[ItineraryItem],
+    disruption: Disruption,
+    options: list[RecoveryOption],
+) -> RecoveryPlan:
+    """Propagate delay consequences through declared itinerary dependencies."""
+
+    item_map = {item.item_id: item for item in itinerary}
+    if len(item_map) != len(itinerary):
+        raise ValueError("itinerary item_id values must be unique")
+    for item in itinerary:
+        unknown = sorted(set(item.depends_on_item_ids) - item_map.keys())
+        if unknown:
+            raise ValueError(f"{item.item_id} depends on unknown items: {unknown}")
+    affected = set(disruption.affected_item_ids)
+    blockers = [
+        f"disruption references unknown item: {item_id}"
+        for item_id in sorted(affected - item_map.keys())
+    ]
+    affected.intersection_update(item_map)
+    original_affected = set(affected)
+    selections: dict[str, RecoveryOption] = {}
+
+    def descendants_of(item_id: str) -> set[str]:
+        descendants: set[str] = set()
+        changed = True
+        while changed:
+            changed = False
+            for candidate in itinerary:
+                if candidate.item_id in descendants:
+                    continue
+                if item_id in candidate.depends_on_item_ids or any(
+                    dependency in descendants for dependency in candidate.depends_on_item_ids
+                ):
+                    descendants.add(candidate.item_id)
+                    changed = True
+        return descendants
+
+    changed = True
+    while changed:
+        changed = False
+        for item in sorted(itinerary, key=lambda value: (value.start, value.item_id)):
+            if item.item_id not in affected or item.item_id in selections:
+                continue
+            descendants = descendants_of(item.item_id)
+            unrelated_fixed = [
+                other
+                for other in itinerary
+                if other.fixed
+                and other.item_id not in affected
+                and other.item_id not in descendants
+            ]
+            candidates = [
+                option
+                for option in options
+                if option.replaces_item_id == item.item_id
+                and option.available
+                and option.verified
+                and not any(
+                    _overlaps(option.start, option.end, fixed) for fixed in unrelated_fixed
+                )
+            ]
+            if not candidates:
+                continue
+            selections[item.item_id] = min(
+                candidates,
+                key=lambda option: (option.extra_cost, option.start, option.option_id),
+            )
+            changed = True
+        for item in sorted(itinerary, key=lambda value: (value.start, value.item_id)):
+            if item.item_id in affected:
+                continue
+            impacted_dependencies = [
+                dependency
+                for dependency in item.depends_on_item_ids
+                if dependency in affected and dependency in selections
+            ]
+            if not impacted_dependencies:
+                continue
+            latest_end = max(selections[dependency].end for dependency in impacted_dependencies)
+            safe_start = latest_end + timedelta(minutes=item.minimum_connection_minutes)
+            if safe_start > item.start:
+                affected.add(item.item_id)
+                changed = True
+
+    for item_id in sorted(affected):
+        if item_id not in selections:
+            blockers.append(f"no verified conflict-free recovery for {item_id}")
+    ordered_selections = [
+        RecoverySelection(replaced_item_id=item.item_id, option=selections[item.item_id])
+        for item in sorted(itinerary, key=lambda value: (value.start, value.item_id))
+        if item.item_id in selections
+    ]
+    return RecoveryPlan(
+        disruption_id=disruption.disruption_id,
+        unchanged_item_ids=[item.item_id for item in itinerary if item.item_id not in affected],
+        replacements=ordered_selections,
+        propagated_item_ids=sorted(affected - original_affected),
         blockers=blockers,
         complete=not blockers and len(selections) == len(affected),
     )
