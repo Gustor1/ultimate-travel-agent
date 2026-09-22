@@ -5,7 +5,7 @@ description: Use after priced evidence exists to calculate trip scenarios, finan
 
 # Budget and Booking Checker
 
-Read `../../shared/compact-research-protocol.md`, `../../shared/evidence-policy.md`, and `../../shared/deterministic-tools.md`.
+Read `../../shared/compact-research-protocol.md`, `../../shared/evidence-policy.md`, and `../../shared/deterministic-tools.md`. Consult `../../shared/scenario-routing.md` and load loyalty or family references only when triggered.
 
 ## Inputs and tools
 

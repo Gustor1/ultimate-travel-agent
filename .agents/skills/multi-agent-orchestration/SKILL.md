@@ -5,7 +5,7 @@ description: Use when multiple travel specialists must coordinate, fan in eviden
 
 # Multi-Agent Orchestration
 
-Read `../../shared/compact-research-protocol.md` and `../../shared/deterministic-tools.md`.
+Read `../../shared/compact-research-protocol.md`, `../../shared/deterministic-tools.md`, and `../../shared/scenario-routing.md`.
 
 ## Inputs and tools
 
@@ -13,7 +13,7 @@ Use trip complexity, specialist capabilities, coverage obligations, dependency I
 
 ## Method
 
-- Classify complexity and activate only applicable specialists; an inapplicable domain becomes an explicit skipped obligation, not a silent omission. External-tool auditing is never part of ordinary travel planning.
+- Classify complexity and active scenarios, then activate only applicable specialists. Put scenario IDs in the run manifest and pass each reference only to affected claim owners; an inapplicable domain becomes an explicit skipped obligation, not a silent omission. External-tool auditing is never part of ordinary travel planning.
 - Assign one owner per claim family and create a shared source-demand map so several consumers can reuse one current source ID.
 - Give each specialist an isolated brief slice, accepted decision IDs, its own artifact shard, and an exact coverage contract. Never forward full history or payloads.
 - Run independent nodes concurrently. Fan in only after required gates pass; block dependents on unresolved date, area, critical claim, or evidence-sufficiency gates.

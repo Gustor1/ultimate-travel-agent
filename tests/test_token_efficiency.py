@@ -20,13 +20,18 @@ EXPECTED_SHARED_ASSETS = {
     "shared/region-portugal.md",
     "shared/scenario-accessibility.md",
     "shared/scenario-extreme-heat.md",
+    "shared/scenario-family.md",
     "shared/scenario-high-altitude.md",
     "shared/scenario-island-ferry.md",
+    "shared/scenario-connectivity.md",
+    "shared/scenario-dining.md",
+    "shared/scenario-loyalty.md",
     "shared/scenario-rail-pass.md",
     "shared/scenario-routing.md",
     "shared/scenario-schengen.md",
     "shared/scenario-self-drive.md",
     "shared/scenario-separate-tickets.md",
+    "shared/scenario-sustainable-travel.md",
 }
 
 
@@ -188,6 +193,30 @@ def test_complete_trip_workflow_isolates_context_and_keeps_artifacts() -> None:
     assert "full conversation history" in workflow
     assert "compact-handoff/v2" in workflow
     assert "Never prune" in workflow
+
+
+def test_optional_capabilities_are_small_and_conditionally_routed() -> None:
+    routing = (AGENTS / "shared" / "scenario-routing.md").read_text(encoding="utf-8")
+    modules = {
+        "scenario-family.md": {"accommodation-research", "travel-safety"},
+        "scenario-dining.md": {"activity-curator", "local-discovery"},
+        "scenario-connectivity.md": {"travel-web-research", "travel-safety"},
+        "scenario-loyalty.md": {"flight-search", "budget-and-booking-checker"},
+        "scenario-sustainable-travel.md": {"transport-research", "travel-web-research"},
+    }
+
+    for filename, owners in modules.items():
+        reference = AGENTS / "shared" / filename
+        assert reference.is_file()
+        assert len(reference.read_text(encoding="utf-8")) <= 2_000
+        assert filename in routing
+        for owner in owners:
+            content = (AGENTS / "skills" / owner / "SKILL.md").read_text(
+                encoding="utf-8"
+            )
+            assert "scenario-routing.md" in content, owner
+
+    assert "load unrelated scenario" in routing
 
 
 def test_workflows_use_dynamic_claim_owned_v2_methods() -> None:

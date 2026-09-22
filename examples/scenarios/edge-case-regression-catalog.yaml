@@ -40,3 +40,28 @@ scenarios:
     regions: [International]
     required_controls: [adaptive_day, weather_fallback, route_windows]
     expected_risk: Essential outdoor items require an explicit conflict warning.
+  - scenario_id: minor-room-occupancy
+    title: Family room whose marketing label does not fit declared occupancy
+    regions: [International]
+    required_controls: [family_occupancy, child_fares, family_pacing]
+    expected_risk: A family-room label does not prove legal occupancy, beds, or adjoining rooms.
+  - scenario_id: award-transfer-delay
+    title: Points transfer proposed before award inventory is verified
+    regions: [International]
+    required_controls: [award_inventory, transfer_exposure, cash_fallback]
+    expected_risk: An irreversible points transfer can strand value after inventory disappears.
+  - scenario_id: remote-work-wifi
+    title: Hotel advertises Wi-Fi without stable remote-work evidence
+    regions: [International]
+    required_controls: [connectivity_method, offline_pack, reliability_gap]
+    expected_risk: A generic Wi-Fi claim does not prove current bandwidth or stability.
+  - scenario_id: dietary-cross-contamination
+    title: Restaurant lists dietary options without an allergen guarantee
+    regions: [International]
+    required_controls: [dietary_provenance, user_confirmation, dining_fallback]
+    expected_risk: Menu labels must not be converted into medical safety claims.
+  - scenario_id: greenwashing-comparison
+    title: Eco claim compared with incompatible emissions boundaries
+    regions: [International]
+    required_controls: [emissions_method, certification_scope, tradeoff_visibility]
+    expected_risk: Unscoped eco labels and incompatible estimates can reverse a recommendation.

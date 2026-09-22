@@ -5,7 +5,7 @@ description: Use after candidate dates and areas are known to compare neighborho
 
 # Accommodation Research
 
-Read `../../shared/compact-research-protocol.md`, `../../shared/research-methods.md`, `../../shared/evidence-policy.md`, and `../../shared/deterministic-tools.md`. Consult `../../shared/scenario-routing.md` and load only matching accessibility or regional references.
+Read `../../shared/compact-research-protocol.md`, `../../shared/research-methods.md`, `../../shared/evidence-policy.md`, and `../../shared/deterministic-tools.md`. Consult `../../shared/scenario-routing.md` and load only matching accessibility, family, connectivity, loyalty, sustainability, or regional references.
 
 ## Inputs and tools
 

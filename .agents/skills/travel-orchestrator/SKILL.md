@@ -5,7 +5,7 @@ description: Use for an end-to-end trip plan spanning several research, budgetin
 
 # Travel Orchestrator
 
-Read `../../shared/compact-research-protocol.md` and `../../shared/deterministic-tools.md` before dispatch.
+Read `../../shared/compact-research-protocol.md`, `../../shared/deterministic-tools.md`, and `../../shared/scenario-routing.md` before dispatch.
 
 ## Inputs and tools
 
@@ -13,7 +13,7 @@ Coordinate a privacy-minimal brief, complexity classification, runtime capabilit
 
 ## Method
 
-1. Create/reuse a run ID and brief fingerprint. Ask only for missing facts that materially alter results; otherwise document reversible assumptions.
+1. Create/reuse a run ID and brief fingerprint. Detect active scenario references from explicit brief facts, record their IDs, and ask only for missing facts that materially alter results; otherwise document reversible assumptions.
 2. Build claim ownership, source-demand, coverage, and dependency maps. Activate only relevant specialists; preserve skipped reasons.
 3. Run destination, transport, broad activity, and applicable safety research in isolated parallel contexts. Gate date-sensitive work on viable candidate dates.
 4. Run accommodation, local discovery, and activity refinement only after the date/area gate. Reuse existing source IDs rather than reopening pages.

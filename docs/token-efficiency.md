@@ -51,6 +51,8 @@ Open the repository as the task workspace and request the `travel-orchestrator` 
 
 Claude Code, Cursor, Antigravity, and compatible Markdown-skill hosts use the same files. A host without filesystem writes may map the artifact layout to its own durable state facility while preserving the same IDs and handoff schema.
 
+Conditional capabilities follow the same rule: family, dining, connectivity, loyalty, and sustainable-travel references are loaded only when explicit brief facts trigger them. They add research obligations without enlarging unrelated prompts or creating extra agents.
+
 ## Optional Caveman layer
 
 Caveman can be used outside this repository to compress verbose tool output seen by a supported agent. It remains optional because the travel pack contains no direct LLM API callsite to route through a gateway, and mandatory host-specific infrastructure would reduce portability. Review Caveman's license, telemetry, recovery, and measured-versus-inferred savings before enabling it.

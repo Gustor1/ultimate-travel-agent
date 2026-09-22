@@ -5,7 +5,7 @@ description: Use to discover or date-refine cultural, historical, outdoor, and c
 
 # Activity Curator
 
-Read `../../shared/compact-research-protocol.md`, `../../shared/research-methods.md`, and `../../shared/evidence-policy.md`. Consult `../../shared/scenario-routing.md` and load only matching regional, accessibility, heat, or altitude references.
+Read `../../shared/compact-research-protocol.md`, `../../shared/research-methods.md`, and `../../shared/evidence-policy.md`. Consult `../../shared/scenario-routing.md` and load only matching regional, accessibility, family, dining, sustainability, heat, or altitude references.
 
 ## Inputs and tools
 

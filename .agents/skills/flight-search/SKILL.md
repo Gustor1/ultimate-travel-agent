@@ -5,7 +5,7 @@ description: Use for live flight comparison across exact or flexible dates and n
 
 # Flight Search
 
-Read `../../shared/compact-research-protocol.md`, `../../shared/research-methods.md`, `../../shared/evidence-policy.md`, and `../../shared/deterministic-tools.md`. Consult `../../shared/scenario-routing.md` and load only matching separate-ticket, border, or accessibility references.
+Read `../../shared/compact-research-protocol.md`, `../../shared/research-methods.md`, `../../shared/evidence-policy.md`, and `../../shared/deterministic-tools.md`. Consult `../../shared/scenario-routing.md` and load only matching separate-ticket, border, accessibility, family, loyalty, or sustainability references.
 
 ## Inputs and tools
 

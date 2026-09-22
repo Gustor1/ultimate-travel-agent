@@ -5,7 +5,7 @@ description: Use after areas are selected to find neighborhood food, markets, cu
 
 # Local Discovery
 
-Read `../../shared/compact-research-protocol.md`, `../../shared/research-methods.md`, and `../../shared/evidence-policy.md`. Consult `../../shared/scenario-routing.md` and load only matching accessibility or regional references.
+Read `../../shared/compact-research-protocol.md`, `../../shared/research-methods.md`, and `../../shared/evidence-policy.md`. Consult `../../shared/scenario-routing.md` and load only matching accessibility, family, dining, connectivity, sustainability, or regional references.
 
 ## Inputs and tools
 

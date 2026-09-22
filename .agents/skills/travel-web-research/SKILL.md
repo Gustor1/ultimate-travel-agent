@@ -5,7 +5,7 @@ description: Use for sourced destination geography, seasonality, climate, crowds
 
 # Travel Web Research
 
-Read `../../shared/compact-research-protocol.md`, `../../shared/research-methods.md`, and `../../shared/evidence-policy.md`. Consult `../../shared/scenario-routing.md` and load only matching regional, heat, altitude, or accessibility references.
+Read `../../shared/compact-research-protocol.md`, `../../shared/research-methods.md`, and `../../shared/evidence-policy.md`. Consult `../../shared/scenario-routing.md` and load only matching regional, family, connectivity, sustainability, heat, altitude, or accessibility references.
 
 ## Inputs and tools
 

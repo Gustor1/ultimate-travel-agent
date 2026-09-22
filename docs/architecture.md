@@ -54,3 +54,11 @@ All stages use [`TravelDossier v1`](travel-dossier-v1.md). Specialized outputs r
 ## Host responsibility
 
 Markdown instructions do not enforce sandboxing. The host runtime controls real tools, network access, filesystem scope, and user approvals. Agent frontmatter documents requested capabilities only.
+
+## Conditional capability decision
+
+The pack extends existing owners before adding specialists. Family/minors, dining, connectivity/remote work, loyalty/awards, and sustainable travel are conditional shared references selected from the brief. They do not create new agents, alter the fixed handoff envelope, or load during unrelated trips.
+
+Assumptions: users may omit these dimensions; sources and web capabilities vary by host; privacy-minimal local artifacts remain the durable state. The main risks are overlapping ownership, prompt growth, stale operational claims, and false precision. They are controlled through one claim owner, explicit routing, existing freshness rules, bounded references, and deterministic validation. A standalone skill is justified later only if one domain develops an independent research lifecycle that cannot be represented cleanly by the current owners.
+
+Decision log: modular conditional references were chosen over five new agents and over an adaptive telemetry subsystem. This preserves portability and token efficiency while allowing the methods to evolve independently.

@@ -18,13 +18,18 @@
     {"name": "region-portugal", "path": "shared/region-portugal.md"},
     {"name": "scenario-accessibility", "path": "shared/scenario-accessibility.md"},
     {"name": "scenario-extreme-heat", "path": "shared/scenario-extreme-heat.md"},
+    {"name": "scenario-family", "path": "shared/scenario-family.md"},
     {"name": "scenario-high-altitude", "path": "shared/scenario-high-altitude.md"},
     {"name": "scenario-island-ferry", "path": "shared/scenario-island-ferry.md"},
+    {"name": "scenario-connectivity", "path": "shared/scenario-connectivity.md"},
+    {"name": "scenario-dining", "path": "shared/scenario-dining.md"},
+    {"name": "scenario-loyalty", "path": "shared/scenario-loyalty.md"},
     {"name": "scenario-rail-pass", "path": "shared/scenario-rail-pass.md"},
     {"name": "scenario-routing", "path": "shared/scenario-routing.md"},
     {"name": "scenario-schengen", "path": "shared/scenario-schengen.md"},
     {"name": "scenario-self-drive", "path": "shared/scenario-self-drive.md"},
-    {"name": "scenario-separate-tickets", "path": "shared/scenario-separate-tickets.md"}
+    {"name": "scenario-separate-tickets", "path": "shared/scenario-separate-tickets.md"},
+    {"name": "scenario-sustainable-travel", "path": "shared/scenario-sustainable-travel.md"}
   ],
   "skills": [
     {"name": "accommodation-research", "path": "skills/accommodation-research/SKILL.md"},

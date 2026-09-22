@@ -5,7 +5,7 @@ description: Use for international entry/transit or destination/date-specific he
 
 # Travel Safety
 
-Read `../../shared/compact-research-protocol.md`, `../../shared/research-methods.md`, and `../../shared/evidence-policy.md`. Consult `../../shared/scenario-routing.md` and load only matching border, driving, heat, altitude, accessibility, or regional references.
+Read `../../shared/compact-research-protocol.md`, `../../shared/research-methods.md`, and `../../shared/evidence-policy.md`. Consult `../../shared/scenario-routing.md` and load only matching border, driving, heat, altitude, accessibility, family, connectivity, or regional references.
 
 ## Inputs and tools
 

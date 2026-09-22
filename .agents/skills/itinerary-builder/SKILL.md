@@ -5,7 +5,7 @@ description: Use after transport, lodging, activities, and opening windows are e
 
 # Itinerary Builder
 
-Read `../../shared/compact-research-protocol.md`, `../../shared/evidence-policy.md`, and `../../shared/deterministic-tools.md`. Load accessibility, heat, or altitude scenario references only when relevant.
+Read `../../shared/compact-research-protocol.md`, `../../shared/evidence-policy.md`, and `../../shared/deterministic-tools.md`. Consult `../../shared/scenario-routing.md` and load only active accessibility, family, dining, connectivity, heat, or altitude references.
 
 ## Inputs and tools
 

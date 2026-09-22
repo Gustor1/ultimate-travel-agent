@@ -28,5 +28,10 @@ def test_edge_case_catalog_covers_critical_travel_failures() -> None:
         "route_windows",
         "disruption_cascade",
         "offline_mode",
+        "family_occupancy",
+        "award_inventory",
+        "connectivity_method",
+        "dietary_provenance",
+        "emissions_method",
     }
     assert all(scenario["expected_risk"] for scenario in scenarios)
