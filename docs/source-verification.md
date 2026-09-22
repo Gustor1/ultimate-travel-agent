@@ -22,6 +22,8 @@ Travel recommendations use claim-level evidence. A source's category, authority,
 
 The legacy Tier 1-6 hierarchy remains available for readers, but it no longer overloads source type and authority.
 
+`independence_group` identifies the upstream publisher or inventory feed. Different URLs do not count as independent corroboration when they reproduce the same origin.
+
 ## Evidence rules
 
 1. Visa, health, border, safety, fare, schedule, cancellation, and admission claims require primary evidence.
@@ -31,6 +33,8 @@ The legacy Tier 1-6 hierarchy remains available for readers, but it no longer ov
 5. Each claim lists exact `source_ids`. A source list without claim linkage is insufficient.
 6. Every time-sensitive source and claim records `retrieved_at` and `expires_at`.
 7. A redirected, dead, login-blocked, or inaccessible page remains unverified unless another primary source confirms the fact.
+8. `cross_checked` requires at least two current evidence origins with different `independence_group` values.
+9. A booking-critical claim requires at least one primary source even when secondary sources agree.
 
 ## Booking-readiness gate
 

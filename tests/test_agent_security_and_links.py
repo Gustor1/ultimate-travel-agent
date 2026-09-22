@@ -1,5 +1,3 @@
-import filecmp
-import os
 from pathlib import Path
 
 from ultimate_travel_agent.validator import validate_all_agents
@@ -70,24 +68,3 @@ def test_internal_agents_least_privilege():
                 "tools:" in content.lower()
                 and "browser" not in content.lower().split("tools:")[1].split("---")[0]
             ), f"Internal agent {ia} has browser"
-
-
-def test_packages_mirror_synchronized():
-    repo_root = Path(__file__).resolve().parent.parent
-    source_dir = repo_root / ".agents" / "skills"
-    mirror_dir = repo_root / "packages" / "travel-skills" / "skills"
-
-    assert source_dir.exists() and mirror_dir.exists()
-
-    match, mismatch, errors = filecmp.cmpfiles(
-        source_dir, mirror_dir, os.listdir(source_dir), shallow=False
-    )
-
-    # Since these are folders containing SKILL.md, we should check those
-    for skill in os.listdir(source_dir):
-        source_skill = source_dir / skill / "SKILL.md"
-        mirror_skill = mirror_dir / skill / "SKILL.md"
-        if source_skill.exists() and mirror_skill.exists():
-            assert filecmp.cmp(source_skill, mirror_skill, shallow=False), (
-                f"Skill mirror mismatch: {skill}"
-            )

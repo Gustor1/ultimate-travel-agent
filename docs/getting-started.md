@@ -72,9 +72,9 @@ python -m ultimate_travel_agent.cli uninstall-skills --target /chemin/vers/mon-p
 
 ## 5. Exécution d'un Workflow de Voyage
 
-Pour planifier un voyage complet avec vos agents IA (Antigravity, Claude Code, Cursor) :
+Pour planifier un voyage complet avec Codex, Claude ou un autre agent compatible :
 
-1. Choisissez ou adaptez un brief de voyage dans `examples/` (ex: `examples/trip-brief-template.md` ou `examples/scenarios/city-break-europe.md`).
+1. Choisissez ou adaptez `examples/trip-brief-template.fr.md` ou `examples/trip-brief-template.md`.
 2. Demandez à votre agent IA d'exécuter le workflow d'orchestration :
    ```text
    Follow the workflow .agents/workflows/plan-complete-trip.md using this brief:

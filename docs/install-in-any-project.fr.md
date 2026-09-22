@@ -1,6 +1,6 @@
-# Installer le Travel Skills Pack dans tout projet Antigravity
+# Installer le Travel Skills Pack dans tout projet agentique
 
-Grâce à son architecture **Skills-First**, `ultimate-travel-agent` s'installe en une seule commande dans n'importe quel projet Antigravity existant ou nouveau.
+Grâce à son architecture **Skills-First**, `ultimate-travel-agent` s'installe dans tout projet dont l'agent sait lire des instructions Markdown locales. Les fichiers sont neutres ; le branchement des outils et permissions dépend de l'hôte.
 
 ---
 

@@ -135,7 +135,7 @@ def get_manifest(pack_root: Path | None = None) -> dict[str, Any]:
         raise ManifestError(
             f"Bundle version must match package version {PACK_VERSION}: {manifest.get('version')}"
         )
-    for collection in ("skills", "agents", "workflows"):
+    for collection in ("assets", "skills", "agents", "workflows"):
         entries = manifest.get(collection, [])
         if not isinstance(entries, list):
             raise ManifestError(f"Bundle manifest field {collection} must be a list")
@@ -282,6 +282,22 @@ def install_pack_skills(
     installed_skills = set(existing_manifest.get("installed_skills", []))
     installed_agents = set(existing_manifest.get("installed_agents", []))
     installed_workflows = set(existing_manifest.get("installed_workflows", []))
+    installed_assets = set(existing_manifest.get("installed_assets", []))
+
+    installed_assets.update(
+        _install_entries(
+            manifest.get("assets", []),
+            bundle_root,
+            target_root,
+            force,
+            "asset",
+            existing_files,
+            newly_installed,
+            skipped_files,
+            overwritten_files,
+            dry_run,
+        )
+    )
 
     installed_skills.update(
         _install_entries(
@@ -338,9 +354,9 @@ def install_pack_skills(
         "installed_skills": sorted(installed_skills),
         "installed_agents": sorted(installed_agents),
         "installed_workflows": sorted(installed_workflows),
+        "installed_assets": sorted(installed_assets),
         "files": files_registry,
     }
-
     manifest_path: Path | None = None
     if not dry_run and files_registry:
         manifest_path = save_install_manifest(target_root, manifest_data)
@@ -353,6 +369,7 @@ def install_pack_skills(
         "skills_count": len(installed_skills),
         "agents_count": len(installed_agents),
         "workflows_count": len(installed_workflows),
+        "assets_count": len(installed_assets),
     }
 
 
@@ -460,33 +477,3 @@ def uninstall_pack_skills(
         "errors": errors,
         "manifest_cleaned": not remaining_files and not dry_run,
     }
-
-
-def sync_pack_mirror(
-    check: bool = False, repository_root: Path | None = None
-) -> dict[str, list[str]]:
-    """Generate or check the compatibility mirror from canonical .agents assets."""
-
-    repo = (repository_root or Path(__file__).resolve().parent.parent.parent).resolve()
-    canonical = repo / ".agents"
-    mirror = repo / "packages" / "travel-skills"
-    manifest = get_manifest(canonical)
-    changed: list[str] = []
-    out_of_sync: list[str] = []
-
-    files = ["manifest.json"] + [str(entry["path"]) for entry in manifest["skills"]]
-    for relative_path in files:
-        source = _safe_join(canonical, relative_path)
-        destination = _safe_join(mirror, relative_path)
-        differs = not destination.exists() or compute_file_sha256(source) != compute_file_sha256(
-            destination
-        )
-        if not differs:
-            continue
-        if check:
-            out_of_sync.append(relative_path)
-            continue
-        destination.parent.mkdir(parents=True, exist_ok=True)
-        shutil.copy2(source, destination, follow_symlinks=False)
-        changed.append(relative_path)
-    return {"changed": changed, "out_of_sync": out_of_sync}

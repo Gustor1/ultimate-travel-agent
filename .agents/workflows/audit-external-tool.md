@@ -1,25 +1,25 @@
 # Workflow: Audit External Tool or MCP
 
-## 1. Purpose
-Audits candidate Model Context Protocol (MCP) servers, third-party skills, or external APIs prior to enabling them in a traveler's AI environment.
-Guarantees compliance with project safety invariants: zero automatic purchases, zero private credential storage, and strict sandbox isolation.
+## Purpose
 
-## 2. Agents Involved
-- `mcp-skill-auditor` (Lead)
-- `mcp-skill-auditing` (Skill)
+Statically assess an exact version of an external MCP server, skill, connector, API, or tool before adoption. Run only when an external component is actually proposed; never as part of ordinary trip planning.
 
-## 3. Input / Output Contracts
-- **Input**: Tool manifest, MCP server schema, SKILL.md file, or API documentation.
-- **Output**: Security and privacy evaluation report with safety rating and adoption recommendation.
+Read `../shared/compact-research-protocol.md`. Use an isolated context and return `compact-handoff/v2` finding IDs.
 
-## 4. Step-by-Step Execution Process
-1. **Permission Scope Analysis**: Check requested tool capabilities (filesystem write, network sockets, command execution, environment variable reads).
-2. **Financial & Booking Risk Audit**: Verify that the tool has NO capability to execute automated bookings, enter credit card details, or trigger financial transactions.
-3. **Data Privacy & Credential Review**: Confirm that user personal data, passport numbers, and API tokens are not transmitted to third-party endpoints.
-4. **Prompt Injection & Integrity Check**: Inspect system prompts and tool descriptions for potential prompt injection vectors or safety bypasses.
-5. **Verdict Generation**: Deliver a formal verdict: APPROVED, RESTRICTED_LOCAL_ONLY, or REJECTED.
+## Agents Involved
 
-## 5. Deliverables
-- Tool Security Audit Report
-- Permission & Data Flow Analysis
-- Official Verdict & Integration Guidelines
+- `mcp-skill-auditor` using `mcp-skill-auditing`
+
+## Process
+
+1. Freeze the reviewed version/commit and inventory manifests, install hooks, binaries, direct/transitive dependencies, licences, updates, and unavailable source.
+2. Map declared versus actual filesystem, command, browser, secret, network, redirect, telemetry, and retention capability.
+3. Trace untrusted input and credentials to prompts, logs, commands, writes, and network sinks. Never execute the component during a static audit.
+4. Record evidence location, exploit preconditions/path, inherent severity, mitigation, residual risk, and missing inspection material.
+5. Return `APPROVED`, `RESTRICTED`, `INSUFFICIENT_EVIDENCE`, or `REJECTED`; do not equate absence of a visible finding with safety.
+
+## Deliverables
+
+- Finding and evidence artifacts
+- Permission/data-flow map
+- Version-scoped verdict and restrictions

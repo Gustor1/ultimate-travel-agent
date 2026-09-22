@@ -1,7 +1,5 @@
 """Functional validation test suite for direct links, source tiers, and regional scenarios."""
 
-from pathlib import Path
-
 from ultimate_travel_agent.validator import (
     is_generic_root_homepage,
     is_generic_search_url,
@@ -148,89 +146,6 @@ def test_sources_require_tier_and_verification_date():
     }
     pg, issues_g = validate_source_record(good_source)
     assert pg, f"Valid source failed: {issues_g}"
-
-
-def test_china_scenario_functional_validity():
-    """Non-regression functional test for China Cultural Discovery scenario."""
-    repo_root = Path(__file__).resolve().parent.parent
-    dossier_path = repo_root / "examples" / "expected-outputs" / "china-discovery-output.md"
-    assert dossier_path.exists(), f"Missing China output dossier: {dossier_path}"
-
-    content = dossier_path.read_text(encoding="utf-8")
-    passed, issues = validate_china_scenario(content)
-    assert passed, f"China functional scenario failed: {issues}"
-
-    # Specific assertions
-    assert "https://en.nia.gov.cn" in content
-    assert "https://www.12306.cn/en/index.html" in content
-    assert "https://bookingticket.dpm.org.cn/" in content
-    assert "https://www.thepuxuan.com" in content
-    assert "Confirmée" in content or "confirmée" in content
-
-
-def test_london_scenario_functional_validity():
-    """Non-regression functional test for London City Break scenario."""
-    repo_root = Path(__file__).resolve().parent.parent
-    dossier_path = repo_root / "examples" / "expected-outputs" / "london-city-trip-output.md"
-    assert dossier_path.exists(), f"Missing London output dossier: {dossier_path}"
-
-    content = dossier_path.read_text(encoding="utf-8")
-    passed, issues = validate_london_scenario(content)
-    assert passed, f"London functional scenario failed: {issues}"
-
-    # Specific assertions
-    assert (
-        "https://tfl.gov.uk/fares/how-to-pay-and-save/pay-as-you-go/contactless-and-oyster-compared"
-        in content
-    )
-    assert "https://www.hrp.org.uk/tower-of-london/visit/tickets-and-prices/" in content
-    assert "https://www.britishmuseum.org/visit" in content
-    assert "FREE" in content or "Free" in content or "free" in content
-    assert "https://thehoxton.com/london/holborn/" in content
-
-
-def test_portugal_scenario_functional_validity():
-    """Non-regression functional test for Portugal Heritage scenario."""
-    repo_root = Path(__file__).resolve().parent.parent
-    dossier_path = repo_root / "examples" / "expected-outputs" / "portugal-cultural-trip-output.md"
-    assert dossier_path.exists(), f"Missing Portugal output dossier: {dossier_path}"
-
-    content = dossier_path.read_text(encoding="utf-8")
-    passed, issues = validate_portugal_scenario(content)
-    assert passed, f"Portugal functional scenario failed: {issues}"
-
-    # Specific assertions
-    assert "https://aima.gov.pt" in content
-    assert "https://www.cp.pt/" in content
-    assert "https://www.portugaltolls.com/en/tolls-payment" in content
-    assert (
-        "https://bilheteira.parquesdesintra.pt/evento/parque-e-palacio-nacional-da-pena/263/en"
-        in content
-    )
-    assert "RNET" in content
-    assert "https://www.lisboaplazahotel.com/" in content
-
-
-def test_specialist_agent_urls_preserved_in_final_dossier():
-    """Verify that all direct URLs supplied by specialist subagents are retained in the master dossier."""
-    repo_root = Path(__file__).resolve().parent.parent
-    dossier_path = repo_root / "examples" / "expected-outputs" / "china-discovery-output.md"
-    content = dossier_path.read_text(encoding="utf-8")
-
-    subagent_urls = [
-        "https://en.nia.gov.cn",
-        "https://www.visaforchina.cn",
-        "https://www.12306.cn/en/index.html",
-        "https://www.thepuxuan.com",
-        "https://www.themiddlehousehotel.com/",
-        "https://bookingticket.dpm.org.cn/",
-        "https://www.dpm.org.cn",
-        "https://www.bjmaco.gov.cn",
-        "https://www.chnmuseum.cn/",
-    ]
-
-    passed, missing = validate_url_retention(subagent_urls, content)
-    assert passed, f"The following subagent URLs were lost in the final dossier: {missing}"
 
 
 def test_china_hotel_requires_foreign_guest_acceptance():

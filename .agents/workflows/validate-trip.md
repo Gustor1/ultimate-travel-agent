@@ -1,29 +1,26 @@
-# Workflow: Validate Trip Quality & Feasibility
+# Workflow: Validate Trip Quality and Feasibility
 
-## 1. Purpose
-Conducts an objective quality audit against `TravelDossier v1` before delivery.
-Verifies temporal feasibility, transit connection realism, budget arithmetic, source integrity, and constraint compliance.
+## Purpose
 
-## 2. Agents Involved
-- `quality-controller` (Lead)
-- `budget-analyst`
-- `source-verification`
-- `travel-quality-control` (Skill)
+Audit `TravelDossier v1` structure, arithmetic, feasibility, evidence, contingencies, and readiness without silently redoing research.
 
-## 3. Input / Output Contracts
-- **Input**: Full draft trip dossier (daily itinerary, transport routes, lodging, budget breakdown, safety plans).
-- **Output**: Quality assurance report with validation score, detected flaws, blocking issues, and final publication approval.
+Read `../shared/compact-research-protocol.md`; write findings once and return `compact-handoff/v2` IDs.
 
-## 4. Step-by-Step Execution Process
+## Agents Involved
 
-1. Validate the `TravelDossier v1` structure and unique claim/source IDs.
-2. Reject missing or expired evidence references.
-3. Recalculate typed cost totals from atomic components.
-4. Check every transit connection, opening day, geographic cluster, pacing limit, and user constraint.
-5. Reject social or community discoveries presented as operational facts without primary evidence.
-6. Set `readiness.booking_ready: true` only when no critical blocker remains.
+- `quality-controller` using `travel-quality-control`
+- `budget-analyst` or `source-verification` only for targeted corrections
 
-## 5. Deliverables
-- Quality Assurance Audit Report
-- List of Detected Issues & Corrections
-- Validation Decision (Approved / Revisions Required)
+## Process
+
+1. Run `validate-dossier`; check schemas, unique IDs, links, revisions, duplicates, and orphans.
+2. Recalculate typed totals, quantities, exchange rates, reserves, and door-to-door formulas.
+3. Test chronology, opening windows, connections, check-in, geography, walking/energy, rest, access, lodging nights, and fallback compatibility.
+4. Audit claim atomicity, authority, independence, applicability, freshness, and conflicts.
+5. Evaluate `coverage_complete`, `evidence_sufficient`, `recommendation_ready`, and `booking_ready` independently; `pending: 0` cannot imply later gates.
+6. Red-team a delay, closure, bad weather, payment/cancellation mismatch, and stale critical claim. After correction, rerun affected findings and dependencies only.
+
+## Deliverables
+
+- Severity-ranked finding IDs and corrections
+- Gate report and `APPROVED`, `MODIFICATIONS_REQUIRED`, or `BLOCKED` decision

@@ -41,6 +41,7 @@ env/
 
 # User-specific & Private Travel Data
 data/user_trips/
+.travel-agent/
 *.private.json
 *.private.yaml
 credentials.json

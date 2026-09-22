@@ -1,0 +1,42 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/Gustor1/ultimate-travel-agent/schemas/compact-handoff-v2.schema.json",
+  "title": "Compact Handoff v2",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "run_id", "stage", "status", "artifacts", "new_ids", "changed_ids", "decision_ids", "blockers", "coverage", "gates"],
+  "properties": {
+    "schema": {"const": "compact-handoff/v2"},
+    "run_id": {"type": "string", "minLength": 1, "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$"},
+    "stage": {"type": "string", "minLength": 1, "pattern": "^[a-z0-9][a-z0-9._-]*$"},
+    "status": {"enum": ["complete", "partial", "blocked"]},
+    "artifacts": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+    "new_ids": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+    "changed_ids": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+    "decision_ids": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+    "blockers": {"type": "array", "items": {"type": "string", "minLength": 1}},
+    "coverage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["expected", "searched", "unavailable", "skipped", "pending"],
+      "properties": {
+        "expected": {"type": "integer", "minimum": 0},
+        "searched": {"type": "integer", "minimum": 0},
+        "unavailable": {"type": "integer", "minimum": 0},
+        "skipped": {"type": "integer", "minimum": 0},
+        "pending": {"type": "integer", "minimum": 0}
+      }
+    },
+    "gates": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["coverage_complete", "evidence_sufficient", "recommendation_ready", "booking_ready"],
+      "properties": {
+        "coverage_complete": {"type": "boolean"},
+        "evidence_sufficient": {"type": "boolean"},
+        "recommendation_ready": {"type": "boolean"},
+        "booking_ready": {"type": "boolean"}
+      }
+    }
+  }
+}

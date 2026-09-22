@@ -1,27 +1,26 @@
-# Workflow: Prepare Departure & Travel Safety
+# Workflow: Prepare Departure and Safety
 
-## 1. Purpose
-Establishes the administrative, health, logistical, and emergency preparedness dossier required before embarking on the journey.
-Provides clear checklists for entry documents, vaccinations, currency access, connectivity, and emergency contacts without automated actions.
+## Purpose
 
-## 2. Agents Involved
-- `travel-preparation-agent` (Lead)
-- `source-verification`
-- `travel-safety` (Skill)
+Create an applicability-specific administrative, health, weather, insurance, medication, connectivity, and emergency checklist without collecting unnecessary PII or giving legal/medical clearance.
 
-## 3. Input / Output Contracts
-- **Input**: Traveler nationality, destination countries, travel dates, health or mobility conditions.
-- **Output**: Pre-departure preparation checklist, administrative requirements guide, health and insurance recommendations, and emergency card.
+Read `../shared/compact-research-protocol.md`; return `compact-handoff/v2` action/blocker IDs.
 
-## 4. Step-by-Step Execution Process
-1. **Passport & Visa Verification**: Check minimum passport validity rules (e.g. 6 months beyond stay) and official visa requirements via embassy channels.
-2. **Health & Immunization Review**: Review routine, mandatory, and recommended immunizations from public health authorities (e.g. WHO, national health portals).
-3. **Travel Insurance & Medical Preparedness**: Define coverage essentials (emergency repatriation, trip cancellation) and prescription medication transport rules.
-4. **Currency & Connectivity**: Formulate payment strategies (zero-fee credit cards, local cash ATM practices) and cellular connectivity plans (eSIM, roaming).
-5. **Emergency Protocols**: Generate emergency contact cards with official nationwide emergency numbers, consular contact details, and offline backup guidance.
+## Agents Involved
 
-## 5. Deliverables
-- Pre-Departure Administrative Checklist
-- Health & Vaccination Guidelines
-- Currency, Card & Connectivity Plan
-- Emergency Protocol & Contacts Card
+- `travel-preparation-agent` using `travel-safety`
+- `source-verification` for flagged critical claims
+
+## Process
+
+1. Build nationality/residency × jurisdiction × transit/border × date applicability using generic categories only.
+2. Verify official entry, passport, visa/transit, customs, driving, advisory, health, vaccine, and medication-import claims. Label legal requirement, official recommendation, or precaution.
+3. Assess severity × likelihood × traveler exposure for weather, environment, scams, remoteness, insurance, and evacuation; preserve high-impact blockers.
+4. Record official emergency and consular contacts from current primary pages. Separate currency/connectivity convenience from safety requirements.
+5. Generate departure-relative revalidation tasks; without current official access, keep claims unverified rather than issuing clearance.
+
+## Deliverables
+
+- Applicable preparation/action checklist
+- Official evidence and emergency-contact IDs
+- Risk, blocker, and revalidation schedule

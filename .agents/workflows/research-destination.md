@@ -1,27 +1,26 @@
 # Workflow: Research Destination
 
-## 1. Purpose
-Conducts in-depth geographic, climatic, cultural, and temporal research on a target country, region, or city.
-Identifies low-crowd periods, seasonal weather expectations, local customs, and high-level regional highlights.
+## Purpose
 
-## 2. Agents Involved
-- `destination-researcher` (Lead)
-- `source-verification`
-- `travel-web-research` (Skill)
+Research geography, climate, daylight, seasonality, crowds, events, cultural context, norms, and regional scope without duplicating claims owned by safety, activities, transport, or accommodation specialists.
 
-## 3. Input / Output Contracts
-- **Input**: Destination name(s), intended travel dates or season, traveler profile and interests.
-- **Output**: Destination profile document with climate statistics, crowd calendar, cultural norms, and primary regional zones.
+Read `../shared/compact-research-protocol.md`; return `compact-handoff/v2` question/source IDs and gates.
 
-## 4. Step-by-Step Execution Process
-1. **Geographic Scoping**: Identify country, administrative divisions, primary international arrival hubs, and geographic layout.
-2. **Climate & Seasonality Analysis**: Examine historical temperature ranges, precipitation probabilities, daylight hours, and extreme weather risks (e.g. typhoons, monsoons).
-3. **Crowd & Holiday Calendar**: Check school holidays, national festivals, and peak tourist migration periods to identify anti-crowd windows.
-4. **Cultural & Practical Norms**: Document currency, local language phrases, tipping customs, dress codes at religious sites, and business operating hours.
-5. **Source Corroboration**: Verify information against official national tourism boards (Tier 1).
+## Agents Involved
 
-## 5. Deliverables
-- Destination Profile Document
-- Seasonal Visiting Matrix
-- Cultural Etiquette Guide
-- Tier 1/3 Source Reference Table
+- `destination-researcher` using `travel-web-research`
+- `source-verification` only for flagged claims
+
+## Process
+
+1. Build topic × period × area × traveler-constraint × source-role coverage.
+2. Establish official geography, districts, realistic scope, and transport anchors without researching operator fares.
+3. Separate durable climate normals from date-specific forecasts; add daylight, seasonal hazards, holidays, events, closures, and crowd drivers.
+4. Research customs, etiquette, practical norms, local-language terms, cultural context, and alternative areas using multilingual query variants.
+5. Resolve duplicate entities, verify retained contextual claims, and publish resolved-question/source-demand IDs so downstream agents reuse evidence.
+
+## Deliverables
+
+- Destination and seasonal profile artifacts
+- Context claim/source and conflict ledger
+- Reusable resolved-question and source-demand IDs

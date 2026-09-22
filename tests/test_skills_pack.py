@@ -152,40 +152,13 @@ def test_all_14_skills_frontmatter_and_policies():
         fm = yaml.safe_load(parts[1])
         assert fm["name"] == skill_name
         assert "description" in fm and len(fm["description"]) > 15
-        assert "conditions" in fm
+        assert "conditions" not in fm
 
-        # Safety policy
-        assert "Never make purchases" in content
-        assert "Never make reservations" in content
-        assert "Never enter personal or payment data" in content
-
-        # Offline fallback behavior
-        assert "live research cannot be completed" in content
-        assert "Never invent live prices" in content
-
-        # Sourcing tiers
-        assert "Tier 1" in content
-        assert "Tier 6" in content
-
-        # Structured output format
-        assert "summary:" in content
-        assert "recommendations:" in content
-        assert "source_log:" in content
-        assert "verification_required:" in content
-
-
-def test_packages_mirror_sync():
-    """Verify that packages/travel-skills/skills mirrors .agents/skills exactly."""
-    base_dir = get_base_dir()
-    agents_skills = base_dir / ".agents" / "skills"
-    packages_skills = base_dir / "packages" / "travel-skills" / "skills"
-
-    for skill_folder in agents_skills.iterdir():
-        if skill_folder.is_dir():
-            pkg_file = packages_skills / skill_folder.name / "SKILL.md"
-            agent_file = skill_folder / "SKILL.md"
-            assert pkg_file.exists(), f"Missing mirrored skill in packages: {skill_folder.name}"
-            assert pkg_file.read_text(encoding="utf-8") == agent_file.read_text(encoding="utf-8")
+        # Universal policy and the handoff schema are inherited from one shared contract.
+        assert "compact-research-protocol.md" in content
+        assert "compact-handoff/v2" in content
+        assert "schema: compact-handoff" not in content
+        assert "source_log:" not in content
 
 
 def test_all_9_workflows_detailed():
@@ -215,16 +188,14 @@ def test_all_9_workflows_detailed():
         assert "Deliverables" in content
 
 
-def test_all_4_example_briefs_detailed():
-    """Verify that universal template and all 3 realistic briefs are non-trivial and complete."""
+def test_bilingual_brief_templates_are_substantial():
+    """Verify that the two user-facing brief templates remain useful."""
     base_dir = get_base_dir()
     ex_dir = base_dir / "examples"
 
     expected_briefs = [
         "trip-brief-template.md",
-        "city-break-brief.md",
-        "road-trip-brief.md",
-        "nature-low-crowd-brief.md",
+        "trip-brief-template.fr.md",
     ]
 
     for b in expected_briefs:
@@ -232,10 +203,6 @@ def test_all_4_example_briefs_detailed():
         assert b_path.exists(), f"Missing example brief: {b}"
         content = b_path.read_text(encoding="utf-8")
         assert len(content) > 300, f"Brief content too short: {b}"
-        if b != "trip-brief-template.md":
-            assert "Agents Mobilized" in content
-            assert "Expected Sources" in content
-            assert "Information Requiring Verification" in content
 
 
 def test_all_12_agents_skills_first():
@@ -274,23 +241,15 @@ def test_documentation_guides_exist():
 
     expected_docs = [
         "install-in-any-project.md",
-        "use-with-antigravity.md",
-        "use-with-browser-tools.md",
         "source-verification.md",
         "skills-catalog.md",
-        "skills-first-pivot-audit.md",
-        "decisions.md",
+        "token-efficiency.md",
     ]
 
     for doc in expected_docs:
         doc_path = docs_dir / doc
         assert doc_path.exists(), f"Missing documentation file: {doc}"
         assert doc_path.stat().st_size > 200, f"Doc too brief: {doc}"
-
-    # Verify decisions.md mentions the archival
-    decisions_content = (docs_dir / "decisions.md").read_text(encoding="utf-8")
-    assert "archive/mcp-api-prototype-v1.2" in decisions_content
-
 
 def test_no_mcp_api_components_in_main():
     """Verify that cloud/server MCP components, Docker, and deployment files are retired from main."""
@@ -319,12 +278,9 @@ def test_no_mcp_api_components_in_main():
     assert not (base_dir / "examples" / "city-trip").exists()
     assert not (base_dir / "examples" / "road-trip").exists()
 
-    # Historical archives preserved in docs/history
-    history_dir = base_dir / "docs" / "history"
-    assert history_dir.exists() and history_dir.is_dir()
-    assert (history_dir / "README.md").exists()
-    assert (history_dir / "research").exists()
-    assert (history_dir / "data").exists()
+    # Pre-pivot archives and generated mirrors do not belong in the active pack.
+    assert not (base_dir / "docs" / "history").exists()
+    assert not (base_dir / "packages").exists()
 
 
 def test_no_secrets_and_personal_paths():

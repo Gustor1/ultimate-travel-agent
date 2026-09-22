@@ -51,6 +51,9 @@ def test_cli_help():
     assert "trip-mode" in result.stdout
     assert "route-optimize" in result.stdout
     assert "notify-webhook" in result.stdout
+    assert "prompt-audit" in result.stdout
+    assert "validate-handoff" in result.stdout
+    assert "normalize-source-url" in result.stdout
 
 
 def test_cli_list_skills():

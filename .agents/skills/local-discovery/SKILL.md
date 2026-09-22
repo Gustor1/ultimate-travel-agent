@@ -1,104 +1,29 @@
 ---
 name: local-discovery
-description: Discovers off-the-beaten-path neighborhood spots, authentic eateries, and emerging cultural venues, tagging community and social sources strictly for verification.
-conditions: Use when travel planning requires local-discovery capabilities.
+description: Use after areas are selected to find neighborhood food, markets, culture, and emerging venues with provenance; use activity-curator for major attractions and ticketed itinerary anchors.
 ---
 
-# local-discovery
+# Local Discovery
 
-## 1. Role & Identity
-Neighborhood scout identifying authentic eateries, craft workshops, scenic vantage points, and community gems, ensuring all findings are explicitly classified and verified prior to logistical adoption.
+Read `../../shared/compact-research-protocol.md`, `../../shared/research-methods.md`, and `../../shared/evidence-policy.md`. Consult `../../shared/scenario-routing.md` and load only matching accessibility or regional references.
 
-## 2. Expected Inputs
-- Destination city or district
-- Dining and culinary preferences (traditional, vegan, street food, fine dining)
-- Desired exploration style (neighborhood strolls, scenic viewpoints, hidden courtyards)
-- Sensitivity to tourist traps
+## Inputs and tools
 
-## 3. Expected Outputs
-- Curated local discovery recommendations by district
-- Authentic dining spots favored by residents
-- Source provenance categorization (Tier 4-6)
-- Strict verification flags requiring official confirmation before booking
+Require accepted areas/dates, interests, dietary/access needs, budget, crowd preference, and desired categories. Use current-source access, local-language queries, artifacts, and local calculations.
 
-## 4. Necessary Tools & Capabilities
-- filesystem_read
-- web_search (optional)
-- browser (optional)
+## Method
 
-## 5. Fallback Behavior Without Web Search or Browser
-State clearly that live research cannot be completed.
-Use only user-provided or local information.
-List the exact information requiring verification.
-Never invent live prices, availability, opening hours, visa rules or booking status.
+- Define coverage by neighborhood × requested category and seek at least two qualified, non-duplicate candidates per requested category in each relevant area when the market supports them. Search in the user's language, English, and useful local names/transliterations; document scarcity instead of padding.
+- Resolve entity aliases and branches. Detect chains, duplicate listings, relocation, and potentially closed venues before ranking.
+- Record exact area, why it fits, price band, known hours/status, discovery date, source type/authority, recency, and verification need. Spread retained candidates geographically unless clustering is requested.
+- Separate local relevance from viral popularity. Weight recent recurring patterns more than raw review count; record suspicious bursts, tourism-only signals, and disagreement.
+- Tier 5 community evidence supports qualitative patterns only; Tier 6 social evidence discovers candidates only. Verify operational facts on an official venue page or authoritative directory when available. Otherwise require two recent independent signals and keep the status unverified.
+- Recommendation readiness requires category coverage, current existence evidence, and explicit provenance—not generic popularity.
 
-## 6. Sourcing Policy
-All references must strictly adhere to the 6-tier sourcing hierarchy:
-- **Tier 1**: Official government portals, tourism ministries, embassies, municipal administrations.
-- **Tier 2**: Official direct operators (rail networks, airlines, ferry lines, museum box offices).
-- **Tier 3**: Recognized tourism institutions (regional tourism boards, national park services, UNESCO).
-- **Tier 4**: Recognized editorial sources (Michelin Guide, Lonely Planet, established travel journalists).
-- **Tier 5**: Community reviews (TripAdvisor, Google Maps reviews, travel forums) for qualitative feedback only.
-- **Tier 6**: Social media (TikTok, Instagram, RedNote, personal blogs) strictly tagged as `social_discovery_only`.
+## Fallback
 
-## 7. Safety Policy
-- **Never make purchases.**
-- **Never make reservations.**
-- **Never enter personal or payment data.**
-- **Never share travel documents.**
-- **Never bypass login, paywalls, robots rules or site restrictions.**
-- **Never present social-media content as verified logistical information.**
+Without current-source access, provide discovery categories and local-language query plans. Keep prices, hours, popularity, existence, and availability unverified.
 
-## 8. Output Format
-All outputs must conform to `TravelDossier v1` (`docs/travel-dossier-v1.md`). The legacy envelope below remains accepted during migration:
-```yaml
-summary: ""
-recommendations: []
-source_log: []
-assumptions: []
-missing_information: []
-verification_required: []
-risks: []
-```
+## Outputs
 
-## 9. Concrete Example
-**User Request:**
-> "Find 3 authentic, non-touristy pintxos bars in the Gros neighborhood of San Sebastian, Spain."
-
-**Expected Output:**
-The fixture below is illustrative only. Venue status, prices, and opening hours require fresh verification.
-```yaml
-summary: "Identified 3 authentic pintxos bars in Gros frequented by locals for Basque seafood and cider, away from the dense tourist clusters of Parte Vieja."
-recommendations:
-  - spot_1:
-      name: "Bar Bergara"
-      specialty: "Creative miniature cuisine (Txalupa gratin, Itxaso monkfish brochette)"
-      address_neighborhood: "Calle General Artetxe, 8, Gros"
-      vibe: "Historic neighborhood favorite, lively bar counter"
-      estimated_price: "€3 - €5 per pintxo"
-      source_provenance: "Tier 4 (Reputable gastronomy guide) & Tier 5 (Local reviews)"
-      verification_status: "Opening hours must be re-checked (typically closed Sunday evenings and Mondays)."
-  - spot_2:
-      name: "Bodega Donostiarra"
-      specialty: "Classic pintxos, mini completas (tuna & anchovy toasts), cooked tortillas"
-      address_neighborhood: "Peña y Goñi, 13, Gros"
-      vibe: "Traditional bodega operating since 1924, vibrant terrace"
-      estimated_price: "€2.50 - €4.50 per pintxo"
-      source_provenance: "Tier 4 (San Sebastian Gastronomy Bureau)"
-      verification_status: "Verified active; table reservations recommended on weekends."
-source_log:
-  - name: "Donostia San Sebastian Turismo Official Gastronomy Directory"
-    tier: 1
-    url: "https://www.sansebastianturismoa.eus"
-  - name: "Guía Repsol Gastronomy Spain"
-    tier: 4
-    url: "https://www.guiarepsol.com"
-assumptions:
-  - "No severe fish or shellfish allergies."
-missing_information:
-  - "Dietary restrictions or preference for seated dining vs bar standing."
-verification_required:
-  - "Check August vacation closures (some family-run bars close for 2-3 weeks in summer)."
-risks:
-  - "Social-media recommendations for pintxos bars can suddenly cause rapid tourist overcrowding." 
-```
+Write candidates, aliases, provenance, claims, sources, duplication signals, and rejection codes. Return `compact-handoff/v2` with retained venue IDs.

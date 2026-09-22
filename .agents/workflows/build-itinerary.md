@@ -1,28 +1,26 @@
-# Workflow: Build & Optimize Daily Itinerary
+# Workflow: Build and Optimize Itinerary
 
-## 1. Purpose
-Synthesizes researched destinations, transit segments, lodgings, and activities into a coherent, hour-by-hour, day-by-day travel itinerary.
-Enforces geographic clustering to eliminate backtracking, balances daily walking loads, and provides flexible meal and rest buffers.
+## Purpose
 
-## 2. Agents Involved
-- `itinerary-optimizer` (Lead)
-- `activity-curator`
-- `transport-planner`
-- `itinerary-builder` (Skill)
+Turn accepted evidence IDs into a feasible chronological plan with geographic coherence, traveler-specific pace, slack, and compatible fallbacks. It does not rediscover missing live facts.
 
-## 3. Input / Output Contracts
-- **Input**: Approved activities, lodging location, inter-city arrival/departure times, pace preference (`packed`, `balanced`, `relaxed`).
-- **Output**: Chronological daily itinerary table with morning/afternoon/evening segments, transfer times, meal windows, and buffer zones.
+Read `../shared/compact-research-protocol.md`; return the itinerary artifact ID via `compact-handoff/v2`.
 
-## 4. Step-by-Step Execution Process
-1. **Geographic Clustering**: Group selected activities into geographic zones (e.g. East District on Day 1, North District on Day 2) to minimize transit.
-2. **Pacing & Energy Balancing**: Alternate high-energy walking tours with seated experiences, relaxed lunches, or leisure breaks.
-3. **Temporal Sequencing**: Align activities with confirmed opening hours, optimal light for photography, and pre-booked timed entry slots.
-4. **Buffer Insertion**: Add 20-30 minute cushions between activities to absorb minor delays and spontaneous exploration.
-5. **Contingency Integration**: Embed pre-determined rain alternatives directly into the daily schedule.
+## Agents Involved
 
-## 5. Deliverables
-- Day-by-Day Chronological Schedule
-- Daily Transit & Walking Map Breakdown
-- Daily Meal & Rest Recommendations
-- Contingency Swap Guide
+- `itinerary-optimizer` using `itinerary-builder`
+- `activity-curator` or `transport-planner` only for a targeted blocked claim
+
+## Process
+
+1. Load accepted IDs and model reservations, opening windows, lodging, meals, transfers, access constraints, and fallbacks as temporal constraints.
+2. Prioritize rigid reservations, then run `route-optimize` with sourced travel times to cluster flexible stops.
+3. Apply profile-derived slack, maximum walking/activity load, rest, jet-lag recovery, and connection buffers; do not use a universal 20–30 minute cushion.
+4. Run `adaptive-day` for weather/energy variants and `disruption-plan` for material cascades. Each fallback must fit its area, window, access, and budget.
+5. Leave missing/stale facts as targeted verification tasks. Store rejected sequences and return only itinerary/change IDs.
+
+## Deliverables
+
+- Chronological itinerary artifact
+- Route, load, slack, and constraint checks
+- Compatible contingency/recovery variants

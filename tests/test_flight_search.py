@@ -18,7 +18,6 @@ from ultimate_travel_agent.validator import (
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 SKILLS_DIR = REPO_ROOT / ".agents" / "skills"
-PKG_SKILLS_DIR = REPO_ROOT / "packages" / "travel-skills" / "skills"
 
 
 # ──────────────────────────────────────────────
@@ -46,18 +45,11 @@ class TestFlightSearchSkillStructure:
         passed, issues = validate_flight_search_skill_file(skill_path)
         assert passed, f"Flight-search extended validation failed: {issues}"
 
-    def test_flight_search_mirror_exists(self):
-        """Mirror in packages/travel-skills/skills must exist and be identical."""
-        primary = SKILLS_DIR / "flight-search" / "SKILL.md"
-        mirror = PKG_SKILLS_DIR / "flight-search" / "SKILL.md"
-        assert mirror.exists(), f"Missing mirror: {mirror}"
-        assert primary.read_bytes() == mirror.read_bytes(), "Mirror is out of sync with primary"
-
     def test_flight_search_in_manifest(self):
-        """The manifest.json must list flight-search as the 14th skill."""
+        """The canonical manifest must list flight-search among the 14 skills."""
         import json
 
-        manifest_path = REPO_ROOT / "packages" / "travel-skills" / "manifest.json"
+        manifest_path = REPO_ROOT / ".agents" / "manifest.json"
         data = json.loads(manifest_path.read_text(encoding="utf-8"))
         skill_names = [s["name"] for s in data["skills"]]
         assert "flight-search" in skill_names, "flight-search missing from manifest.json"
@@ -739,10 +731,3 @@ class TestFlightComparisonEngines:
         }
         passed, issues = validate_flight_comparison_sources(dossier)
         assert passed, f"Should pass: {issues}"
-
-    def test_paris_lisbon_expected_output_passes_comparison_sources(self):
-        """paris-lisbon-flights-output.md must include adaptive comparison evidence."""
-        output_file = REPO_ROOT / "examples" / "expected-outputs" / "paris-lisbon-flights-output.md"
-        content = output_file.read_text(encoding="utf-8")
-        passed, issues = validate_flight_comparison_sources(content)
-        assert passed, f"Expected output failed comparison sources: {issues}"

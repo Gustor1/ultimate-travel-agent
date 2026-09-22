@@ -1,7 +1,7 @@
-# Installing Travel Skills Pack in Any Antigravity Project
+# Installing the Travel Skills Pack in Any Agent Project
 
 The `ultimate-travel-agent` repository is designed with a **Skills-First** philosophy.
-You can install this comprehensive travel planning toolkit directly into any existing or new Antigravity project with a single command.
+You can install this travel planning toolkit into any project whose agent host can consume local Markdown instructions. The files are host-neutral; capability and permission wiring remains platform-specific.
 
 ---
 

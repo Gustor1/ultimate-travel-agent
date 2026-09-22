@@ -1,33 +1,28 @@
 # Travel Skills Catalog
 
-Comprehensive reference catalog of all 13 core skills included in `ultimate-travel-agent`.
-Each skill is standalone, local-first, open-source (MIT), and fully compatible with Antigravity.
+The pack contains 14 runtime-neutral, local-first skills. Each entrypoint loads shared policy progressively and returns artifact IDs through `compact-handoff/v2`; only final synthesis expands a complete `TravelDossier v1`.
 
----
+| Skill | Distinct responsibility | Deterministic support |
+|---|---|---|
+| [`travel-orchestrator`](../.agents/skills/travel-orchestrator/SKILL.md) | Dynamic end-to-end DAG, ownership, gates, final synthesis | `validate-handoff`, `validate-dossier` |
+| [`multi-agent-orchestration`](../.agents/skills/multi-agent-orchestration/SKILL.md) | Isolated contexts, source-demand fan-in, sharded recovery | Handoff validation |
+| [`travel-web-research`](../.agents/skills/travel-web-research/SKILL.md) | Geography, climate, events, crowds, norms, regional context | Coverage/artifact checks |
+| [`flight-search`](../.agents/skills/flight-search/SKILL.md) | Complete four-pass flight matrix and direct-carrier evidence | `flight-search-plan`, `flight-search-coverage` |
+| [`transport-research`](../.agents/skills/transport-research/SKILL.md) | Non-flight/multimodal door-to-door Pareto comparison | `compare-total-cost` |
+| [`accommodation-research`](../.agents/skills/accommodation-research/SKILL.md) | Neighborhoods and exact comparable room/rate plans | Hotel coverage, mobility, comparison, neighborhood commands |
+| [`activity-curator`](../.agents/skills/activity-curator/SKILL.md) | Major activities, slots, access, crowd and weather fallback | Deterministic time checks |
+| [`local-discovery`](../.agents/skills/local-discovery/SKILL.md) | Neighborhood venues, multilingual discovery, provenance | URL/entity deduplication |
+| [`travel-safety`](../.agents/skills/travel-safety/SKILL.md) | Applicable entry, health, weather, insurance, emergency actions | `revalidation-plan` |
+| [`source-verification`](../.agents/skills/source-verification/SKILL.md) | Atomic critical/stale/conflicting claim audit | `normalize-source-url` |
+| [`budget-and-booking-checker`](../.agents/skills/budget-and-booking-checker/SKILL.md) | Atomic scenarios, financial exposure, risk reserve, user handoff | Cost, watch, revalidation, booking commands |
+| [`itinerary-builder`](../.agents/skills/itinerary-builder/SKILL.md) | Time-window route, pace, slack, variants, disruption recovery | Route, adaptive-day, disruption commands |
+| [`travel-quality-control`](../.agents/skills/travel-quality-control/SKILL.md) | Structure, arithmetic, feasibility, evidence, readiness audit | `validate-dossier` |
+| [`mcp-skill-auditing`](../.agents/skills/mcp-skill-auditing/SKILL.md) | Optional static review of a proposed external component only | Filesystem inspection |
 
-| Skill Name | Role | Primary Tools | Output Deliverable |
-|---|---|---|---|
-| [`travel-orchestrator`](file:///.agents/skills/travel-orchestrator/SKILL.md) | Coordinates the 5-wave planning lifecycle and compiles master dossier | `filesystem_read`, `local_calculation` | Sourced Master Travel Dossier |
-| [`travel-web-research`](file:///.agents/skills/travel-web-research/SKILL.md) | Researches destination climate, regional norms, and season windows | `web_search`, `browser`, `filesystem_read` | Destination Profile & Seasonal Matrix |
-| [`transport-research`](file:///.agents/skills/transport-research/SKILL.md) | Compares door-to-door multi-modal transit (air, rail, road, ferry) | `web_search`, `browser`, `local_calculation` | Multi-Modal Transit Comparison Matrix |
-| [`accommodation-research`](file:///.agents/skills/accommodation-research/SKILL.md) | Vets strategic neighborhoods and curates 3-5 lodging options | `web_search`, `browser`, `filesystem_read` | Vetted Lodging Shortlist |
-| [`activity-curator`](file:///.agents/skills/activity-curator/SKILL.md) | Curates activities with anti-crowd tactics and rain backups | `web_search`, `browser`, `local_calculation` | Thematic Activity Catalog & Plan B |
-| [`local-discovery`](file:///.agents/skills/local-discovery/SKILL.md) | Scouts authentic neighborhood eateries and hidden gems | `web_search`, `browser`, `filesystem_read` | Discovery Catalog (tagged Tier 4-6) |
-| [`itinerary-builder`](file:///.agents/skills/itinerary-builder/SKILL.md) | Assembles chronological daily schedules with geographic clusters | `filesystem_read`, `local_calculation` | Chronological Day-by-Day Itinerary |
-| [`budget-and-booking-checker`](file:///.agents/skills/budget-and-booking-checker/SKILL.md) | Audits expenses, adds 10-15% safety reserve, and lists booking deadlines | `filesystem_read`, `local_calculation` | Itemized Budget & Booking Schedule |
-| [`travel-safety`](file:///.agents/skills/travel-safety/SKILL.md) | Reviews entry visas, health prerequisites, and emergency plans | `web_search`, `browser`, `filesystem_read` | Safety, Visa & Health Checklist |
-| [`source-verification`](file:///.agents/skills/source-verification/SKILL.md) | Cross-checks claims against 6-tier sourcing hierarchy | `web_search`, `browser`, `filesystem_read` | Source Verification Audit Log |
-| [`travel-quality-control`](file:///.agents/skills/travel-quality-control/SKILL.md) | Validates transit feasibility, budget arithmetic, and pacing | `filesystem_read`, `local_calculation` | Quality Gate Approval / Flaw Report |
-| [`multi-agent-orchestration`](file:///.agents/skills/multi-agent-orchestration/SKILL.md) | Defines multi-agent wave execution topologies and data pipelines | `filesystem_read`, `local_calculation` | 5-Wave Multi-Agent Execution Plan |
-| [`mcp-skill-auditing`](file:///.agents/skills/mcp-skill-auditing/SKILL.md) | Audits candidate external tools and MCP servers for security | `filesystem_read`, `web_search` | Tool Security & Privacy Audit Report |
+## Shared guarantees
 
----
-
-## Universal Standards Guaranteed by Every Skill
-
-1. **Standardized YAML Output Format**:
-   Every skill returns a structured envelope containing `summary`, `recommendations`, `source_log`, `assumptions`, `missing_information`, `verification_required`, and `risks`.
-2. **Safe Fallback Protocol**:
-   When internet search is absent, every skill clearly declares the offline state and provides safe, un-hallucinated estimates with verification flags.
-3. **Strict Safety Invariants**:
-   Zero automated booking, zero purchasing, zero personal/payment data storage, zero paywall bypass.
+- Required research cells and candidate obligations are never pruned for token savings.
+- `pending: 0` proves execution, not evidence sufficiency; four readiness gates remain separate.
+- Claims link to current sources by stable ID, authority, independence group, and applicability.
+- Parallel writers use separate revisioned shards; handoffs contain IDs instead of copied evidence.
+- Missing live evidence remains explicitly unverified. No skill purchases, reserves, bypasses access controls, or handles payment data.

@@ -7,7 +7,12 @@ import pytest
 import yaml
 from pydantic import ValidationError
 
-from ultimate_travel_agent.contracts import Money, upgrade_legacy_dossier, validate_travel_dossier
+from ultimate_travel_agent.contracts import (
+    Money,
+    SourceEvidence,
+    upgrade_legacy_dossier,
+    validate_travel_dossier,
+)
 
 
 def _booking_ready_dossier() -> dict:
@@ -64,6 +69,69 @@ def test_booking_ready_dossier_rejects_unresolved_work():
     passed, issues, _ = validate_travel_dossier(data, today=date(2026, 9, 19))
     assert not passed
     assert any("requires verification" in issue for issue in issues)
+
+
+def test_booking_ready_critical_claim_requires_primary_authority():
+    data = _booking_ready_dossier()
+    data["sources"][0]["authority"] = "secondary"
+    passed, issues, _ = validate_travel_dossier(data, today=date(2026, 9, 19))
+    assert not passed
+    assert any("primary evidence" in issue for issue in issues)
+
+
+def test_cross_checked_claim_requires_two_independent_origins():
+    data = _booking_ready_dossier()
+    data["claims"][0]["status"] = "cross_checked"
+    data["claims"][0]["source_ids"] = ["operator", "mirror"]
+    data["sources"][0]["independence_group"] = "inventory-feed"
+    data["sources"].append(
+        {
+            **data["sources"][0],
+            "source_id": "mirror",
+            "name": "Inventory mirror",
+            "url": "https://mirror.example/booking",
+        }
+    )
+
+    passed, issues, _ = validate_travel_dossier(data, today=date(2026, 9, 19))
+    assert not passed
+    assert any("independent" in issue for issue in issues)
+
+    data["sources"][1]["independence_group"] = "second-origin"
+    passed, issues, _ = validate_travel_dossier(data, today=date(2026, 9, 19))
+    assert passed, issues
+
+
+def test_source_evidence_preserves_canonical_and_original_urls():
+    source = SourceEvidence.model_validate(
+        {
+            "source_id": "operator",
+            "name": "Direct operator",
+            "url": "https://operator.example/booking?utm_source=search",
+            "canonical_url": "https://operator.example/booking",
+            "source_type": "direct_operator",
+            "authority": "primary",
+            "independence_group": "operator",
+            "retrieved_at": "2026-09-19",
+        }
+    )
+    assert str(source.canonical_url) == "https://operator.example/booking"
+    assert source.independence_group == "operator"
+
+
+def test_source_evidence_derives_canonical_url_when_missing():
+    source = SourceEvidence.model_validate(
+        {
+            "source_id": "operator",
+            "name": "Direct operator",
+            "url": "https://operator.example/booking?utm_source=search&date=2026-10-03",
+            "source_type": "direct_operator",
+            "authority": "primary",
+            "retrieved_at": "2026-09-19",
+        }
+    )
+    assert str(source.url).endswith("utm_source=search&date=2026-10-03")
+    assert str(source.canonical_url) == "https://operator.example/booking?date=2026-10-03"
 
 
 def test_legacy_dossier_is_upgraded_without_losing_fields():

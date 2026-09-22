@@ -46,6 +46,7 @@ packages = [
     "ultimate_travel_agent.schemas",
     "ultimate_travel_agent.bundle",
     "ultimate_travel_agent.bundle.agents",
+    "ultimate_travel_agent.bundle.shared",
     "ultimate_travel_agent.bundle.skills",
     "ultimate_travel_agent.bundle.workflows",
 ]
@@ -56,6 +57,8 @@ include-package-data = true
 "ultimate_travel_agent" = ["schemas/*.json"]
 "ultimate_travel_agent.bundle" = [
     "manifest.json",
+    "shared/*.md",
+    "shared/*.json",
     "skills/*/SKILL.md",
     "agents/*/agent.md",
     "workflows/*.md",

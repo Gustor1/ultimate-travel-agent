@@ -57,8 +57,10 @@ sources:
   - source_id: airline.af.booking
     name: Air France booking engine
     url: https://wwws.airfrance.fr/search/open-dates
+    canonical_url: https://wwws.airfrance.fr/search/open-dates
     source_type: direct_operator
     authority: primary
+    independence_group: air-france
     retrieved_at: 2026-09-19
     expires_at: 2026-09-20
 ```

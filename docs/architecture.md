@@ -9,11 +9,10 @@
 - 14 skills;
 - 12 agent definitions;
 - 9 workflows;
+- one shared compact-research protocol;
 - one bundle manifest.
 
-`packages/travel-skills/skills/` is a generated compatibility mirror. Run `ultimate-travel-agent sync-pack`; CI uses `sync-pack --check`.
-
-The Python wheel bundles canonical `.agents` assets as `ultimate_travel_agent.bundle`, so installation does not depend on a Git checkout.
+The Python wheel bundles the canonical `.agents` assets as `ultimate_travel_agent.bundle`, so installation does not depend on a Git checkout and no duplicate source tree is maintained.
 
 ## Execution graph
 
@@ -26,6 +25,10 @@ The Python wheel bundles canonical `.agents` assets as `ultimate_travel_agent.bu
 7. Schedule: `itinerary-optimizer` builds the chronological plan.
 8. Quality gate: `quality-controller` checks feasibility, arithmetic, freshness, and readiness.
 9. Synthesis: `travel-orchestrator` emits `TravelDossier v1`.
+
+## Context transport
+
+Specialists do not exchange full dossier fragments or conversation histories. They persist full-fidelity evidence once under a run artifact directory and return `compact-handoff/v2` envelopes containing paths, stable IDs, blockers, coverage counts, and distinct readiness gates. Downstream stages load only the referenced records required for their decision. See [Token efficiency](token-efficiency.md).
 
 `mcp-skill-auditor` runs only when an external skill, MCP server, API, or new tool is proposed. It is not part of ordinary trip planning.
 

@@ -11,7 +11,6 @@ from ultimate_travel_agent.skills import (
     find_pack_root,
     install_pack_skills,
     list_available_skills,
-    sync_pack_mirror,
     uninstall_pack_skills,
 )
 
@@ -150,18 +149,50 @@ def validate_dossier_cmd(args: argparse.Namespace) -> None:
         raise SystemExit(1)
 
 
-def sync_pack_cmd(args: argparse.Namespace) -> None:
-    """Generate or verify the compatibility mirror."""
-    result = sync_pack_mirror(check=args.check)
-    if args.check and result["out_of_sync"]:
-        print("Pack mirror is out of sync:")
-        for path in result["out_of_sync"]:
-            print(f"  - {path}")
+def validate_handoff_cmd(args: argparse.Namespace) -> None:
+    """Validate JSON or YAML against the compact-handoff/v2 contract."""
+    from ultimate_travel_agent.contracts import validate_compact_handoff
+
+    data = _load_mapping(Path(args.path).resolve())
+    passed, issues, handoff = validate_compact_handoff(data)
+    print(f"compact-handoff/v2: {'PASSED' if passed else 'FAILED'}")
+    if handoff is not None:
+        print(
+            f"Stage: {handoff.stage}; status: {handoff.status}; "
+            f"pending: {handoff.coverage.pending}; blockers: {len(handoff.blockers)}"
+        )
+    for issue in issues:
+        print(f"  - {issue}")
+    if not passed:
         raise SystemExit(1)
-    if result["changed"]:
-        print(f"Synchronized {len(result['changed'])} files.")
-    else:
-        print("Pack mirror is synchronized.")
+
+
+def prompt_audit_cmd(args: argparse.Namespace) -> None:
+    """Report stable prompt corpus sizes without claiming provider billing usage."""
+    from ultimate_travel_agent.prompt_audit import audit_prompt_corpus
+    from ultimate_travel_agent.skills import find_pack_root
+
+    root = Path(args.path).resolve() if args.path else find_pack_root()
+    report = audit_prompt_corpus(root)
+    print("Corpus      Files  Characters  Estimated tokens")
+    for name in ("skills", "agents", "workflows", "shared"):
+        values = report[name]
+        print(
+            f"{name:<11} {values['files']:>5}  {values['characters']:>10}  "
+            f"{values['estimated_tokens']:>16}"
+        )
+    print("Estimated tokens use characters/4 and are not provider billing data.")
+
+
+def normalize_source_url_cmd(args: argparse.Namespace) -> None:
+    """Print a conservative source-deduplication URL."""
+    from ultimate_travel_agent.evidence import canonicalize_source_url
+
+    try:
+        print(canonicalize_source_url(args.url))
+    except ValueError as exc:
+        print(f"Invalid source URL: {exc}")
+        raise SystemExit(1) from exc
 
 
 def profile_save_cmd(args: argparse.Namespace) -> None:
@@ -605,12 +636,22 @@ def main() -> None:
     )
     dossier_parser.add_argument("path", help="Path to a JSON or YAML dossier")
 
-    sync_parser = subparsers.add_parser(
-        "sync-pack", help="Generate the compatibility skill mirror from canonical .agents assets"
+    handoff_parser = subparsers.add_parser(
+        "validate-handoff", help="Validate a JSON/YAML compact-handoff/v2 file"
     )
-    sync_parser.add_argument(
-        "--check", action="store_true", help="Fail if the mirror is out of sync"
+    handoff_parser.add_argument("path", help="Path to a JSON or YAML handoff")
+
+    prompt_audit_parser = subparsers.add_parser(
+        "prompt-audit", help="Measure canonical prompt corpus size and a stable token proxy"
     )
+    prompt_audit_parser.add_argument(
+        "--path", help="Optional .agents or installed bundle directory"
+    )
+
+    source_url_parser = subparsers.add_parser(
+        "normalize-source-url", help="Canonicalize an HTTP(S) source URL for deduplication"
+    )
+    source_url_parser.add_argument("url", help="Original source URL")
 
     profile_save_parser = subparsers.add_parser(
         "profile-save", help="Validate and save a traveler profile"
@@ -758,8 +799,12 @@ def main() -> None:
         validate_skills_cmd(args)
     elif args.command == "validate-dossier":
         validate_dossier_cmd(args)
-    elif args.command == "sync-pack":
-        sync_pack_cmd(args)
+    elif args.command == "validate-handoff":
+        validate_handoff_cmd(args)
+    elif args.command == "prompt-audit":
+        prompt_audit_cmd(args)
+    elif args.command == "normalize-source-url":
+        normalize_source_url_cmd(args)
     elif args.command == "profile-save":
         profile_save_cmd(args)
     elif args.command == "profile-show":

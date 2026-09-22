@@ -1,7 +1,7 @@
 # Catalogue des Skills de Voyage
 
 Liste exhaustive des 14 skills spécialisées incluses dans `ultimate-travel-agent`.
-Toutes les skills sont locales, open source (licence MIT) et compatibles avec Antigravity.
+Toutes les skills sont locales, open source (licence MIT) et indépendantes de l'hôte. Codex, Claude ou un autre agent doit simplement relier les capacités déclarées à ses outils réels.
 
 ---
 

@@ -30,9 +30,6 @@ jobs:
           python -m pip install --upgrade pip
           pip install -e ".[dev]"
 
-      - name: Verify generated pack mirror
-        run: ultimate-travel-agent sync-pack --check
-
       - name: Run test suite
         run: |
           pytest -v

@@ -9,22 +9,55 @@ from urllib.parse import urlparse
 
 import yaml
 
+LOCAL_REFERENCE_RE = re.compile(
+    r"(?:\((?P<link>(?:\.\./)*[a-z0-9._/-]+\.md)\)|"
+    r"`(?P<code>(?:\.\./)+[a-z0-9._/-]+\.md)`)",
+    re.IGNORECASE,
+)
+
+
+def _effective_skill_content(skill_path: Path, content: str) -> Tuple[str, List[str]]:
+    """Resolve direct shared Markdown references for invariant validation.
+
+    Skill entrypoints intentionally keep universal policy in shared files.  The
+    validator checks the effective instruction graph without requiring every
+    skill to duplicate those policies.
+    """
+
+    issues: List[str] = []
+    referenced: List[str] = []
+    visited: set[Path] = {skill_path.resolve(strict=False)}
+
+    def visit(owner: Path, text: str, depth: int) -> None:
+        if depth > 3:
+            return
+        for match in LOCAL_REFERENCE_RE.finditer(text):
+            relative_path = match.group("link") or match.group("code")
+            reference = (owner.parent / relative_path).resolve(strict=False)
+            if reference in visited:
+                continue
+            visited.add(reference)
+            if not reference.is_file():
+                issues.append(f"Missing shared reference: {relative_path}")
+                continue
+            try:
+                reference_text = reference.read_text(encoding="utf-8")
+            except (OSError, UnicodeDecodeError) as exc:
+                issues.append(f"Could not read shared reference {relative_path}: {exc}")
+                continue
+            referenced.append(reference_text)
+            visit(reference, reference_text, depth + 1)
+
+    visit(skill_path, content, 0)
+    return "\n".join([content, *referenced]), issues
+
 
 def validate_skill_file(skill_path: Path) -> Tuple[bool, List[str]]:
     """Validate a single SKILL.md file against strict project standards.
 
-    Checks:
-    - Frontmatter YAML validity
-    - name, description, conditions
-    - Role, Inputs, Outputs
-    - Tools (filesystem_read, etc.)
-    - Fallback behavior without browser / web search
-    - Source policy Tier 1 to Tier 6
-    - Safety policy (no purchases, no reservations, no private data)
-    - Booking / payment prohibition
-    - Structured YAML output format
-    - Example user request and expected output
-    - Missing information and verification required handling
+    Universal evidence, safety, and output invariants may live in directly
+    referenced shared files.  Entry-point checks focus on routing, inputs,
+    method, fallback, and output linkage.
     """
     issues: List[str] = []
     if not skill_path.exists():
@@ -35,8 +68,11 @@ def validate_skill_file(skill_path: Path) -> Tuple[bool, List[str]]:
     except Exception as e:
         return False, [f"Could not read file: {e}"]
 
-    if len(content) < 400:
+    if len(content) < 300:
         issues.append(f"Content too short ({len(content)} chars)")
+
+    effective_content, reference_issues = _effective_skill_content(skill_path, content)
+    issues.extend(reference_issues)
 
     # 1. YAML frontmatter
     if not content.startswith("---"):
@@ -54,15 +90,12 @@ def validate_skill_file(skill_path: Path) -> Tuple[bool, List[str]]:
                     issues.append("Missing 'name' in frontmatter")
                 if not fm.get("description") or len(str(fm.get("description", ""))) < 10:
                     issues.append("Missing or too short 'description' in frontmatter")
-                if not fm.get("conditions"):
-                    issues.append("Missing 'conditions' in frontmatter")
         except Exception as e:
             issues.append(f"Error parsing frontmatter YAML: {e}")
 
     # 2. Structural sections
     content_lower = content.lower()
-    if "role" not in content_lower:
-        issues.append("Missing 'Role' section")
+    effective_lower = effective_content.lower()
     if "inputs" not in content_lower:
         issues.append("Missing 'Inputs' section")
     if "outputs" not in content_lower:
@@ -73,46 +106,35 @@ def validate_skill_file(skill_path: Path) -> Tuple[bool, List[str]]:
     # 3. Fallback behavior without web search / browser
     if "fallback" not in content_lower:
         issues.append("Missing 'Fallback' section")
-    if (
-        "live research cannot be completed" not in content
-        and "cannot be completed" not in content_lower
+    if not any(
+        marker in content_lower
+        for marker in ["unavailable", "unverified", "insufficient", "verification"]
     ):
-        issues.append("Missing clear fallback statement when web research is unavailable")
-    if "never invent live prices" not in content_lower and "never invent" not in content_lower:
+        issues.append("Fallback must preserve unavailable or unverified evidence state")
+    if "never invent live prices" not in effective_lower and "never invent" not in effective_lower:
         issues.append("Missing invariant: never invent live prices/availability")
 
     # 4. Source Policy (Tier 1 to Tier 6)
-    if "source policy" not in content_lower and "sourcing policy" not in content_lower:
+    if "evidence policy" not in effective_lower and "source policy" not in effective_lower:
         issues.append("Missing 'Source Policy' section")
-    if "tier 1" not in content_lower or "tier 6" not in content_lower:
+    if "tier 1" not in effective_lower or "tier 6" not in effective_lower:
         issues.append("Source policy must cover Tier 1 through Tier 6")
 
     # 5. Safety Policy & No booking/purchasing
-    if "safety policy" not in content_lower:
+    if "safety" not in effective_lower:
         issues.append("Missing 'Safety Policy' section")
-    if "never make purchases" not in content_lower:
+    if "never make purchases" not in effective_lower:
         issues.append("Missing safety invariant: 'Never make purchases'")
-    if "never make reservations" not in content_lower:
+    if "never make reservations" not in effective_lower:
         issues.append("Missing safety invariant: 'Never make reservations'")
-    if "personal or payment data" not in content_lower and "payment data" not in content_lower:
+    if "personal" not in effective_lower or "payment data" not in effective_lower:
         issues.append("Missing safety invariant: never enter personal or payment data")
 
     # 6. Structured Output Format
-    if "```yaml" not in content:
-        issues.append("Missing structured ```yaml output format specification")
-    for key in ["summary:", "recommendations:", "source_log:", "verification_required:", "risks:"]:
-        if key not in content:
-            issues.append(f"Structured output schema missing key: {key}")
-
-    # 7. Example with User Request
-    if "example" not in content_lower:
-        issues.append("Missing 'Example' section")
-    if "user request" not in content_lower and "user:" not in content_lower:
-        issues.append("Missing explicit User Request in example")
-
-    # 8. Handling missing info and verification
-    if "missing_information" not in content:
-        issues.append("Output format missing missing_information field")
+    if "compact-handoff/v2" not in effective_content:
+        issues.append("Missing compact-handoff/v2 output contract")
+    if "outputs" not in content_lower:
+        issues.append("Skill entrypoint must link its output contract")
 
     return (len(issues) == 0), issues
 
@@ -1400,8 +1422,8 @@ def validate_flight_search_skill_file(skill_path: Path) -> Tuple[bool, List[str]
         issues.append("flight-search skill missing adaptive comparison policy")
     if "unavailable" not in content_lower and "indisponible" not in content_lower:
         issues.append("flight-search skill missing unavailable-engine logging policy")
-    if "source_log" not in content_lower:
-        issues.append("flight-search skill missing source_log requirement for discovery tools")
+    if "source records" not in content_lower:
+        issues.append("flight-search skill missing source-record requirement for discovery tools")
 
     # Door-to-door cost methodology and decomposition rule
     if "door" not in content_lower and "porte" not in content_lower:

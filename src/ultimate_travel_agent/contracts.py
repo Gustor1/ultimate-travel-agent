@@ -20,6 +20,7 @@ from pydantic import (
     model_validator,
 )
 
+from ultimate_travel_agent.evidence import canonicalize_source_url
 from ultimate_travel_agent.profiles import TravelerProfile
 
 VerificationStatus = Literal[
@@ -80,11 +81,21 @@ class SourceEvidence(BaseModel):
     source_id: str = Field(pattern=r"^[a-z0-9][a-z0-9._-]*$")
     name: str = Field(min_length=1)
     url: HttpUrl
+    canonical_url: HttpUrl | None = None
     source_type: SourceType
     authority: AuthorityLevel
+    independence_group: str | None = Field(default=None, min_length=1)
     retrieved_at: date
     expires_at: date | None = None
     tier: int | None = Field(default=None, ge=1, le=6, description="Legacy display field")
+
+    @model_validator(mode="before")
+    @classmethod
+    def derive_canonical_url(cls, value: Any) -> Any:
+        if isinstance(value, dict) and value.get("url") and not value.get("canonical_url"):
+            value = dict(value)
+            value["canonical_url"] = canonicalize_source_url(str(value["url"]))
+        return value
 
     @model_validator(mode="after")
     def check_freshness_window(self) -> "SourceEvidence":
@@ -116,6 +127,85 @@ class ReadinessGate(BaseModel):
 
     booking_ready: bool = False
     blockers: list[str] = Field(default_factory=list)
+
+
+class HandoffCoverage(BaseModel):
+    """Machine-verifiable execution counts for one specialist stage."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    expected: int = Field(ge=0)
+    searched: int = Field(ge=0)
+    unavailable: int = Field(ge=0)
+    skipped: int = Field(ge=0)
+    pending: int = Field(ge=0)
+
+    @model_validator(mode="after")
+    def check_total(self) -> "HandoffCoverage":
+        terminal_and_pending = self.searched + self.unavailable + self.skipped + self.pending
+        if self.expected != terminal_and_pending:
+            raise ValueError(
+                "coverage expected must equal searched + unavailable + skipped + pending"
+            )
+        return self
+
+
+class HandoffGates(BaseModel):
+    """Separate execution, evidence, recommendation, and booking readiness."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    coverage_complete: bool = False
+    evidence_sufficient: bool = False
+    recommendation_ready: bool = False
+    booking_ready: bool = False
+
+
+class CompactHandoffV2(BaseModel):
+    """Small artifact index exchanged between isolated specialist contexts."""
+
+    model_config = ConfigDict(extra="forbid", populate_by_name=True)
+
+    schema_version: Literal["compact-handoff/v2"] = Field(
+        default="compact-handoff/v2", alias="schema", serialization_alias="schema"
+    )
+    run_id: str = Field(min_length=1, pattern=r"^[A-Za-z0-9][A-Za-z0-9._-]*$")
+    stage: str = Field(min_length=1, pattern=r"^[a-z0-9][a-z0-9._-]*$")
+    status: Literal["complete", "partial", "blocked"]
+    artifacts: list[str] = Field(default_factory=list)
+    new_ids: list[str] = Field(default_factory=list)
+    changed_ids: list[str] = Field(default_factory=list)
+    decision_ids: list[str] = Field(default_factory=list)
+    blockers: list[str] = Field(default_factory=list)
+    coverage: HandoffCoverage
+    gates: HandoffGates
+
+    @model_validator(mode="after")
+    def check_consistency(self) -> "CompactHandoffV2":
+        for field_name in ("artifacts", "new_ids", "changed_ids", "decision_ids"):
+            values = getattr(self, field_name)
+            if len(values) != len(set(values)):
+                raise ValueError(f"{field_name} values must be unique")
+        overlap = set(self.new_ids) & set(self.changed_ids)
+        if overlap:
+            raise ValueError("new_ids and changed_ids must not overlap")
+
+        should_be_complete = self.coverage.pending == 0
+        if self.gates.coverage_complete != should_be_complete:
+            raise ValueError("coverage_complete must equal whether pending is zero")
+        if self.gates.evidence_sufficient and not self.gates.coverage_complete:
+            raise ValueError("evidence_sufficient requires coverage_complete")
+        if self.gates.recommendation_ready and not self.gates.evidence_sufficient:
+            raise ValueError("recommendation_ready requires evidence_sufficient")
+        if self.gates.booking_ready and not self.gates.recommendation_ready:
+            raise ValueError("booking_ready requires recommendation_ready")
+        if self.gates.booking_ready and self.blockers:
+            raise ValueError("booking_ready handoff cannot contain blockers")
+        if self.status == "complete" and not self.gates.coverage_complete:
+            raise ValueError("complete status requires coverage_complete")
+        if self.status == "blocked" and not self.blockers:
+            raise ValueError("blocked status requires at least one blocker")
+        return self
 
 
 class TravelDossierV1(BaseModel):
@@ -157,6 +247,18 @@ class TravelDossierV1(BaseModel):
     trip_mode: dict[str, Any] = Field(default_factory=dict)
     optimized_routes: list[dict[str, Any]] = Field(default_factory=list)
     notification_receipts: list[dict[str, Any]] = Field(default_factory=list)
+
+
+def validate_compact_handoff(
+    data: dict[str, Any],
+) -> tuple[bool, list[str], CompactHandoffV2 | None]:
+    """Validate the portable compact handoff and return actionable issues."""
+
+    try:
+        handoff = CompactHandoffV2.model_validate(data)
+    except ValidationError as exc:
+        return False, [error["msg"] for error in exc.errors()], None
+    return True, [], handoff
 
 
 def _legacy_source_type(tier: int) -> SourceType:
@@ -278,6 +380,19 @@ def validate_travel_dossier(
                 ):
                     issues.append(
                         f"Critical claim {claim.claim_id} uses expired source {source_id}"
+                    )
+            linked_sources = [source_map[source_id] for source_id in claim.source_ids if source_id in source_map]
+            if linked_sources and not any(source.authority == "primary" for source in linked_sources):
+                issues.append(f"Critical claim {claim.claim_id} has no primary evidence")
+            if claim.status == "cross_checked":
+                independence_groups = {
+                    source.independence_group
+                    for source in linked_sources
+                    if source.independence_group is not None
+                }
+                if len(independence_groups) < 2:
+                    issues.append(
+                        f"Cross-checked claim {claim.claim_id} lacks two independent evidence origins"
                     )
         if dossier.readiness.blockers:
             issues.append("Booking-ready dossier still contains readiness blockers")
