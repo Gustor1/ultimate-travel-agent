@@ -1,31 +1,19 @@
-"""MCP tool registry for ultimate-travel-agent.
+"""Statically auditable MCP tool catalogue.
 
-Declares all 30 CLI tools as `mcp.types.Tool` objects with explicit
-`ToolAnnotations` so that MCP clients and registries (e.g. M8ven) can
-discover their safety/behaviour hints.
-
-This module is a **pure data declaration** -- it does not start a server,
-open network connections, or read files.  Import it wherever you need the
-tool list::
-
-    from ultimate_travel_agent.mcp_tools import list_tools, TOOLS
-
-The `mcp` package is an optional dependency.  If it is not installed, an
-`ImportError` is raised with an actionable message.
-
-.. note::
-    These hints describe expected behaviour for MCP *clients*.  They do **not**
-    replace the server-side access controls, input validation, and sandboxing
-    that the host runtime is responsible for enforcing.
+The catalogue is importable without starting a server. Safety annotations are
+intentionally repeated as inline boolean literals so static registries do not need to
+execute helper functions to understand tool behaviour.
 """
 
 from __future__ import annotations
 
 from typing import Any
 
+from ultimate_travel_agent.mcp.schemas import get_input_model, get_output_model
+
 try:
     from mcp.types import Tool, ToolAnnotations
-except ImportError:  # pragma: no cover
+except ImportError:  # pragma: no cover - normal package does not require the MCP extra
     from pydantic import BaseModel, ConfigDict
 
     class ToolAnnotations(BaseModel):  # type: ignore[no-redef]
@@ -47,176 +35,20 @@ except ImportError:  # pragma: no cover
         model_config = ConfigDict(extra="allow")
 
 
-# ---------------------------------------------------------------------------
-# Minimal reusable input schema (each tool takes a single JSON object).
-# Individual tools declare their own structured inputs at invocation time;
-# the schema here is intentionally permissive so that this registry module
-# has no coupling to the internal Pydantic models.
-# ---------------------------------------------------------------------------
-_OBJECT_INPUT: dict[str, object] = {"type": "object"}
-
-# ---------------------------------------------------------------------------
-# Annotation factory helpers
-# ---------------------------------------------------------------------------
+def _input(name: str) -> dict[str, Any]:
+    return get_input_model(name).model_json_schema()
 
 
-def _local_readonly() -> ToolAnnotations:
-    """Pure local read / calculation; no I/O side effects."""
-    return ToolAnnotations(
-        readOnlyHint=True,
-        destructiveHint=False,
-        idempotentHint=True,
-        openWorldHint=False,
-    )
+def _output(name: str) -> dict[str, Any]:
+    return get_output_model(name).model_json_schema()
 
-
-def _local_writer(*, destructive: bool = False, idempotent: bool = True) -> ToolAnnotations:
-    """Writes or deletes local files; no network access."""
-    return ToolAnnotations(
-        readOnlyHint=False,
-        destructiveHint=destructive,
-        idempotentHint=idempotent,
-        openWorldHint=False,
-    )
-
-
-def _network_readonly(*, idempotent: bool = True) -> ToolAnnotations:
-    """Contacts an external network endpoint; does not modify remote state."""
-    return ToolAnnotations(
-        readOnlyHint=True,
-        destructiveHint=False,
-        idempotentHint=idempotent,
-        openWorldHint=True,
-    )
-
-
-def _network_writer(*, idempotent: bool = False) -> ToolAnnotations:
-    """Sends data to an external network endpoint (e.g. webhook POST)."""
-    return ToolAnnotations(
-        readOnlyHint=False,
-        destructiveHint=False,
-        idempotentHint=idempotent,
-        openWorldHint=True,
-    )
-
-
-# ---------------------------------------------------------------------------
-# Tool catalogue -- 30 tools matching the CLI subcommands in cli.py
-# ---------------------------------------------------------------------------
 
 TOOLS: list[Tool] = [
-    # ------------------------------------------------------------------
-    # Skills management (local file I/O)
-    # ------------------------------------------------------------------
     Tool(
         name="install-skills",
-        description=(
-            "Install Ultimate Travel Agent skills, agents, and workflows into a target "
-            "project directory. Skips existing files unless --force is set."
-        ),
-        inputSchema=_OBJECT_INPUT,
-        annotations=_local_writer(destructive=False, idempotent=True),
-    ),
-    Tool(
-        name="uninstall-skills",
-        description=(
-            "Remove previously installed travel skills, agents, and workflows from a "
-            "target project directory."
-        ),
-        inputSchema=_OBJECT_INPUT,
-        # Deletes files -> destructiveHint=True; noop if already absent -> idempotent=True
-        annotations=_local_writer(destructive=True, idempotent=True),
-    ),
-    Tool(
-        name="list-skills",
-        description="List all available travel skills in the installed pack.",
-        inputSchema=_OBJECT_INPUT,
-        annotations=_local_readonly(),
-    ),
-    Tool(
-        name="validate-skills",
-        description=(
-            "Validate the quality, schema, and safety invariants of all skills "
-            "in the installed pack."
-        ),
-        inputSchema=_OBJECT_INPUT,
-        annotations=_local_readonly(),
-    ),
-    # ------------------------------------------------------------------
-    # Contract validators (pure computation)
-    # ------------------------------------------------------------------
-    Tool(
-        name="validate-dossier",
-        description=(
-            "Validate a JSON or YAML file against the TravelDossier v1 contract, "
-            "checking evidence freshness, source authority, and readiness gates."
-        ),
-        inputSchema=_OBJECT_INPUT,
-        annotations=_local_readonly(),
-    ),
-    Tool(
-        name="validate-handoff",
-        description=(
-            "Validate a JSON or YAML file against the compact-handoff/v2 contract, "
-            "checking stage, status, coverage, and blockers."
-        ),
-        inputSchema=_OBJECT_INPUT,
-        annotations=_local_readonly(),
-    ),
-    # ------------------------------------------------------------------
-    # Corpus & URL utilities (pure computation)
-    # ------------------------------------------------------------------
-    Tool(
-        name="prompt-audit",
-        description=(
-            "Measure the canonical prompt corpus character count and a stable token "
-            "proxy for regression tracking. Does not call any provider billing API."
-        ),
-        inputSchema=_OBJECT_INPUT,
-        annotations=_local_readonly(),
-    ),
-    Tool(
-        name="normalize-source-url",
-        description=(
-            "Canonicalize an HTTP(S) source URL for deduplication by stripping "
-            "tracking parameters while preserving content-identifying ones."
-        ),
-        inputSchema=_OBJECT_INPUT,
-        annotations=_local_readonly(),
-    ),
-    # ------------------------------------------------------------------
-    # Traveler profile (local file I/O)
-    # ------------------------------------------------------------------
-    Tool(
-        name="profile-save",
-        description=(
-            "Validate and atomically persist a privacy-minimal traveler profile "
-            "as a normalized JSON file."
-        ),
-        inputSchema=_OBJECT_INPUT,
-        # Writes one file; identical inputs produce identical output -> idempotent
-        annotations=_local_writer(destructive=False, idempotent=True),
-    ),
-    Tool(
-        name="profile-show",
-        description="Load and display a validated traveler profile as normalized JSON.",
-        inputSchema=_OBJECT_INPUT,
-        annotations=_local_readonly(),
-    ),
-    # ------------------------------------------------------------------
-    # Dossier export (local file I/O, no network)
-    # ------------------------------------------------------------------
-    Tool(
-        name="export-dossier",
-        description=(
-            "Validate a dossier and export it to a portable artifact in one of the "
-            "supported formats: ics, geojson, pdf, checklist, offline, html. "
-            "Writes the output to a user-specified path."
-        ),
-        inputSchema=_OBJECT_INPUT,
-        # Writes a file (readOnly=False); no data deletion (destructive=False);
-        # same inputs produce byte-identical output (idempotent=True);
-        # export functions make no network calls (openWorld=False).
+        description="Install the canonical skills pack below the configured MCP root.",
+        inputSchema=_input("install-skills"),
+        outputSchema=_output("install-skills"),
         annotations=ToolAnnotations(
             readOnlyHint=False,
             destructiveHint=False,
@@ -224,240 +56,367 @@ TOOLS: list[Tool] = [
             openWorldHint=False,
         ),
     ),
-    # ------------------------------------------------------------------
-    # Monitoring (pure computation)
-    # ------------------------------------------------------------------
+    Tool(
+        name="uninstall-skills",
+        description="Remove manifest-tracked installed files below the configured MCP root.",
+        inputSchema=_input("uninstall-skills"),
+        outputSchema=_output("uninstall-skills"),
+        annotations=ToolAnnotations(
+            readOnlyHint=False,
+            destructiveHint=True,
+            idempotentHint=True,
+            openWorldHint=False,
+        ),
+    ),
+    Tool(
+        name="list-skills",
+        description="List skills in the canonical bundled pack.",
+        inputSchema=_input("list-skills"),
+        outputSchema=_output("list-skills"),
+        annotations=ToolAnnotations(
+            readOnlyHint=True,
+            destructiveHint=False,
+            idempotentHint=True,
+            openWorldHint=False,
+        ),
+    ),
+    Tool(
+        name="validate-skills",
+        description="Validate skill quality and safety invariants.",
+        inputSchema=_input("validate-skills"),
+        outputSchema=_output("validate-skills"),
+        annotations=ToolAnnotations(
+            readOnlyHint=True,
+            destructiveHint=False,
+            idempotentHint=True,
+            openWorldHint=False,
+        ),
+    ),
+    Tool(
+        name="validate-dossier",
+        description="Validate a TravelDossier v1 object and return normalized data when valid.",
+        inputSchema=_input("validate-dossier"),
+        outputSchema=_output("validate-dossier"),
+        annotations=ToolAnnotations(
+            readOnlyHint=True,
+            destructiveHint=False,
+            idempotentHint=True,
+            openWorldHint=False,
+        ),
+    ),
+    Tool(
+        name="validate-handoff",
+        description="Validate a compact-handoff/v2 object.",
+        inputSchema=_input("validate-handoff"),
+        outputSchema=_output("validate-handoff"),
+        annotations=ToolAnnotations(
+            readOnlyHint=True,
+            destructiveHint=False,
+            idempotentHint=True,
+            openWorldHint=False,
+        ),
+    ),
+    Tool(
+        name="prompt-audit",
+        description="Measure the prompt corpus with a deterministic character/token proxy.",
+        inputSchema=_input("prompt-audit"),
+        outputSchema=_output("prompt-audit"),
+        annotations=ToolAnnotations(
+            readOnlyHint=True,
+            destructiveHint=False,
+            idempotentHint=True,
+            openWorldHint=False,
+        ),
+    ),
+    Tool(
+        name="normalize-source-url",
+        description="Canonicalize a safe HTTP(S) evidence URL for deduplication.",
+        inputSchema=_input("normalize-source-url"),
+        outputSchema=_output("normalize-source-url"),
+        annotations=ToolAnnotations(
+            readOnlyHint=True,
+            destructiveHint=False,
+            idempotentHint=True,
+            openWorldHint=False,
+        ),
+    ),
+    Tool(
+        name="profile-save",
+        description="Atomically save a privacy-minimal profile below the MCP root.",
+        inputSchema=_input("profile-save"),
+        outputSchema=_output("profile-save"),
+        annotations=ToolAnnotations(
+            readOnlyHint=False,
+            destructiveHint=False,
+            idempotentHint=True,
+            openWorldHint=False,
+        ),
+    ),
+    Tool(
+        name="profile-show",
+        description="Load a validated traveler profile below the MCP root.",
+        inputSchema=_input("profile-show"),
+        outputSchema=_output("profile-show"),
+        annotations=ToolAnnotations(
+            readOnlyHint=True,
+            destructiveHint=False,
+            idempotentHint=True,
+            openWorldHint=False,
+        ),
+    ),
+    Tool(
+        name="export-dossier",
+        description="Write a validated dossier export below the MCP root.",
+        inputSchema=_input("export-dossier"),
+        outputSchema=_output("export-dossier"),
+        annotations=ToolAnnotations(
+            readOnlyHint=False,
+            destructiveHint=False,
+            idempotentHint=True,
+            openWorldHint=False,
+        ),
+    ),
     Tool(
         name="revalidation-plan",
-        description=(
-            "Generate a pre-departure revalidation schedule from a validated dossier, "
-            "calculating task deadlines relative to the departure date."
+        description="Build a deterministic pre-departure revalidation schedule.",
+        inputSchema=_input("revalidation-plan"),
+        outputSchema=_output("revalidation-plan"),
+        annotations=ToolAnnotations(
+            readOnlyHint=True,
+            destructiveHint=False,
+            idempotentHint=True,
+            openWorldHint=False,
         ),
-        inputSchema=_OBJECT_INPUT,
-        annotations=_local_readonly(),
     ),
     Tool(
         name="price-watch",
-        description=(
-            "Assess a sourced flight or hotel price-history series and optionally "
-            "schedule a price-alert policy against current state."
+        description="Assess timestamped price observations or schedule a local alert decision.",
+        inputSchema=_input("price-watch"),
+        outputSchema=_output("price-watch"),
+        annotations=ToolAnnotations(
+            readOnlyHint=True,
+            destructiveHint=False,
+            idempotentHint=True,
+            openWorldHint=False,
         ),
-        inputSchema=_OBJECT_INPUT,
-        annotations=_local_readonly(),
     ),
-    # ------------------------------------------------------------------
-    # Flight search (local computation -- generates a search plan to file)
-    # ------------------------------------------------------------------
     Tool(
         name="flight-search-plan",
-        description=(
-            "Generate an exhaustive four-pass flexible-flight search matrix from a "
-            "FlightSearchRequest and write the plan to a JSON output file."
+        description="Generate a four-pass flight matrix and optionally save it below the MCP root.",
+        inputSchema=_input("flight-search-plan"),
+        outputSchema=_output("flight-search-plan"),
+        annotations=ToolAnnotations(
+            readOnlyHint=False,
+            destructiveHint=False,
+            idempotentHint=True,
+            openWorldHint=False,
         ),
-        inputSchema=_OBJECT_INPUT,
-        # Writes an output JSON file; no network call made by this tool
-        annotations=_local_writer(destructive=False, idempotent=True),
     ),
     Tool(
         name="flight-search-coverage",
-        description=(
-            "Verify that every cell in a flight-search plan was attempted and "
-            "optionally require booking-level source evidence."
+        description="Assess completion and booking evidence across a flight-search plan.",
+        inputSchema=_input("flight-search-coverage"),
+        outputSchema=_output("flight-search-coverage"),
+        annotations=ToolAnnotations(
+            readOnlyHint=True,
+            destructiveHint=False,
+            idempotentHint=True,
+            openWorldHint=False,
         ),
-        inputSchema=_OBJECT_INPUT,
-        annotations=_local_readonly(),
     ),
-    # ------------------------------------------------------------------
-    # Hotel search (local computation -- generates a research plan to file)
-    # ------------------------------------------------------------------
     Tool(
         name="hotel-search-plan",
-        description=(
-            "Generate transit-first hotel comparison tasks from a HotelSearchRequest "
-            "and write the research plan to a JSON output file."
+        description="Generate hotel research tasks and optionally save them below the MCP root.",
+        inputSchema=_input("hotel-search-plan"),
+        outputSchema=_output("hotel-search-plan"),
+        annotations=ToolAnnotations(
+            readOnlyHint=False,
+            destructiveHint=False,
+            idempotentHint=True,
+            openWorldHint=False,
         ),
-        inputSchema=_OBJECT_INPUT,
-        # Writes an output JSON file; no network call made by this tool
-        annotations=_local_writer(destructive=False, idempotent=True),
     ),
     Tool(
         name="hotel-search-coverage",
-        description=(
-            "Verify hotel research source coverage and direct-check completion "
-            "from a HotelResearchPlan."
+        description="Assess hotel discovery, transit, and official verification coverage.",
+        inputSchema=_input("hotel-search-coverage"),
+        outputSchema=_output("hotel-search-coverage"),
+        annotations=ToolAnnotations(
+            readOnlyHint=True,
+            destructiveHint=False,
+            idempotentHint=True,
+            openWorldHint=False,
         ),
-        inputSchema=_OBJECT_INPUT,
-        annotations=_local_readonly(),
     ),
     Tool(
         name="hotel-compare",
-        description=(
-            "Compare normalized room quotes and transit access scores for one hotel property."
+        description="Compare matched room quotes and transit evidence for one property.",
+        inputSchema=_input("hotel-compare"),
+        outputSchema=_output("hotel-compare"),
+        annotations=ToolAnnotations(
+            readOnlyHint=True,
+            destructiveHint=False,
+            idempotentHint=True,
+            openWorldHint=False,
         ),
-        inputSchema=_OBJECT_INPUT,
-        annotations=_local_readonly(),
     ),
     Tool(
         name="hotel-mobility",
-        description=(
-            "Score door-to-door transit quality from a hotel to important trip "
-            "anchors using sourced journey data."
+        description="Score sourced door-to-door journeys from a hotel to trip anchors.",
+        inputSchema=_input("hotel-mobility"),
+        outputSchema=_output("hotel-mobility"),
+        annotations=ToolAnnotations(
+            readOnlyHint=True,
+            destructiveHint=False,
+            idempotentHint=True,
+            openWorldHint=False,
         ),
-        inputSchema=_OBJECT_INPUT,
-        annotations=_local_readonly(),
     ),
-    # ------------------------------------------------------------------
-    # Cost & disruption (pure computation)
-    # ------------------------------------------------------------------
     Tool(
         name="compare-total-cost",
-        description=(
-            "Compare complete travel options including monetary cost, time value, "
-            "and transfer-risk exposure."
+        description="Compare exact door-to-door costs, time value, and risk reserve.",
+        inputSchema=_input("compare-total-cost"),
+        outputSchema=_output("compare-total-cost"),
+        annotations=ToolAnnotations(
+            readOnlyHint=True,
+            destructiveHint=False,
+            idempotentHint=True,
+            openWorldHint=False,
         ),
-        inputSchema=_OBJECT_INPUT,
-        annotations=_local_readonly(),
     ),
     Tool(
         name="disruption-plan",
-        description=(
-            "Build a recovery plan that replaces only the disrupted itinerary items "
-            "while preserving unaffected ones. Supports cascading missed-connection "
-            "propagation."
+        description="Build a deterministic recovery plan for disrupted itinerary items.",
+        inputSchema=_input("disruption-plan"),
+        outputSchema=_output("disruption-plan"),
+        annotations=ToolAnnotations(
+            readOnlyHint=True,
+            destructiveHint=False,
+            idempotentHint=True,
+            openWorldHint=False,
         ),
-        inputSchema=_OBJECT_INPUT,
-        annotations=_local_readonly(),
     ),
-    # ------------------------------------------------------------------
-    # Live connector (network I/O -- the only tool that opens HTTP connections)
-    # ------------------------------------------------------------------
     Tool(
         name="connector-fetch",
         description=(
-            "Execute one bounded live JSON connector request against a pre-configured "
-            "HTTPS endpoint. Credentials are supplied via environment variables and "
-            "never included in the result. Supports optional response normalization."
+            "Compatibility connector for bounded HTTPS GET or POST JSON requests. "
+            "Use connector-read when remote mutation must be impossible."
         ),
-        inputSchema=_OBJECT_INPUT,
-        # Contacts an external API; POST is possible -> non-idempotent
-        annotations=_network_readonly(idempotent=False),
+        inputSchema=_input("connector-fetch"),
+        outputSchema=_output("connector-fetch"),
+        annotations=ToolAnnotations(
+            readOnlyHint=False,
+            destructiveHint=False,
+            idempotentHint=False,
+            openWorldHint=True,
+        ),
     ),
-    # ------------------------------------------------------------------
-    # Day planning (pure computation)
-    # ------------------------------------------------------------------
+    Tool(
+        name="connector-read",
+        description="Execute one bounded HTTPS GET JSON request; POST is rejected by schema.",
+        inputSchema=_input("connector-read"),
+        outputSchema=_output("connector-read"),
+        annotations=ToolAnnotations(
+            readOnlyHint=True,
+            destructiveHint=False,
+            idempotentHint=True,
+            openWorldHint=True,
+        ),
+    ),
     Tool(
         name="adaptive-day",
-        description=(
-            "Build essential, balanced, rain, and low-energy day variants from a "
-            "list of activity candidates."
+        description="Build essential, balanced, rain, and low-energy day variants.",
+        inputSchema=_input("adaptive-day"),
+        outputSchema=_output("adaptive-day"),
+        annotations=ToolAnnotations(
+            readOnlyHint=True,
+            destructiveHint=False,
+            idempotentHint=True,
+            openWorldHint=False,
         ),
-        inputSchema=_OBJECT_INPUT,
-        annotations=_local_readonly(),
     ),
     Tool(
         name="route-optimize",
-        description=(
-            "Optimize a day's visit order using sourced travel times and venue opening windows."
+        description="Optimize visit order from sourced travel times and opening windows.",
+        inputSchema=_input("route-optimize"),
+        outputSchema=_output("route-optimize"),
+        annotations=ToolAnnotations(
+            readOnlyHint=True,
+            destructiveHint=False,
+            idempotentHint=True,
+            openWorldHint=False,
         ),
-        inputSchema=_OBJECT_INPUT,
-        annotations=_local_readonly(),
     ),
-    # ------------------------------------------------------------------
-    # Group decision (pure computation)
-    # ------------------------------------------------------------------
     Tool(
         name="group-decide",
-        description=(
-            "Rank complete group travel options by aggregating participant ballots "
-            "and applying hard vetoes."
+        description="Rank complete group ballots while enforcing hard vetoes.",
+        inputSchema=_input("group-decide"),
+        outputSchema=_output("group-decide"),
+        annotations=ToolAnnotations(
+            readOnlyHint=True,
+            destructiveHint=False,
+            idempotentHint=True,
+            openWorldHint=False,
         ),
-        inputSchema=_OBJECT_INPUT,
-        annotations=_local_readonly(),
     ),
-    # ------------------------------------------------------------------
-    # Neighborhood (pure computation)
-    # ------------------------------------------------------------------
     Tool(
         name="neighborhood-score",
-        description=(
-            "Score evidence-backed neighborhood quality against traveler requirements "
-            "such as transit access, safety, and walkability."
+        description="Score a neighborhood from dated evidence and traveler thresholds.",
+        inputSchema=_input("neighborhood-score"),
+        outputSchema=_output("neighborhood-score"),
+        annotations=ToolAnnotations(
+            readOnlyHint=True,
+            destructiveHint=False,
+            idempotentHint=True,
+            openWorldHint=False,
         ),
-        inputSchema=_OBJECT_INPUT,
-        annotations=_local_readonly(),
     ),
-    # ------------------------------------------------------------------
-    # Booking handoff (local state check; time-sensitive)
-    # ------------------------------------------------------------------
     Tool(
         name="booking-handoff",
-        description=(
-            "Prepare or confirm a user-controlled booking checkout handoff, "
-            "checking price-lock deadlines and generating a direct operator link."
-        ),
-        inputSchema=_OBJECT_INPUT,
-        # Time-sensitive deadline checking makes repeated calls non-idempotent
+        description="Prepare or confirm a user-controlled checkout handoff without purchasing.",
+        inputSchema=_input("booking-handoff"),
+        outputSchema=_output("booking-handoff"),
         annotations=ToolAnnotations(
             readOnlyHint=True,
             destructiveHint=False,
-            idempotentHint=False,
+            idempotentHint=True,
             openWorldHint=False,
         ),
     ),
-    # ------------------------------------------------------------------
-    # Trip companion (local state; time-sensitive)
-    # ------------------------------------------------------------------
     Tool(
         name="trip-mode",
-        description=(
-            "Show the current itinerary item, next required action, and offline "
-            "readiness status relative to the current time."
-        ),
-        inputSchema=_OBJECT_INPUT,
-        # Current-time dependency makes repeated calls non-idempotent
+        description="Compute the current trip state from an explicit timestamp.",
+        inputSchema=_input("trip-mode"),
+        outputSchema=_output("trip-mode"),
         annotations=ToolAnnotations(
             readOnlyHint=True,
             destructiveHint=False,
-            idempotentHint=False,
+            idempotentHint=True,
             openWorldHint=False,
         ),
     ),
-    # ------------------------------------------------------------------
-    # Webhook notification (network I/O -- HTTP POST)
-    # ------------------------------------------------------------------
     Tool(
         name="notify-webhook",
-        description=(
-            "Deliver one explicitly configured signed HTTPS webhook notification. "
-            "The signing secret is supplied via an environment variable. "
-            "No notification content is included in the receipt."
+        description="Send one explicitly configured signed HTTPS webhook notification.",
+        inputSchema=_input("notify-webhook"),
+        outputSchema=_output("notify-webhook"),
+        annotations=ToolAnnotations(
+            readOnlyHint=False,
+            destructiveHint=False,
+            idempotentHint=False,
+            openWorldHint=True,
         ),
-        inputSchema=_OBJECT_INPUT,
-        # Sends an HTTP POST; each call triggers a new delivery -> non-idempotent
-        annotations=_network_writer(idempotent=False),
     ),
 ]
-
-# ---------------------------------------------------------------------------
-# Public API
-# ---------------------------------------------------------------------------
 
 _TOOL_INDEX: dict[str, Tool] = {tool.name: tool for tool in TOOLS}
 
 
 def list_tools() -> list[Tool]:
-    """Return the complete list of MCP tool definitions with safety annotations.
-
-    The returned list is a shallow copy; callers must not mutate the elements.
-    """
     return list(TOOLS)
 
 
 def get_tool(name: str) -> Tool:
-    """Return a single tool definition by its CLI name.
-
-    Raises `KeyError` if *name* is not registered.
-    """
     return _TOOL_INDEX[name]
 
 

@@ -98,6 +98,12 @@ class ConnectorRequest(BaseModel):
         return self
 
 
+class ReadOnlyConnectorRequest(ConnectorRequest):
+    """Connector request contract that makes remote mutation impossible."""
+
+    method: Literal["GET"] = "GET"
+
+
 class ConnectorResult(BaseModel):
     model_config = ConfigDict(extra="forbid")
 

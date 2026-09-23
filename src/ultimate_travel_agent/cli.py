@@ -453,6 +453,27 @@ def connector_fetch_cmd(args: argparse.Namespace) -> None:
         print(result.model_dump_json(indent=2))
 
 
+def connector_read_cmd(args: argparse.Namespace) -> None:
+    """Execute one bounded GET-only live JSON connector request."""
+    from ultimate_travel_agent.connectors import (
+        ConnectorConfig,
+        ConnectorNormalizationSpec,
+        ReadOnlyConnectorRequest,
+        execute_json_connector,
+        normalize_connector_result,
+    )
+
+    data = _load_mapping(Path(args.input).resolve())
+    config = ConnectorConfig.model_validate(data.get("config"))
+    request = ReadOnlyConnectorRequest.model_validate(data.get("request"))
+    result = execute_json_connector(config, request)
+    if "normalization" in data:
+        spec = ConnectorNormalizationSpec.model_validate(data.get("normalization"))
+        print(normalize_connector_result(result, spec).model_dump_json(indent=2))
+    else:
+        print(result.model_dump_json(indent=2))
+
+
 def adaptive_day_cmd(args: argparse.Namespace) -> None:
     """Build essential, balanced, rain, and low-energy day variants."""
     from pydantic import TypeAdapter
@@ -752,6 +773,11 @@ def main() -> None:
     )
     connector_parser.add_argument("input", help="Connector config and request JSON/YAML")
 
+    connector_read_parser = subparsers.add_parser(
+        "connector-read", help="Execute a secure GET-only live JSON connector request"
+    )
+    connector_read_parser.add_argument("input", help="Connector config and request JSON/YAML")
+
     adaptive_parser = subparsers.add_parser(
         "adaptive-day", help="Build weather and energy day variants"
     )
@@ -833,6 +859,8 @@ def main() -> None:
         disruption_plan_cmd(args)
     elif args.command == "connector-fetch":
         connector_fetch_cmd(args)
+    elif args.command == "connector-read":
+        connector_read_cmd(args)
     elif args.command == "adaptive-day":
         adaptive_day_cmd(args)
     elif args.command == "group-decide":

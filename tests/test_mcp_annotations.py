@@ -39,6 +39,7 @@ EXPECTED_TOOL_NAMES: frozenset[str] = frozenset(
         "compare-total-cost",
         "disruption-plan",
         "connector-fetch",
+        "connector-read",
         "adaptive-day",
         "route-optimize",
         "group-decide",
@@ -131,11 +132,11 @@ class TestNetworkTool:
         assert tool.annotations is not None
         assert tool.annotations.openWorldHint is True
 
-    def test_connector_fetch_is_read_only(self) -> None:
-        """The connector reads external data; it does not mutate remote state."""
+    def test_connector_fetch_is_not_read_only(self) -> None:
+        """The compatibility connector permits POST and may mutate remote state."""
         tool = get_tool("connector-fetch")
         assert tool.annotations is not None
-        assert tool.annotations.readOnlyHint is True
+        assert tool.annotations.readOnlyHint is False
 
     def test_connector_fetch_is_not_destructive(self) -> None:
         tool = get_tool("connector-fetch")
@@ -147,6 +148,14 @@ class TestNetworkTool:
         tool = get_tool("connector-fetch")
         assert tool.annotations is not None
         assert tool.annotations.idempotentHint is False
+
+    def test_connector_read_is_read_only_and_idempotent(self) -> None:
+        tool = get_tool("connector-read")
+        assert tool.annotations is not None
+        assert tool.annotations.readOnlyHint is True
+        assert tool.annotations.destructiveHint is False
+        assert tool.annotations.idempotentHint is True
+        assert tool.annotations.openWorldHint is True
 
 
 class TestWebhookTool:
@@ -231,7 +240,7 @@ class TestOpenWorldTools:
             for t in list_tools()
             if t.annotations is not None and t.annotations.openWorldHint is True
         )
-        assert open_world == {"connector-fetch", "notify-webhook"}
+        assert open_world == {"connector-fetch", "connector-read", "notify-webhook"}
 
     def test_all_other_tools_are_closed_world(self) -> None:
         closed_world = [
@@ -239,4 +248,4 @@ class TestOpenWorldTools:
             for t in list_tools()
             if t.annotations is not None and t.annotations.openWorldHint is False
         ]
-        assert len(closed_world) == len(list_tools()) - 2
+        assert len(closed_world) == len(list_tools()) - 3

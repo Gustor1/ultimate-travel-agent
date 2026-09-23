@@ -14,7 +14,16 @@ The active product is a declarative skills bundle plus local Python installation
 - User-modified installed files remain untouched unless the user requests cleanup.
 - `--force` overwrites create recoverable local backups, restored during uninstallation.
 - Manifests use atomic replacement.
-- No active code performs purchases, reservations, network requests, shell execution, persistence, or privilege escalation.
+- No active code performs purchases, reservations, shell execution, privilege
+  escalation, or arbitrary filesystem access.
+- MCP filesystem inputs resolve below `ULTIMATE_TRAVEL_AGENT_MCP_ROOT` (the current
+  directory by default); traversal outside that root is rejected.
+- `connector-read` permits GET only. The compatibility `connector-fetch` permits GET
+  or POST and is explicitly non-read-only; both enforce HTTPS, same-host redirects,
+  bounded responses, allowed path prefixes, environment-only credentials, and
+  sensitive-field rejection.
+- `notify-webhook` performs an explicit signed HTTPS POST and never returns the response
+  body or signing secret.
 
 ## Instruction-level controls
 

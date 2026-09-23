@@ -1,6 +1,8 @@
 # Privacy and Data Flow
 
-The pack stores no traveler database and sends no network requests itself. Web searches occur only through tools supplied by the host agent runtime.
+The pack stores no traveler database. Most tools are local. Network access occurs only
+through the explicitly open-world `connector-read`, `connector-fetch`, and
+`notify-webhook` tools, or through web tools supplied by the host agent runtime.
 
 ## Local data
 
@@ -25,4 +27,6 @@ Nationality may be necessary for visa research. Use a generic query such as `off
 - Keep credentials outside prompts and dossiers.
 - `.gitignore` reduces accidental commits but is not a runtime secret-control system.
 - Use host secret stores for optional external tools.
+- MCP connector and webhook credentials are read from named environment variables;
+  their values are not accepted as tool arguments or returned in results.
 - Audit every connector's scopes, logging, retention, and subprocess behavior before enabling it.

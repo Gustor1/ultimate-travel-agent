@@ -251,13 +251,16 @@ def test_documentation_guides_exist():
         assert doc_path.exists(), f"Missing documentation file: {doc}"
         assert doc_path.stat().st_size > 200, f"Doc too brief: {doc}"
 
-def test_no_mcp_api_components_in_main():
-    """Verify that cloud/server MCP components, Docker, and deployment files are retired from main."""
+def test_mcp_is_local_adapter_without_web_or_deployment_stack():
+    """Keep the stdio MCP adapter while excluding retired cloud deployment surfaces."""
     base_dir = get_base_dir()
     src_dir = base_dir / "src" / "ultimate_travel_agent"
 
+    assert (src_dir / "mcp" / "server.py").is_file()
+    assert (src_dir / "mcp" / "handlers.py").is_file()
+    assert (src_dir / "mcp" / "schemas.py").is_file()
+
     # Retired components
-    assert not (src_dir / "mcp").exists()
     assert not (src_dir / "integrations").exists()
     assert not (src_dir / "web").exists()
     assert not (base_dir / "docker-compose.yml").exists()

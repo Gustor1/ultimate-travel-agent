@@ -1,0 +1,46 @@
+schema_version: 1
+cases:
+  - {id: orchestrator-positive, category: positive, focus_skills: [travel-orchestrator], prompt: "Plan my complete trip to Japan, including research, budget, schedule, and checks.", expected: [travel-orchestrator]}
+  - {id: orchestrator-negative, category: negative, focus_skills: [travel-orchestrator], prompt: "Compare three hotels near Kyoto Station.", expected: [accommodation-research]}
+  - {id: orchestrator-edge, category: edge, focus_skills: [travel-orchestrator], prompt: "I already made all reservations; validate my trip for feasibility.", expected: [travel-quality-control]}
+  - {id: orchestrator-overlap, category: overlap, focus_skills: [travel-orchestrator], prompt: "Plan my trip end-to-end and compare the flights.", expected: [travel-orchestrator, flight-search]}
+
+  - {id: flight-positive, category: positive, focus_skills: [flight-search], prompt: "Compare flexible flights from Shanghai to Lisbon with nearby airports.", expected: [flight-search]}
+  - {id: flight-negative, category: negative, focus_skills: [flight-search], prompt: "Compare overnight trains from Paris to Vienna.", expected: [transport-research]}
+  - {id: flight-edge, category: edge, focus_skills: [flight-search], prompt: "I have a flight already; check whether the itinerary is feasible.", expected: [travel-quality-control]}
+  - {id: flight-overlap, category: overlap, focus_skills: [flight-search], prompt: "Compare flights and trains between London and Edinburgh.", expected: [flight-search, transport-research]}
+
+  - {id: accommodation-positive, category: positive, focus_skills: [accommodation-research], prompt: "Find hotels with exact room totals and late-night metro access.", expected: [accommodation-research]}
+  - {id: accommodation-negative, category: negative, focus_skills: [accommodation-research], prompt: "Find neighborhood markets and independent cafés.", expected: []}
+  - {id: accommodation-edge, category: edge, focus_skills: [accommodation-research], prompt: "Which district is best for lodging near my itinerary anchors?", expected: [accommodation-research]}
+  - {id: accommodation-overlap, category: overlap, focus_skills: [accommodation-research], prompt: "Plan my complete trip and compare hotels after dates are known.", expected: [travel-orchestrator, accommodation-research]}
+
+  - {id: transport-positive, category: positive, focus_skills: [transport-research], prompt: "Compare train, bus, and ferry options with luggage.", expected: [transport-research]}
+  - {id: transport-negative, category: negative, focus_skills: [transport-research], prompt: "Compare nonstop flights and baggage fees.", expected: [flight-search]}
+  - {id: transport-edge, category: edge, focus_skills: [transport-research], prompt: "Check a rental car route including tolls and parking.", expected: [transport-research]}
+  - {id: transport-overlap, category: overlap, focus_skills: [transport-research], prompt: "Compare flights, rail, and bus for this corridor.", expected: [flight-search, transport-research]}
+
+  - {id: activity-positive, category: positive, focus_skills: [activity-curator], prompt: "Curate museums and outdoor activities with opening hours and rain backups.", expected: [activity-curator]}
+  - {id: activity-negative, category: negative, focus_skills: [activity-curator], prompt: "Find a quiet hotel room near the metro.", expected: [accommodation-research]}
+  - {id: activity-edge, category: edge, focus_skills: [activity-curator], prompt: "Find ticketed cultural attractions for Tuesday afternoon.", expected: [activity-curator]}
+  - {id: activity-overlap, category: overlap, focus_skills: [activity-curator], prompt: "Plan my complete trip with museums and activities.", expected: [travel-orchestrator, activity-curator]}
+
+  - {id: verification-positive, category: positive, focus_skills: [source-verification], prompt: "Verify the stale claim against authoritative sources.", expected: [source-verification]}
+  - {id: verification-negative, category: negative, focus_skills: [source-verification], prompt: "Discover twelve activities in Osaka.", expected: [activity-curator]}
+  - {id: verification-edge, category: edge, focus_skills: [source-verification], prompt: "The sources are contradictory; resolve which rule applies.", expected: [source-verification]}
+  - {id: verification-overlap, category: overlap, focus_skills: [source-verification], prompt: "Verify visa entry requirements from current official sources.", expected: [source-verification, travel-safety]}
+
+  - {id: quality-positive, category: positive, focus_skills: [travel-quality-control], prompt: "Run a quality check on this itinerary for arithmetic and feasibility.", expected: [travel-quality-control]}
+  - {id: quality-negative, category: negative, focus_skills: [travel-quality-control], prompt: "Search flexible flights for next month.", expected: [flight-search]}
+  - {id: quality-edge, category: edge, focus_skills: [travel-quality-control], prompt: "Validate my trip after I changed one reservation.", expected: [travel-quality-control]}
+  - {id: quality-overlap, category: overlap, focus_skills: [travel-quality-control], prompt: "Audit my itinerary and verify contradictory evidence.", expected: [source-verification, travel-quality-control]}
+
+  - {id: safety-positive, category: positive, focus_skills: [travel-safety], prompt: "Check visa, vaccine, and entry requirements for my dates.", expected: [travel-safety]}
+  - {id: safety-negative, category: negative, focus_skills: [travel-safety], prompt: "Compare room cancellation policies at these hotels.", expected: [accommodation-research]}
+  - {id: safety-edge, category: edge, focus_skills: [travel-safety], prompt: "Review the weather advisory and emergency contacts for the trek.", expected: [travel-safety]}
+  - {id: safety-overlap, category: overlap, focus_skills: [travel-safety], prompt: "Verify the visa rule because two official sources disagree.", expected: [source-verification, travel-safety]}
+
+  - {id: mcp-audit-positive, category: positive, focus_skills: [mcp-skill-auditing], prompt: "Perform a security audit of this external MCP server and its permissions.", expected: [mcp-skill-auditing]}
+  - {id: mcp-audit-negative, category: negative, focus_skills: [mcp-skill-auditing], prompt: "Use the weather connector to plan outdoor activities.", expected: [activity-curator]}
+  - {id: mcp-audit-edge, category: edge, focus_skills: [mcp-skill-auditing], prompt: "Review privacy and permissions for a third-party connector before installation.", expected: [mcp-skill-auditing]}
+  - {id: mcp-audit-overlap, category: overlap, focus_skills: [mcp-skill-auditing], prompt: "Verify the source claims and run a security audit of the external API.", expected: [source-verification, mcp-skill-auditing]}

@@ -2,9 +2,11 @@
 
 [![M8ven Score](https://m8ven.ai/badge/mcp/gustor1-ultimate-travel-agent-dboc4d?v=67c79fb9bddeb27e2f85b347c35535cb)](https://m8ven.ai/mcp/gustor1-ultimate-travel-agent-dboc4d)
 
-Pack portable de **14 skills de voyage** pour Codex, Claude et les autres hôtes capables de lire des instructions Markdown et d'utiliser des outils web.
-
-Le dépôt est volontairement centré sur les skills. Il ne contient ni serveur MCP, ni interface web, ni moteur de réservation. Les prix, horaires, formalités et disponibilités doivent toujours être vérifiés sur des sources officielles avant toute décision.
+Ultimate Travel Agent est un pack portable de **14 skills de voyage**, accompagné
+d'une CLI déterministe et d'un serveur MCP optionnel. Le serveur expose les mêmes
+validateurs, calculs et connecteurs bornés ; il ne constitue ni une interface web ni
+un moteur de réservation. Les prix, horaires, formalités et disponibilités doivent
+toujours être vérifiés sur des sources officielles avant toute décision.
 
 ## Où se trouve le produit
 
@@ -15,6 +17,8 @@ Le dépôt est volontairement centré sur les skills. Il ne contient ni serveur 
 | [`.agents/agents/`](.agents/agents/) | Définitions optionnelles des spécialistes |
 | [`.agents/workflows/`](.agents/workflows/) | Workflows optionnels de bout en bout |
 | [`src/ultimate_travel_agent/`](src/ultimate_travel_agent/) | Outils déterministes optionnels : validation, calculs et installation |
+| [`src/ultimate_travel_agent/mcp/`](src/ultimate_travel_agent/mcp/) | Adaptateur MCP stdio optionnel, schémas et dispatch sécurisé |
+| [`evals/`](evals/) | Evals déterministes de déclenchement des skills |
 | [`tests/`](tests/) | Tests de développement ; ils ne sont jamais chargés pendant un planning |
 
 `.agents/` est l'unique source de vérité. Il n'existe plus de copie miroir du pack.
@@ -40,6 +44,24 @@ Pour installer le pack dans un autre projet :
 python -m pip install -e .
 ultimate-travel-agent install-skills --target /chemin/du/projet --include-agents --include-workflows
 ```
+
+Installation publiée, sans dépendances MCP :
+
+```bash
+python -m pip install ultimate-travel-agent
+```
+
+Installation avec le SDK et lancement du serveur MCP stdio :
+
+```bash
+python -m pip install "ultimate-travel-agent[mcp]"
+ultimate-travel-agent-mcp
+```
+
+Par défaut, les opérations fichier MCP sont limitées au répertoire courant. Définissez
+`ULTIMATE_TRAVEL_AGENT_MCP_ROOT` sur un répertoire local explicite pour choisir une
+autre racine. La suite automatisée vérifie réellement `initialize`, `tools/list` et
+`tools/call` avec un client MCP stdio.
 
 L'hôte cible doit relier les capacités déclarées par les skills à ses propres outils de recherche et à son modèle de permissions. Les mêmes fichiers restent utilisables avec Claude, Codex et d'autres agents ; seule cette couche d'adaptation dépend de la plateforme.
 
@@ -82,10 +104,27 @@ Les modèles de brief français et anglais sont dans [`examples/`](examples/). L
 ## Développement
 
 ```bash
-python -m pip install -e ".[dev]"
+python -m pip install -e ".[dev,mcp]"
 pytest -q
 ruff check src tests
+mypy src/ultimate_travel_agent
+python -m evals.run_skill_evals
 ```
+
+## Effets et confidentialité
+
+- Les calculs et validations restent locaux et read-only.
+- `profile-save`, `export-dossier`, les générateurs de plans avec `output_path` et les
+  commandes d'installation écrivent uniquement sous la racine MCP configurée.
+- `uninstall-skills` est le seul tool destructif ; il reste borné par son manifeste.
+- `connector-read` utilise uniquement GET. `connector-fetch` conserve GET/POST pour
+  compatibilité et est donc annoncé comme potentiellement mutatif à distance.
+- `notify-webhook` envoie un POST signé. Aucun tool n'effectue d'achat ou de réservation.
+- Les secrets proviennent exclusivement de variables d'environnement et ne sont ni
+  inclus dans les résultats ni journalisés.
+
+Le tableau complet des 30 tools et de leurs annotations est dans
+[la documentation MCP](docs/mcp-tool-annotations.md).
 
 Les tests et le code Python ne sont pas injectés dans les prompts de voyage. Ils servent à empêcher les régressions de précision, de sécurité et de couverture.
 

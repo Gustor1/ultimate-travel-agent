@@ -44,11 +44,13 @@ mcp = [
 
 [project.scripts]
 ultimate-travel-agent = "ultimate_travel_agent.cli:main"
+ultimate-travel-agent-mcp = "ultimate_travel_agent.mcp.server:main"
 
 [tool.setuptools]
 packages = [
     "ultimate_travel_agent",
     "ultimate_travel_agent.schemas",
+    "ultimate_travel_agent.mcp",
     "ultimate_travel_agent.bundle",
     "ultimate_travel_agent.bundle.agents",
     "ultimate_travel_agent.bundle.shared",

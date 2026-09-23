@@ -1,6 +1,9 @@
 # Architecture
 
-`ultimate-travel-agent` is a declarative Travel Skills Pack. The active branch contains skills, agent definitions, workflows, a safe installer, and validators. It does not contain the archived MCP server, provider adapters, or FastAPI interface.
+`ultimate-travel-agent` is a declarative Travel Skills Pack with deterministic Python
+utilities and an optional stdio MCP adapter. The MCP server is intentionally thin: it
+validates Pydantic request envelopes, dispatches directly to existing functions, and
+returns structured results. It is not a FastAPI service or booking engine.
 
 ## Canonical assets
 
@@ -13,6 +16,17 @@
 - one bundle manifest.
 
 The Python wheel bundles the canonical `.agents` assets as `ultimate_travel_agent.bundle`, so installation does not depend on a Git checkout and no duplicate source tree is maintained.
+
+## MCP adapter
+
+`mcp_tools.py` is the statically auditable catalogue. Each declaration contains four
+inline safety booleans. `mcp/schemas.py` derives input and output JSON Schemas from
+Pydantic contracts, `mcp/handlers.py` owns bounded dispatch and filesystem containment,
+and `mcp/server.py` provides initialization, `tools/list`, and `tools/call` over stdio.
+No call is routed through a shell or CLI subprocess.
+
+The normal package has no MCP runtime dependency. Installing the `mcp` extra adds the
+SDK and the `ultimate-travel-agent-mcp` entry point.
 
 ## Execution graph
 
