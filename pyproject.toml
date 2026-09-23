@@ -37,6 +37,9 @@ dev = [
     "mypy>=1.9.0",
     "types-PyYAML>=6.0.12",
 ]
+mcp = [
+    "mcp>=1.0.0",
+]
 
 [project.scripts]
 ultimate-travel-agent = "ultimate_travel_agent.cli:main"

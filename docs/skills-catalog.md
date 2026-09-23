@@ -1,4 +1,4 @@
-# Travel Skills Catalog
+﻿# Travel Skills Catalog
 
 The pack contains 14 runtime-neutral, local-first skills. Each entrypoint loads shared policy progressively and returns artifact IDs through `compact-handoff/v2`; only final synthesis expands a complete `TravelDossier v1`.
 
@@ -26,3 +26,7 @@ The pack contains 14 runtime-neutral, local-first skills. Each entrypoint loads 
 - Claims link to current sources by stable ID, authority, independence group, and applicability.
 - Parallel writers use separate revisioned shards; handoffs contain IDs instead of copied evidence.
 - Missing live evidence remains explicitly unverified. No skill purchases, reserves, bypasses access controls, or handles payment data.
+
+## MCP tool safety annotations
+
+All 29 deterministic CLI tools carry explicit safety hints for MCP clients. See [mcp-tool-annotations.md](mcp-tool-annotations.md) for the full classification and rationale.
