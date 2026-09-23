@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import pytest
 
-from ultimate_travel_agent.mcp_tools import TOOLS, get_tool, list_tools
+from ultimate_travel_agent.mcp_tools import TOOLS, Tool, get_tool, list_tools
 
 # ---------------------------------------------------------------------------
 # The canonical set of CLI tool names mirrors cli.py subcommands exactly.
@@ -82,16 +82,12 @@ class TestAnnotationPresence:
 
     @pytest.mark.parametrize("tool", TOOLS, ids=lambda t: t.name)
     def test_tool_has_annotations_object(self, tool: object) -> None:
-        from mcp.types import Tool
-
         assert isinstance(tool, Tool)
         assert tool.annotations is not None, f"{tool.name}: annotations must not be None"  # type: ignore[union-attr]
 
     @pytest.mark.parametrize("tool", TOOLS, ids=lambda t: t.name)
     @pytest.mark.parametrize("field", _ANNOTATION_FIELDS)
     def test_annotation_field_is_explicit_bool(self, tool: object, field: str) -> None:
-        from mcp.types import Tool
-
         assert isinstance(tool, Tool)
         annotations = tool.annotations  # type: ignore[union-attr]
         value = getattr(annotations, field)

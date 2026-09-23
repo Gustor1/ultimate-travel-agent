@@ -21,13 +21,30 @@ The `mcp` package is an optional dependency.  If it is not installed, an
 
 from __future__ import annotations
 
+from typing import Any
+
 try:
     from mcp.types import Tool, ToolAnnotations
-except ImportError as _exc:  # pragma: no cover
-    raise ImportError(
-        "The 'mcp' package is required to use mcp_tools. "
-        "Install it with: pip install 'ultimate-travel-agent[mcp]'"
-    ) from _exc
+except ImportError:  # pragma: no cover
+    from pydantic import BaseModel, ConfigDict
+
+    class ToolAnnotations(BaseModel):  # type: ignore[no-redef]
+        title: str | None = None
+        readOnlyHint: bool | None = None
+        destructiveHint: bool | None = None
+        idempotentHint: bool | None = None
+        openWorldHint: bool | None = None
+
+        model_config = ConfigDict(extra="allow")
+
+    class Tool(BaseModel):  # type: ignore[no-redef]
+        name: str
+        description: str | None = None
+        inputSchema: dict[str, Any]
+        outputSchema: dict[str, Any] | None = None
+        annotations: ToolAnnotations | None = None
+
+        model_config = ConfigDict(extra="allow")
 
 
 # ---------------------------------------------------------------------------
@@ -442,3 +459,6 @@ def get_tool(name: str) -> Tool:
     Raises `KeyError` if *name* is not registered.
     """
     return _TOOL_INDEX[name]
+
+
+__all__ = ["TOOLS", "Tool", "ToolAnnotations", "get_tool", "list_tools"]
