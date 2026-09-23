@@ -1,5 +1,7 @@
 # Ultimate Travel Agent
 
+[![M8ven Score](https://m8ven.ai/badge/mcp/gustor1-ultimate-travel-agent-dboc4d?v=67c79fb9bddeb27e2f85b347c35535cb)](https://m8ven.ai/mcp/gustor1-ultimate-travel-agent-dboc4d)
+
 Pack portable de **14 skills de voyage** pour Codex, Claude et les autres hôtes capables de lire des instructions Markdown et d'utiliser des outils web.
 
 Le dépôt est volontairement centré sur les skills. Il ne contient ni serveur MCP, ni interface web, ni moteur de réservation. Les prix, horaires, formalités et disponibilités doivent toujours être vérifiés sur des sources officielles avant toute décision.
