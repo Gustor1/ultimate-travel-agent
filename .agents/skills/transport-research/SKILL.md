@@ -15,6 +15,7 @@ Require endpoints, direction, dates/windows, party, luggage/access needs, accept
 
 - Predeclare viable rail, bus, ferry, car/rental, taxi/shuttle, and local-transfer cells; preserve unavailable and rejected modes with reasons.
 - Build a time-expanded journey: origin access, check-in/security, wait, ride, transfer, border/formality, last mile, recovery buffer, first/last usable departure, and frequency. Research both directions when they differ.
+- For last services, borders, or luggage detours, record latest safe departure, terminal, cutoff, buffer, lodging arrival, and fallback. Unknown critical times remain provisional.
 - Verify schedule, operating dates, final fare, booking window, luggage, reservations, accessibility features, strike/seasonal caveats, cancellation, and deep direct-operator URL.
 - Separate-ticket journeys require protection, re-entry/recheck, terminal changes, last recovery, missed-connection and overnight analysis. Driving includes fuel/charging, tolls, parking, restricted zones, fatigue, insurance/excess, deposit, border and one-way fees.
 - Compare a Pareto frontier of true cost, duration, robustness, comfort, luggage, accessibility, and environmental impact. Keep per-person and per-vehicle values distinct; run `compare-total-cost` for arithmetic.

@@ -23,7 +23,7 @@ Load atomic cost/claim IDs, party allocation, budget caps, risk tolerance, dated
 
 ## Fallback
 
-Current-source access is unnecessary when supplied records are complete and fresh. If a required value is missing or stale, calculate bounded scenarios, mark the affected result unverified, and issue a targeted revalidation task.
+Use complete, fresh supplied records without live access. For missing/stale values, mark unverified, calculate defensible bounds or label `unpriced`; list missing fare, room, intercity, activity, and daily costs for revalidation.
 
 ## Outputs
 

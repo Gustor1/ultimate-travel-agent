@@ -29,6 +29,7 @@ Resolve code-shares and duplicate itineraries. Store ordered segments, marketing
 Verify retained fare, seats, baggage, payment/cancellation, and schedule on a deep direct-airline URL, not a root homepage. Separate tickets require protection disclosure, immigration, terminal change, baggage reclaim/recheck, check-in closure, missed-connection risk, last recovery, and overnight fallback. Start from a configurable 120-minute buffer and increase it for friction. Never assume through-checked baggage.
 
 Inventories beyond 330 days / 11 months are `unopened inventory` with a range, never a false exact fare.
+If inventory is unopened or budget unknown, retain comparable route/date options and pricing inputs. Label `unpriced`; historical schedules do not prove fares.
 
 ## Door-to-door decision
 

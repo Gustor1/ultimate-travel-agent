@@ -25,7 +25,7 @@ Store all candidates and rejection codes; hand off retained IDs only.
 
 ## Fallback
 
-Without current-source access, compare only supplied fresh records. Otherwise provide area criteria and a pending coverage plan; keep live price, availability, policy, and walking claims unverified.
+Without live access, compare only fresh supplied records; otherwise give area criteria and pending checks, leaving price, availability, policy, and walking unverified. State room assumptions when budget/comfort is unknown; areas alone are not property comparisons.
 
 ## Outputs
 

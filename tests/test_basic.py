@@ -53,6 +53,7 @@ def test_cli_help():
     assert "notify-webhook" in result.stdout
     assert "prompt-audit" in result.stdout
     assert "validate-handoff" in result.stdout
+    assert "validate-run" in result.stdout
     assert "normalize-source-url" in result.stdout
 
 

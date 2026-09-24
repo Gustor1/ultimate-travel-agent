@@ -19,6 +19,7 @@ Load assigned claim/source IDs, criticality, applicability, freshness requiremen
 - Cross-check critical, ambiguous, volatile, or contradictory claims using an independent authoritative origin when available. Two pages using one upstream feed are not independent.
 - Resolve contradictions by applicability, responsibility, and effective date. Preserve both claims; if material uncertainty remains, block rather than average or silently choose.
 - Update by stable ID/revision. Record dead, redirected, blocked, or unavailable pages and the exact remaining verification action.
+- Check domain/venue end dates against trip dates; replace expiring links with canonical pages, retaining originals.
 
 ## Fallback
 

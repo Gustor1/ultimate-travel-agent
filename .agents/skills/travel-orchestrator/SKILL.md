@@ -19,13 +19,13 @@ Coordinate a privacy-minimal brief, complexity classification, runtime capabilit
 4. Run accommodation, local discovery, and activity refinement only after the date/area gate. Reuse existing source IDs rather than reopening pages.
 5. Verify only critical/stale/missing/conflicting claims, then calculate budget, construct itinerary, and perform quality control by artifact ID.
 6. Require `compact-handoff/v2`; reject embedded full payloads. Resume only pending, expired, or invalidated cells.
-7. After coverage, evidence, recommendation, and quality gates pass, expand accepted artifacts once into `TravelDossier v1`. Preserve scenarios, rejected options/reasons, conflicts, fallbacks, booking deadlines, and revalidation tasks.
-8. Run `validate-dossier`; `booking_ready` remains false whenever a critical blocker exists.
+7. Expand accepted artifacts once after all gates pass; preserve scenarios, rejections, conflicts, fallbacks, deadlines, and revalidation. Failed gates stay provisional with missing evidence named.
+8. Run `validate-run`; run `validate-dossier` for JSON/YAML only. Report failed/unavailable checks. Critical blockers prevent booking readiness.
 
 ## Fallback
 
-Without current-source access, continue only from supplied fresh evidence, deterministic calculations, and explicit assumptions. Return an inspiration-mode dossier plus exact pending verification; never manufacture readiness.
+Without current sources, use supplied fresh evidence, calculations, and assumptions. Return inspiration mode with pending checks; insufficient comparisons prevent recommendation readiness.
 
 ## Outputs
 
-Intermediate stages return `compact-handoff/v2`. Final output is one complete validated `TravelDossier v1`, not repeated dossier fragments.
+Intermediate stages return `compact-handoff/v2`. Final dossier leads with route/nights, price or `unpriced`, difficult days, decisions, and readiness; then detail and checks. Link claims to evidence, never local paths as web links.

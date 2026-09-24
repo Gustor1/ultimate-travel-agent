@@ -5,6 +5,7 @@ Prefer packaged commands over model-generated arithmetic or ad hoc scripts. Use 
 | Need | Command |
 |---|---|
 | Validate final evidence/readiness | `validate-dossier` |
+| Validate run manifest, gate order, and artifact references | `validate-run` |
 | Validate an agent handoff | `validate-handoff` |
 | Measure prompt corpus regression | `prompt-audit` |
 | Canonicalize a source URL | `normalize-source-url` |

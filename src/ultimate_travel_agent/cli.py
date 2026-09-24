@@ -167,6 +167,18 @@ def validate_handoff_cmd(args: argparse.Namespace) -> None:
         raise SystemExit(1)
 
 
+def validate_run_cmd(args: argparse.Namespace) -> None:
+    """Validate a travel run manifest and its declared artifacts."""
+    from ultimate_travel_agent.run_validation import validate_run
+
+    passed, issues = validate_run(Path(args.path))
+    print(f"travel-run/v1: {'PASSED' if passed else 'FAILED'}")
+    for issue in issues:
+        print(f"  - {issue}")
+    if not passed:
+        raise SystemExit(1)
+
+
 def prompt_audit_cmd(args: argparse.Namespace) -> None:
     """Report stable prompt corpus sizes without claiming provider billing usage."""
     from ultimate_travel_agent.prompt_audit import audit_prompt_corpus
@@ -662,6 +674,11 @@ def main() -> None:
     )
     handoff_parser.add_argument("path", help="Path to a JSON or YAML handoff")
 
+    run_parser = subparsers.add_parser(
+        "validate-run", help="Validate a travel run manifest and declared artifacts"
+    )
+    run_parser.add_argument("path", help="Path to a travel run directory")
+
     prompt_audit_parser = subparsers.add_parser(
         "prompt-audit", help="Measure canonical prompt corpus size and a stable token proxy"
     )
@@ -827,6 +844,8 @@ def main() -> None:
         validate_dossier_cmd(args)
     elif args.command == "validate-handoff":
         validate_handoff_cmd(args)
+    elif args.command == "validate-run":
+        validate_run_cmd(args)
     elif args.command == "prompt-audit":
         prompt_audit_cmd(args)
     elif args.command == "normalize-source-url":

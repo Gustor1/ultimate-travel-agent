@@ -14,6 +14,7 @@ Generate the coverage ledger before discovery. Every cell ends `searched`, `unav
 - `booking_ready`: every critical claim is current, primary-sourced, and blocker-free.
 
 Never infer a later gate from an earlier one.
+Gate order is strict: `booking_ready` requires `recommendation_ready`, which requires `evidence_sufficient`, which requires `coverage_complete`. An inspiration-mode proposal may describe a plausible route, but cannot set `recommendation_ready` when comparison evidence is insufficient. Preserve missing evidence and unresolved dependencies as explicit tasks.
 
 ## Durable run state
 
@@ -25,6 +26,9 @@ Create or reuse `.travel-agent/runs/<run_id>/`:
 - `decisions/<agent>.jsonl`: accepted/rejected decisions and reasons by stable ID.
 - `checks/<agent>.jsonl`: verification and quality findings linked to record, claim, and source IDs.
 - `final.md` or `final.yaml`: the only expanded user-facing dossier.
+
+Before delivery, validate the manifest and all declared artifact paths with `validate-run`; a manually written validation note is not a passing result. If the command cannot run, record the failed validation and keep readiness gates false beyond what independently verified evidence supports.
+The manifest uses `schema: travel-run/v1` and `artifacts.final` for the user-facing file. When `recommendation_ready: true`, it also declares nonempty file paths under `artifacts.sources`, `artifacts.research`, `artifacts.decisions`, and `artifacts.checks`; these references support, but do not replace, the quality audit.
 
 Parallel agents use single-writer shards. Merge deterministically by stable ID and revision; never concurrently append to one shared JSONL file. Updates are immutable events with `revision`, `op`, and optional `supersedes`; latest valid revision wins while history remains auditable. Use atomic write-then-rename for manifests and merged files. Retries load terminal cells and execute only genuinely pending or expired work.
 
