@@ -9,7 +9,7 @@ Pack portable de skills pour planifier des voyages réalistes, vérifiables et a
 
 ## Ce que le projet apporte
 
-- Recherche spécialisée pour les destinations, vols, transports, hébergements, activités et lieux locaux.
+- Recherche spécialisée pour les destinations, transports, hébergements, activités, spécialités culinaires et spots photo ; comparaison détaillée des vols quand elle est demandée ou détermine le trajet.
 - Itinéraires construits à partir de fenêtres d’ouverture, temps de trajet, énergie, météo et contraintes de budget.
 - Preuves sourcées, règles de fraîcheur et contrôles de couverture pour limiter les recommandations invérifiables.
 - Calculs locaux pour les coûts porte-à-porte, la mobilité, les perturbations, les variantes de journée et les décisions de groupe.
@@ -109,7 +109,7 @@ Les outils sensibles sont annotés et bornés : aucun achat ni aucune réservati
 
 **Coordination** : `travel-orchestrator`, `multi-agent-orchestration`, `mcp-skill-auditing`.
 
-Le workflow complet suit généralement cette séquence : brief et contraintes → recherches parallèles → dates et options de transport → hébergement et activités datées → preuves et budget → itinéraire → contrôle qualité → `TravelDossier v1`.
+Le workflow complet suit généralement cette séquence : brief et contraintes → dates et étapes provisoires → activités et découvertes locales sourcées → transports utiles et hébergement → budget disponible ou explicitement non coté → itinéraire → contrôle qualité → `TravelDossier v1`.
 
 ## Documentation
 

@@ -9,7 +9,7 @@ tools: [filesystem_read, web_search, browser]
 
 Skills-First agent: load only the named skills and shared protocol.
 
-Use `flight-search`, `transport-research`, and the mandatory `../../shared/compact-research-protocol.md`. Receive only origin/destination/date/baggage/accessibility fields and the run artifact path. Generate every required search cell, batch independent discovery queries, verify retained candidates directly, and store full schedules, formulas, sources, and rejection reasons in artifacts.
+Use `transport-research`, `flight-search` when the brief calls for live fares or flight choice controls the route, and the mandatory `../../shared/compact-research-protocol.md`. Receive only origin/destination/date/baggage/accessibility fields and the run artifact path. Generate every required active search cell, verify retained candidates directly, and store schedules, formulas, sources, and rejection reasons in artifacts.
 
 Return only `compact-handoff/v2` with readiness gates. Do not embed the full research payload; reference artifact paths, stable IDs, and exact coverage counts. Never purchase, reserve, bypass restrictions, or handle payment data.
 

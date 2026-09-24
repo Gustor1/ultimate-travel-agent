@@ -6,7 +6,7 @@ Le planificateur utilise un graphe dynamique fondé sur les dépendances du voya
 Brief minimal
   └─► graphe de dépendances + propriétaires des claims + registre des sources demandées
        ├─► destination ───────────────┐
-       ├─► transport / flight-search ├─► dates et zones viables
+       ├─► transport pertinent ──────├─► dates et zones viables
        ├─► activités générales ──────┘          │
        └─► sécurité si applicable               ├─► hébergement
                                                 ├─► découverte locale
@@ -27,6 +27,7 @@ Brief minimal
 - Plusieurs consommateurs réutilisent le même `source_id` actuel au lieu de rouvrir la page.
 - Une reprise n’exécute que les cellules `pending`, expirées, contredites ou invalidées.
 - `validate-handoff` contrôle chaque transition et `validate-dossier` contrôle le résultat final.
+- `flight-search` est activé pour une comparaison de tarifs demandée ou si le choix du vol détermine le trajet. Sinon, les aéroports et horaires d'arrivée restent des hypothèses visibles.
 
 ## Portes de décision
 
@@ -44,8 +45,8 @@ Les quatre portes sont indépendantes :
 - Destination : géographie, climat, événements, affluence, normes et contexte régional.
 - Transport : matrices de vols, rail, bus, ferry, conduite, correspondances et coûts porte-à-porte.
 - Hébergement : quartiers, mobilité vers les vrais points d’intérêt, chambre/tarif comparable, coût final et annulation.
-- Activités : couverture thématique, créneaux, accessibilité, files, réservation et plans B compatibles.
-- Découverte locale : candidats de quartier, recherches multilingues, récence, provenance et existence.
+- Activités : visites marquantes pour les journées disponibles, créneaux, accessibilité, files, réservation et plans B compatibles.
+- Découverte locale : spécialités culinaires, bonnes adresses et spots photo proches du parcours, avec recherches multilingues, provenance et existence.
 - Sécurité : applicabilité par nationalité/résidence/juridiction/date, exigences, recommandations, risques et revalidation.
 - Budget : coûts atomiques, exposition remboursable, scénarios corrélés et réserve fondée sur le risque.
 - Itinéraire : contraintes temporelles, trajets sourcés, charge, marge, variantes et récupération.

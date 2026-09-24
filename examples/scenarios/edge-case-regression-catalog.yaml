@@ -10,6 +10,11 @@ scenarios:
     regions: [Japan]
     required_controls: [service_hours, hotel_mobility, offline_mode]
     expected_risk: The nearest station is irrelevant when service has ended.
+  - scenario_id: japan-experiences-before-flights
+    title: Japan activity plan while flights remain unquoted
+    regions: [Japan]
+    required_controls: [provisional_air_windows, activity_provenance, regional_food, photo_timing, booking_gate]
+    expected_risk: Flight uncertainty must stay visible without blocking a sourced experience plan or inventing fares.
   - scenario_id: greek-island-weather
     title: Greek island ferry disruption
     regions: [Greece]

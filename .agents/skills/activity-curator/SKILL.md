@@ -13,7 +13,8 @@ Require destination/areas, date window, interests, pace, party/access needs, bud
 
 ## Method
 
-- Build coverage by category × area × date × indoor/outdoor. Unless the user requests fewer, investigate at least `max(12, 3 × trip_days)` distinct candidates and retain at least `max(6, 2 × trip_days)` qualified candidates when the destination supports them; document evidenced scarcity instead of padding with weak options.
+- Build coverage by overnight base × stated interest × usable day × indoor/outdoor. Qualify an anchor for each full sightseeing day except intentional rest days, and a compatible alternative for each fragile anchor. Expand only where meaningful choices are missing; document scarcity instead of padding.
+- For each retained experience record what makes it distinctive, realistic time on site, best time for light or crowds when relevant, and its fit with the surrounding day. Local food venues and informal photo spots belong to `local-discovery`; ticketed tours and attractions stay here.
 - Search in local language when useful. For retained items verify official opening days/hours, timed-entry window, final admission, price, booking release, duration, accessibility features, seasonal closure, and direct ticket URL as atomic claims.
 - Record queue time separately from visit length, travel time from realistic anchors, geographic cluster, energy load, and the best evidence-backed low-crowd slot.
 - Check reservation compatibility across days before recommending. Avoid stacking several weather-sensitive, high-energy, or non-refundable activities into one fragile window.

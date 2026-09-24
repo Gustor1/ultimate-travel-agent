@@ -53,7 +53,8 @@ def test_primary_skill_prompts_have_a_regression_budget() -> None:
     contents = [path.read_text(encoding="utf-8") for path in skill_files]
 
     assert len(skill_files) == 14
-    assert sum(map(len, contents)) <= 35_000
+    # Activity-led planning adds compact food/photo guidance while keeping the pack bounded.
+    assert sum(map(len, contents)) <= 37_000
     assert max(map(len, contents)) <= 4_500
     for content in contents:
         assert "compact-research-protocol.md" in content

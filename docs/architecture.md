@@ -31,9 +31,9 @@ SDK and the `ultimate-travel-agent-mcp` entry point.
 ## Execution graph
 
 1. Brief gate: `travel-orchestrator` detects missing critical constraints.
-2. Wave 1A, parallel: destination, transport, safety, and broad activity research.
-3. Date gate: transport options establish candidate effective dates.
-4. Wave 1B, parallel: accommodation, local discovery, and date-sensitive activity refinement.
+2. Wave 1A, parallel: destination, relevant ground transport, safety, and broad activity research. Run full flight comparison only when requested or when flights determine viable dates or route.
+3. Date gate: use candidate dates from the brief or verified transport; unquoted flights remain provisional.
+4. Wave 1B, parallel: accommodation, local food/photo discovery, and date-sensitive activity refinement.
 5. Evidence gate: `source-verification` creates claim/source links and freshness windows.
 6. Budget: `budget-analyst` consolidates typed cost components.
 7. Schedule: `itinerary-optimizer` builds the chronological plan.

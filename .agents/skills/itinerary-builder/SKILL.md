@@ -13,10 +13,10 @@ Load accepted activity, lodging, route, meal, constraint, opening-window, fallba
 
 ## Method
 
-- Model fixed reservations, opening windows, transfers, meals, rest, check-in/out, and fallbacks as temporal constraints. Never overlap blocks or schedule a closed item.
+- Model fixed reservations, opening windows, transfers, meals, rest, check-in/out, and fallbacks as temporal constraints. Never overlap blocks or schedule a closed item. Unverified flight times remain explicit arrival/departure windows.
 - Prioritize rigid reservations, then cluster flexible stops geographically. Run `route-optimize`; use sourced travel times rather than straight-line distance for final feasibility.
 - Apply the profile's maximum activity hours, walking budget, mobility needs, pace, and jet-lag recovery. “2–3 major visits” is only a default for an unspecified balanced profile.
-- Preserve visible slack for queues and disruptions instead of filling 100% of the day. Validate every connection and cascading effect of delay.
+- Preserve visible slack for queues and disruptions instead of filling 100% of the day. Validate every connection and cascading effect of delay. Fit sourced local specialties and photo moments into nearby meal or visit windows; omit a detour that breaks the pace.
 - Show time chain and latest safe departure on last-service, border, luggage, or intercity days; unresolved legs stay provisional.
 - Count full days per base; compare a lower-transfer route when short stays crowd out priorities.
 - Use `adaptive-day` for weather/energy variants and `disruption-plan` for recovery. A fallback must fit the same approximate area, time window, access needs, and budget.

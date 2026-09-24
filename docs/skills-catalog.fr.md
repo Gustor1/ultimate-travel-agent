@@ -11,8 +11,8 @@ Toutes les skills sont locales, open source (licence MIT) et indépendantes de l
 | `travel-web-research` | Étudie le climat, les coutumes et les créneaux anti-foule | `web_search`, `browser`, `filesystem_read` | Profil de destination & matrice saisonnière |
 | `transport-research` | Compare les transports porte-à-porte (train, vol, route, ferry) | `web_search`, `browser`, `local_calculation` | Matrice comparative multi-modale |
 | `accommodation-research` | Évalue les quartiers sûrs et sélectionne 3-5 hébergements | `web_search`, `browser`, `filesystem_read` | Short-list d'hébergements vérifiés |
-| `activity-curator` | Conçoit le programme d'activités avec plans B mauvais temps | `web_search`, `browser`, `local_calculation` | Catalogue d'activités & alternatives pluie |
-| `local-discovery` | Repère les adresses de quartier et restos authentiques | `web_search`, `browser`, `filesystem_read` | Pépites locales (Tier 4-6) |
+| `activity-curator` | Sélectionne des expériences adaptées aux journées et prévoit des plans B | `web_search`, `browser`, `local_calculation` | Visites sourcées et créneaux faisables |
+| `local-discovery` | Recherche spécialités locales, adresses de quartier et spots photo | `web_search`, `browser`, `filesystem_read` | Suggestions proches du parcours avec provenance |
 | `itinerary-builder` | Construit le planning jour par jour avec regroupements géographiques | `filesystem_read`, `local_calculation` | Itinéraire chronologique détaillé |
 | `budget-and-booking-checker` | Consolide les coûts, ajoute 10-15 % de réserve et liste les réservations | `filesystem_read`, `local_calculation` | Budget ventilé & calendrier des réservations |
 | `travel-safety` | Contrôle visas, passeports, vaccins et consignes d'urgence | `web_search`, `browser`, `filesystem_read` | Checklist formalités, santé et sécurité |

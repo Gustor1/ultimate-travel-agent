@@ -419,14 +419,9 @@ class TestWorkflowIntegration:
         workflow_path = REPO_ROOT / ".agents" / "workflows" / "plan-complete-trip.md"
         content = workflow_path.read_text(encoding="utf-8")
         assert "flight-search" in content, "plan-complete-trip.md missing flight-search reference"
-        accom_lines = [
-            i
-            for i, line in enumerate(content.split("\n"))
-            if "accommodation-researcher" in line.lower() and "depends" in line.lower()
-        ]
-        assert len(accom_lines) > 0, (
-            "plan-complete-trip.md missing accommodation-researcher dependency on flight-search"
-        )
+        assert "fares are requested or flight choice controls dates/route" in content
+        assert "`accommodation-researcher` depends on viable candidate dates" in content
+        assert "without `flight-search`" in content
 
     def test_compare_transport_references_flight_search(self):
         workflow_path = REPO_ROOT / ".agents" / "workflows" / "compare-transport.md"

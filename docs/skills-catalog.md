@@ -11,7 +11,7 @@ The pack contains 14 runtime-neutral, local-first skills. Each entrypoint loads 
 | [`transport-research`](../.agents/skills/transport-research/SKILL.md) | Non-flight/multimodal door-to-door Pareto comparison | `compare-total-cost` |
 | [`accommodation-research`](../.agents/skills/accommodation-research/SKILL.md) | Neighborhoods and exact comparable room/rate plans | Hotel coverage, mobility, comparison, neighborhood commands |
 | [`activity-curator`](../.agents/skills/activity-curator/SKILL.md) | Major activities, slots, access, crowd and weather fallback | Deterministic time checks |
-| [`local-discovery`](../.agents/skills/local-discovery/SKILL.md) | Neighborhood venues, multilingual discovery, provenance | URL/entity deduplication |
+| [`local-discovery`](../.agents/skills/local-discovery/SKILL.md) | Local specialties, neighborhood venues, photo spots, provenance | URL/entity deduplication |
 | [`travel-safety`](../.agents/skills/travel-safety/SKILL.md) | Applicable entry, health, weather, insurance, emergency actions | `revalidation-plan` |
 | [`source-verification`](../.agents/skills/source-verification/SKILL.md) | Atomic critical/stale/conflicting claim audit | `normalize-source-url` |
 | [`budget-and-booking-checker`](../.agents/skills/budget-and-booking-checker/SKILL.md) | Atomic scenarios, financial exposure, risk reserve, user handoff | Cost, watch, revalidation, booking commands |
@@ -21,7 +21,7 @@ The pack contains 14 runtime-neutral, local-first skills. Each entrypoint loads 
 
 ## Shared guarantees
 
-- Required research cells and candidate obligations are never pruned for token savings.
+- Required cells within the selected scope are never pruned for token savings; activity breadth follows usable days and interests.
 - `pending: 0` proves execution, not evidence sufficiency; four readiness gates remain separate.
 - Claims link to current sources by stable ID, authority, independence group, and applicability.
 - Parallel writers use separate revisioned shards; handoffs contain IDs instead of copied evidence.

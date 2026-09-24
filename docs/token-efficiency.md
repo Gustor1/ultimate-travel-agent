@@ -1,6 +1,6 @@
 # Token efficiency without research loss
 
-The pack reduces model context by changing how research is carried between stages. It does **not** reduce search matrices, provider checks, candidate counts, source tiers, or final dossier detail.
+The pack reduces model context by changing how research is carried between stages. It preserves every cell required by the selected task. Activity breadth follows usable days and interests rather than a fixed number of candidates per calendar day.
 
 ## What changed
 
@@ -20,18 +20,19 @@ Measured as UTF-8 text characters in the canonical `.agents/` tree:
 
 | Corpus | Before | After | Reduction |
 |---|---:|---:|---:|
-| 14 primary skills | 121,605 | 33,161 | 72.7% |
-| 12 agent definitions | 27,102 | 10,974 | 59.5% |
-| 9 workflows | 19,528 | 13,355 | 31.6% |
-| Skills + agents + workflows | 168,235 | 57,490 | 65.8% |
+| 14 primary skills | 121,605 | 36,392 | 70.1% |
+| 12 agent definitions | 27,102 | 11,136 | 58.9% |
+| 9 workflows | 19,528 | 13,790 | 29.4% |
+| Skills + agents + workflows | 168,235 | 61,318 | 63.6% |
 
 Shared methods are progressively disclosed: research, evidence, cache, deterministic-tool, regional, and scenario references are loaded only when applicable. The entrypoint corpus therefore shrank even while claim-first planning, contradiction resolution, multilingual queries, Pareto comparison, source independence, concurrency safety, and machine-validatable handoffs were added. Character counts are a stable repository regression metric, not provider-billed token measurements. Actual Codex or Claude quota savings depend on host caching, model reasoning, web-result size, and subagent implementation.
 
 Reproduce the current corpus measurement with `ultimate-travel-agent prompt-audit`. Its token column is the explicit `characters / 4` comparison proxy, never a claim about billed usage.
 
-## Why precision and quantity remain intact
+## Why precision remains intact
 
-- Flight search still creates the complete four-pass coverage ledger, including the full flexible-date Cartesian grid and dates × gateways matrix.
+- When flight comparison is requested or controls the route, it still creates the complete four-pass coverage ledger, including flexible dates and gateways. Other trips keep flights explicitly unpriced and continue experience planning from candidate dates.
+- Activity research covers each usable sightseeing day and its fragile anchors. It expands choices where needed without a trip-length-only quota.
 - Accommodation still covers required neighborhoods, transit evidence, Google Hotels, Booking.com, Agoda/Trip.com, and official-property verification.
 - Destination research retains its complete topic × period × area × traveler-constraint × source-role coverage lattice.
 - Every required cell must end as `searched`, `unavailable`, or justified `skipped`; `pending: 0` closes execution but does not falsely imply evidence sufficiency.

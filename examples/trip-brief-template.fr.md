@@ -18,6 +18,8 @@
 
 ## 3. Centres d'Intérêt & Contraintes
 - **Centres d'intérêt** : [ex. Gastronomie, musées d'art, balades nature, architecture historique, marchés locaux]
+- **Spécialités et photos** : [ex. Plats régionaux à découvrir, marchés, scènes de rue, points de vue au lever ou coucher du soleil]
+- **Vols** : [ex. Billets déjà choisis / dates et aéroports provisoires / comparaison de prix souhaitée]
 - **Visites incontournables** : [ex. Randonnée au lever du jour à Fushimi Inari, spectacle de théâtre, dégustation d'huile d'olive]
 - **À éviter absolument** : [ex. Pièges à touristes, restaurants bondés en bordure de monuments, longs trajets en car]
 - **Besoins alimentaires ou d'accessibilité** : [ex. Végétarien / Sans gluten / Nécessité d'un ascenseur (pas d'escaliers raides)]
