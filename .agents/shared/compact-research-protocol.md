@@ -2,6 +2,8 @@
 
 Mandatory for travel-planning agents. It changes context transport, never research scope.
 
+Read [planning-depth.md](planning-depth.md) first. The depth mode decides which cells are required. Durable run state and `compact-handoff/v2` envelopes are mandatory in `exhaustive` mode and optional otherwise; evidence honesty, claim ownership, and universal safety apply in every mode.
+
 ## Fidelity and completion
 
 Never prune a required query or search cell to save tokens. Preserve the complete search matrix, candidate obligations, official verification, fallbacks, rejected options, and source requirements. Save verbose evidence once; exchange IDs and deltas.

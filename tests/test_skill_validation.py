@@ -3,8 +3,8 @@
 from ultimate_travel_agent.validator import validate_all_skills, validate_skill_file
 
 
-def test_all_14_skills_meet_quality_standard():
-    """Verify that all 14 core skills pass the comprehensive quality validator."""
+def test_all_15_skills_meet_quality_standard():
+    """Verify that all 15 core skills pass the comprehensive quality validator."""
     passed, reports = validate_all_skills()
     assert passed, f"Skill validation failed on skills: {[k for k, v in reports.items() if v]}"
 

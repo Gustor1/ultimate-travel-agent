@@ -36,11 +36,11 @@ def test_isolated_project_lifecycle():
         res1 = install_pack_skills(
             target_dir=target_project, include_agents=False, include_workflows=False
         )
-        assert len(res1["installed"]) >= 14
+        assert len(res1["installed"]) >= 15
         manifest1 = load_install_manifest(target_project)
         assert manifest1 is not None
         assert manifest1["pack_name"] == "ultimate-travel-agent"
-        assert len(manifest1["installed_skills"]) == 14
+        assert len(manifest1["installed_skills"]) == 15
         assert len(manifest1["installed_agents"]) == 0
         assert len(manifest1["installed_workflows"]) == 0
 

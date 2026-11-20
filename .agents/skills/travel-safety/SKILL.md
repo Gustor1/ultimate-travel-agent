@@ -14,6 +14,7 @@ Require generic nationality/residency, destinations/transits, dates, age/access 
 ## Method
 
 - Build an applicability matrix: traveler category × jurisdiction × border/transit type × date. Verify entry/visa/transit, passport validity, forms, customs, driving, and advisories with both destination authorities and the traveler's relevant origin authority when useful.
+- Entry is checked in every depth mode for an international trip: accepted identity document for the traveler category, validity rule, and any electronic travel authorization or visa with lead time and official application page. Missing nationality category blocks this cell rather than assuming one.
 - Label every item `legal_requirement`, `official_recommendation`, or `precaution`; never present advice as law. Record issuing jurisdiction, effective date, applicability, and revalidation deadline.
 - Check official health guidance, vaccines, medication documentation/import rules, insurance/evacuation limits, seasonal/environmental hazards, severe weather, scams, and emergency procedures without diagnosing.
 - Prioritize risk as severity × likelihood × traveler exposure while preserving low-probability high-impact blockers. Record official emergency/consular contacts only from current primary sources.

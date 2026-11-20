@@ -1,12 +1,13 @@
 # Catalogue des Skills de Voyage
 
-Liste exhaustive des 14 skills spécialisées incluses dans `ultimate-travel-agent`.
+Liste exhaustive des 15 skills spécialisées incluses dans `ultimate-travel-agent`.
 Toutes les skills sont locales, open source (licence MIT) et indépendantes de l'hôte. Codex, Claude ou un autre agent doit simplement relier les capacités déclarées à ses outils réels.
 
 ---
 
 | Nom de la Skill | Rôle principal | Outils requis | Résultat produit |
 |---|---|---|---|
+| `trip-intake` | Cadre la demande en une seule série de questions avec valeurs par défaut et choisit le mode (rapide, standard, exhaustif) | — | Brief minimal, hypothèses, mode de profondeur |
 | `travel-orchestrator` | Pilote les 5 vagues de planification et synthétise le dossier | `filesystem_read`, `local_calculation` | Dossier de voyage final sourcé |
 | `travel-web-research` | Étudie le climat, les coutumes et les créneaux anti-foule | `web_search`, `browser`, `filesystem_read` | Profil de destination & matrice saisonnière |
 | `transport-research` | Compare les transports porte-à-porte (train, vol, route, ferry) | `web_search`, `browser`, `local_calculation` | Matrice comparative multi-modale |

@@ -9,7 +9,7 @@ Grâce à son architecture **Skills-First**, `ultimate-travel-agent` s'installe 
 Depuis la racine du dépôt (ou avec l'outil installé en CLI) :
 
 ```bash
-# Installer uniquement les 14 skills de voyage :
+# Installer uniquement les 15 skills de voyage :
 ultimate-travel-agent install-skills --target /chemin/vers/mon-projet
 ```
 

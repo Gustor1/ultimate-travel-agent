@@ -10,7 +10,7 @@ You can install this travel planning toolkit into any project whose agent host c
 From the root of this project (or after installing via pip):
 
 ```bash
-# Install the 14 core travel skills into your target project:
+# Install the 15 core travel skills into your target project:
 python -m ultimate_travel_agent.cli install-skills --target /path/to/my-project
 ```
 

@@ -53,7 +53,7 @@ class TestFlightSearchSkillStructure:
         data = json.loads(manifest_path.read_text(encoding="utf-8"))
         skill_names = [s["name"] for s in data["skills"]]
         assert "flight-search" in skill_names, "flight-search missing from manifest.json"
-        assert len(skill_names) == 14, f"Expected 14 skills, got {len(skill_names)}"
+        assert len(skill_names) == 15, f"Expected 15 skills, got {len(skill_names)}"
 
     def test_transport_planner_references_flight_search(self):
         """The transport-planner agent must reference flight-search."""

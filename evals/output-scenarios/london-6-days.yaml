@@ -1,0 +1,60 @@
+schema_version: 1
+id: london-6-days-from-paris
+description: >-
+  Golden output scenario. A capable agent using the skills should produce a plan
+  that passes every check below. Checks are deterministic text proxies, not a
+  substitute for human review of the plan's quality.
+brief:
+  language: fr
+  prompt: >-
+    Prépare-moi un voyage à Londres de 6 jours en avril depuis Paris, à deux adultes,
+    budget moyen, rythme équilibré. On aime les musées, la street food et les marchés.
+  depth_mode: standard
+checks:
+  - id: sections
+    description: The plan follows the shared output template.
+    all_of:
+      - "(?im)^#+.*en bref"
+      - "(?im)^#+.*points bloquants"
+      - "(?im)^#+.*réserver"
+      - "(?im)^#+.*jour par jour"
+      - "(?im)^#+.*budget"
+      - "(?im)^#+.*sources"
+  - id: entry-documents
+    description: UK entry is covered for a French traveler (passport and ETA).
+    all_of:
+      - "(?i)passeport|passport"
+      - "(?i)\\bETA\\b|electronic travel authori[sz]ation|autorisation de voyage électronique"
+  - id: corridor-decision
+    description: Eurostar is compared with flying.
+    all_of:
+      - "(?i)eurostar"
+      - "(?i)\\bavion\\b|\\bvols?\\b|flight"
+  - id: local-transport
+    description: Contactless or Oyster fare capping is explained.
+    all_of:
+      - "(?i)contactless|sans contact|oyster"
+      - "(?i)plafon|\\bcap"
+  - id: booking-calendar
+    description: Time-sensitive bookings are dated.
+    all_of:
+      - "(?i)maintenant|now"
+      - "(?i)J-\\d+|\\d+ (?:jours|days) (?:avant|before)"
+  - id: rain-plan
+    description: Weather fallbacks exist.
+    all_of:
+      - "(?i)pluie|rain"
+  - id: markets-and-food
+    description: Stated interests are reflected.
+    all_of:
+      - "(?i)march[ée]|market"
+      - "(?i)musée|museum"
+  - id: source-conflicts
+    description: Disagreements between sources are surfaced, or their absence is stated.
+    all_of:
+      - "(?i)contradictions? entre sources|source conflicts?"
+  - id: price-status
+    description: Every line carrying a GBP or EUR amount states whether it is verified, estimated, or unpriced.
+    price_lines_labeled:
+      currency: "£|€|\\bGBP\\b|\\bEUR\\b"
+      labels: "(?i)vérifié|verified|relevé|observed|estimation|estimate|estimé|non coté|unpriced|~|environ|≈"
