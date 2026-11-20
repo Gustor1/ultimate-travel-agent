@@ -75,7 +75,7 @@ include-package-data = true
 minversion = "7.0"
 addopts = "-ra -q --import-mode=importlib"
 testpaths = ["tests"]
-pythonpath = ["src"]
+pythonpath = ["src", "."]
 
 [tool.ruff]
 line-length = 100
