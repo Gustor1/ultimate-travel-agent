@@ -12,24 +12,26 @@
     {"name": "compact-research-protocol", "path": "shared/compact-research-protocol.md"},
     {"name": "deterministic-tools", "path": "shared/deterministic-tools.md"},
     {"name": "evidence-policy", "path": "shared/evidence-policy.md"},
-    {"name": "research-methods", "path": "shared/research-methods.md"},
+    {"name": "planning-depth", "path": "shared/planning-depth.md"},
     {"name": "region-china", "path": "shared/region-china.md"},
     {"name": "region-london", "path": "shared/region-london.md"},
     {"name": "region-portugal", "path": "shared/region-portugal.md"},
+    {"name": "research-methods", "path": "shared/research-methods.md"},
     {"name": "scenario-accessibility", "path": "shared/scenario-accessibility.md"},
+    {"name": "scenario-connectivity", "path": "shared/scenario-connectivity.md"},
+    {"name": "scenario-dining", "path": "shared/scenario-dining.md"},
     {"name": "scenario-extreme-heat", "path": "shared/scenario-extreme-heat.md"},
     {"name": "scenario-family", "path": "shared/scenario-family.md"},
     {"name": "scenario-high-altitude", "path": "shared/scenario-high-altitude.md"},
     {"name": "scenario-island-ferry", "path": "shared/scenario-island-ferry.md"},
-    {"name": "scenario-connectivity", "path": "shared/scenario-connectivity.md"},
-    {"name": "scenario-dining", "path": "shared/scenario-dining.md"},
     {"name": "scenario-loyalty", "path": "shared/scenario-loyalty.md"},
     {"name": "scenario-rail-pass", "path": "shared/scenario-rail-pass.md"},
     {"name": "scenario-routing", "path": "shared/scenario-routing.md"},
     {"name": "scenario-schengen", "path": "shared/scenario-schengen.md"},
     {"name": "scenario-self-drive", "path": "shared/scenario-self-drive.md"},
     {"name": "scenario-separate-tickets", "path": "shared/scenario-separate-tickets.md"},
-    {"name": "scenario-sustainable-travel", "path": "shared/scenario-sustainable-travel.md"}
+    {"name": "scenario-sustainable-travel", "path": "shared/scenario-sustainable-travel.md"},
+    {"name": "trip-output-template", "path": "shared/trip-output-template.md"}
   ],
   "skills": [
     {"name": "accommodation-research", "path": "skills/accommodation-research/SKILL.md"},
@@ -45,7 +47,8 @@
     {"name": "travel-orchestrator", "path": "skills/travel-orchestrator/SKILL.md"},
     {"name": "travel-quality-control", "path": "skills/travel-quality-control/SKILL.md"},
     {"name": "travel-safety", "path": "skills/travel-safety/SKILL.md"},
-    {"name": "travel-web-research", "path": "skills/travel-web-research/SKILL.md"}
+    {"name": "travel-web-research", "path": "skills/travel-web-research/SKILL.md"},
+    {"name": "trip-intake", "path": "skills/trip-intake/SKILL.md"}
   ],
   "agents": [
     {"name": "accommodation-researcher", "path": "agents/accommodation-researcher/agent.md"},

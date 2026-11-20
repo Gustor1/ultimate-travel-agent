@@ -32,6 +32,8 @@ EXPECTED_SHARED_ASSETS = {
     "shared/scenario-self-drive.md",
     "shared/scenario-separate-tickets.md",
     "shared/scenario-sustainable-travel.md",
+    "shared/planning-depth.md",
+    "shared/trip-output-template.md",
 }
 
 
@@ -52,9 +54,9 @@ def test_primary_skill_prompts_have_a_regression_budget() -> None:
     skill_files = sorted((AGENTS / "skills").glob("*/SKILL.md"))
     contents = [path.read_text(encoding="utf-8") for path in skill_files]
 
-    assert len(skill_files) == 14
-    # Activity-led planning adds compact food/photo guidance while keeping the pack bounded.
-    assert sum(map(len, contents)) <= 37_000
+    assert len(skill_files) == 15
+    # Depth modes and trip intake add one compact skill; shared references carry the detail.
+    assert sum(map(len, contents)) <= 40_000
     assert max(map(len, contents)) <= 4_500
     for content in contents:
         assert "compact-research-protocol.md" in content
@@ -78,7 +80,7 @@ def test_workflow_prompt_corpus_has_a_regression_budget() -> None:
 
 def test_prompt_audit_reports_reproducible_corpus_costs() -> None:
     report = audit_prompt_corpus(AGENTS)
-    assert report["skills"]["files"] == 14
+    assert report["skills"]["files"] == 15
     assert report["agents"]["files"] == 12
     assert report["workflows"]["files"] == 9
     assert report["skills"]["characters"] == sum(

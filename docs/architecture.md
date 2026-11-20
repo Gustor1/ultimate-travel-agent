@@ -9,7 +9,7 @@ returns structured results. It is not a FastAPI service or booking engine.
 
 `.agents/` is the single source of truth:
 
-- 14 skills;
+- 15 skills;
 - 12 agent definitions;
 - 9 workflows;
 - one shared compact-research protocol;

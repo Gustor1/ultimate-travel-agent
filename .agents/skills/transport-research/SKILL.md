@@ -13,6 +13,7 @@ Require endpoints, direction, dates/windows, party, luggage/access needs, accept
 
 ## Method
 
+- When the main corridor also has flights, own the door-to-door rail/coach/ferry side of the comparison and reuse `flight-search` offer IDs instead of researching fares twice.
 - Predeclare viable rail, bus, ferry, car/rental, taxi/shuttle, and local-transfer cells; preserve unavailable and rejected modes with reasons.
 - Build a time-expanded journey: origin access, check-in/security, wait, ride, transfer, border/formality, last mile, recovery buffer, first/last usable departure, and frequency. Research both directions when they differ.
 - For last services, borders, or luggage detours, record latest safe departure, terminal, cutoff, buffer, lodging arrival, and fallback. Unknown critical times remain provisional.

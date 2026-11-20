@@ -58,7 +58,7 @@ def test_cli_help():
 
 
 def test_cli_list_skills():
-    """Verify list-skills subcommand outputs all 14 skills."""
+    """Verify list-skills subcommand outputs all 15 skills."""
     result = subprocess.run(
         [sys.executable, "-m", "ultimate_travel_agent.cli", "list-skills"],
         capture_output=True,

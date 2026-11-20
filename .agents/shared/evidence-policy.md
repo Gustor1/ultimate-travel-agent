@@ -27,6 +27,10 @@ Primary evidence is required for legal, health, safety, price, schedule, cancell
 
 Use a shorter window when the publisher or event indicates faster change. An inaccessible, redirected, or login-blocked page does not verify a claim.
 
+## Observed versus verified
+
+A value is `verified` only when read on the responsible primary page itself. A search-engine snippet or summary, a comparison engine, or a booking connector result is `observed` (user-facing label: `relevé le <date>`), even when the snippet quotes an official domain. Observed values may support planning and budgets but never `booking_ready`. Upgrade to `verified` only after opening the primary page, and record which tool supplied the value.
+
 ## Evidence sufficiency
 
 `pending: 0` proves execution only. A recommendation also needs the skill's minimum qualified set, comparable fields, primary evidence for critical facts, and no unresolved material conflict. State `INSUFFICIENT_EVIDENCE` when these conditions fail.

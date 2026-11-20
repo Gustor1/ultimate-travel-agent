@@ -21,7 +21,10 @@ class EvalCase:
 
 RULES: dict[str, tuple[tuple[str, ...], ...]] = {
     "travel-orchestrator": (
-        (r"\bcomplete trip\b", r"\bend-to-end\b", r"\bplan (?:my |a )?trip\b", r"voyage complet", r"itin.raire complet"),
+        (r"\bcomplete trip\b", r"\bend-to-end\b", r"\bplan (?:my |a )?trip\b", r"voyage complet", r"itin.raire complet", r"pr.pare(?:-moi|r)? (?:un |mon |notre )?voyage"),
+    ),
+    "trip-intake": (
+        (r"where (?:should|to) (?:I |we )?go\b", r"\bnot sure (?:where|when)\b", r"\bhelp me (?:choose|decide|frame)\b", r"o. partir", r"je ne sais pas (?:o.|quand)", r"\bh.site entre\b", r"cadrer (?:mon |notre )?voyage"),
     ),
     "flight-search": (
         (r"\bflights?\b", r"\bairfare\b", r"\bvols?\b", r"billets? d.avion"),

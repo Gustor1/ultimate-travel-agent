@@ -1,9 +1,10 @@
 ﻿# Travel Skills Catalog
 
-The pack contains 14 runtime-neutral, local-first skills. Each entrypoint loads shared policy progressively and returns artifact IDs through `compact-handoff/v2`; only final synthesis expands a complete `TravelDossier v1`.
+The pack contains 15 runtime-neutral, local-first skills. Each entrypoint loads shared policy progressively and returns artifact IDs through `compact-handoff/v2`; only final synthesis expands a complete `TravelDossier v1`.
 
 | Skill | Distinct responsibility | Deterministic support |
 |---|---|---|
+| [`trip-intake`](../.agents/skills/trip-intake/SKILL.md) | One round of defaulted questions, privacy-minimal brief, depth mode (quick/standard/exhaustive) | `profile-show` |
 | [`travel-orchestrator`](../.agents/skills/travel-orchestrator/SKILL.md) | Dynamic end-to-end DAG, ownership, gates, final synthesis | `validate-handoff`, `validate-dossier` |
 | [`multi-agent-orchestration`](../.agents/skills/multi-agent-orchestration/SKILL.md) | Isolated contexts, source-demand fan-in, sharded recovery | Handoff validation |
 | [`travel-web-research`](../.agents/skills/travel-web-research/SKILL.md) | Geography, climate, events, crowds, norms, regional context | Coverage/artifact checks |

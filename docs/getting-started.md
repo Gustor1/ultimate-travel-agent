@@ -49,7 +49,7 @@ pytest
 `ultimate-travel-agent` fournit un gestionnaire de compétences en ligne de commande pour inspecter, installer et valider les skills de voyage :
 
 ```bash
-# Lister les 14 skills du pack
+# Lister les 15 skills du pack
 python -m ultimate_travel_agent.cli list-skills
 
 # Installer les skills, agents et workflows dans un projet cible

@@ -20,7 +20,7 @@ Generate stable cells with `flight-search-plan`. Use at least one available comp
 3. **Pass 3 — flexible dates:** principal airports and the complete Cartesian departure × return grid through requested flexibility, up to ±3 days. For one_way, search every valid departure once.
 4. **Pass 4 — combined:** every valid flexible pair × every retained gateway, max 5. Use cheap structured discovery for the complete bounded matrix, then direct verification for the Pareto frontier and required fallbacks.
 
-If `dates_fixed: true`, Passes 3–4 are `skipped` with reasons. Multi-city applies coverage per flexible leg and rejects chronological impossibilities. Run `flight-search-coverage`; the `coverage_report` requires `pending: 0`, but recommendation readiness also needs a verified REF and sufficient comparable offers.
+In `standard` mode apply `../../shared/planning-depth.md` bounds: other cells are `skipped` (`DEPTH_MODE`), unreadable engines `unavailable`. If `dates_fixed: true`, Passes 3–4 are `skipped` with reasons. Multi-city applies coverage per flexible leg and rejects chronological impossibilities. Run `flight-search-coverage`; the `coverage_report` requires `pending: 0`, but recommendation readiness also needs a verified REF and sufficient comparable offers.
 
 ## Normalization and verification
 

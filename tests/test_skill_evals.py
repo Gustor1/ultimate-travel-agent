@@ -15,6 +15,7 @@ TARGET_SKILLS = {
     "travel-quality-control",
     "travel-safety",
     "mcp-skill-auditing",
+    "trip-intake",
 }
 
 

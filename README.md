@@ -22,7 +22,7 @@ Pack portable de skills pour planifier des voyages réalistes, vérifiables et a
 
 | Répertoire | Contenu |
 | --- | --- |
-| `.agents/skills/` | 14 skills de voyage |
+| `.agents/skills/` | 15 skills de voyage |
 | `.agents/agents/` | 12 définitions de spécialistes |
 | `.agents/workflows/` | 9 workflows prêts à suivre |
 | `.agents/shared/` | Protocoles, schémas, cache et références conditionnelles |
@@ -99,7 +99,7 @@ Par défaut, les opérations fichier MCP restent limitées au répertoire couran
 
 Les outils sensibles sont annotés et bornés : aucun achat ni aucune réservation n’est exécuté. Les secrets proviennent uniquement des variables d’environnement et ne sont ni renvoyés dans les résultats ni journalisés.
 
-## Les 14 skills
+## Les 15 skills
 
 **Recherche** : `travel-web-research`, `flight-search`, `transport-research`, `accommodation-research`, `activity-curator`, `local-discovery`.
 
@@ -107,7 +107,7 @@ Les outils sensibles sont annotés et bornés : aucun achat ni aucune réservati
 
 **Contrôle** : `source-verification`, `travel-quality-control`.
 
-**Coordination** : `travel-orchestrator`, `multi-agent-orchestration`, `mcp-skill-auditing`.
+**Coordination** : `trip-intake`, `travel-orchestrator`, `multi-agent-orchestration`, `mcp-skill-auditing`.
 
 Le workflow complet suit généralement cette séquence : brief et contraintes → dates et étapes provisoires → activités et découvertes locales sourcées → transports utiles et hébergement → budget disponible ou explicitement non coté → itinéraire → contrôle qualité → `TravelDossier v1`.
 

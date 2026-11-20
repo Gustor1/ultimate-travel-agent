@@ -44,3 +44,9 @@ cases:
   - {id: mcp-audit-negative, category: negative, focus_skills: [mcp-skill-auditing], prompt: "Use the weather connector to plan outdoor activities.", expected: [activity-curator]}
   - {id: mcp-audit-edge, category: edge, focus_skills: [mcp-skill-auditing], prompt: "Review privacy and permissions for a third-party connector before installation.", expected: [mcp-skill-auditing]}
   - {id: mcp-audit-overlap, category: overlap, focus_skills: [mcp-skill-auditing], prompt: "Verify the source claims and run a security audit of the external API.", expected: [source-verification, mcp-skill-auditing]}
+
+  - {id: intake-positive, category: positive, focus_skills: [trip-intake], prompt: "Je veux partir en mai mais je ne sais pas où aller.", expected: [trip-intake]}
+  - {id: intake-negative, category: negative, focus_skills: [trip-intake], prompt: "Compare three hotels near Kyoto Station.", expected: [accommodation-research]}
+  - {id: intake-edge, category: edge, focus_skills: [trip-intake], prompt: "J'hésite entre Lisbonne et Porto pour quatre jours.", expected: [trip-intake]}
+  - {id: intake-overlap, category: overlap, focus_skills: [trip-intake], prompt: "Prépare-moi un voyage à Londres, je ne sais pas quand partir.", expected: [travel-orchestrator, trip-intake]}
+  - {id: orchestrator-french, category: positive, focus_skills: [travel-orchestrator], prompt: "Prépare-moi un voyage à Londres de 6 jours en avril depuis Paris.", expected: [travel-orchestrator]}

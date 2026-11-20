@@ -23,7 +23,7 @@ def test_install_in_temp_project():
         )
         install_skills(args)
 
-        # 1. Check all 14 skills are installed
+        # 1. Check all 15 skills are installed
         skills_dest = target_path / ".agents" / "skills"
         assert skills_dest.exists()
         expected_skills = [
@@ -41,6 +41,7 @@ def test_install_in_temp_project():
             "multi-agent-orchestration",
             "mcp-skill-auditing",
             "flight-search",
+            "trip-intake",
         ]
         for skill in expected_skills:
             skill_file = skills_dest / skill / "SKILL.md"
@@ -116,8 +117,8 @@ def test_uninstall():
         assert not (target_path / ".agents" / "workflows").exists()
 
 
-def test_all_14_skills_frontmatter_and_policies():
-    """Verify that all 14 skills adhere to the mandatory schema, frontmatter, and safety invariants."""
+def test_all_15_skills_frontmatter_and_policies():
+    """Verify that all 15 skills adhere to the mandatory schema, frontmatter, and safety invariants."""
     base_dir = get_base_dir()
     skills_dir = base_dir / ".agents" / "skills"
 
@@ -136,6 +137,7 @@ def test_all_14_skills_frontmatter_and_policies():
         "multi-agent-orchestration",
         "mcp-skill-auditing",
         "flight-search",
+        "trip-intake",
     ]
 
     for skill_name in expected_skills:
